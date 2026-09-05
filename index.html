@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My World Map - Custom Map Editor</title>
+    <!-- Mapbox GL JS CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <!-- Top Bar: Ricerca -->
+    <div class="top-bar">
+        <input type="text" id="searchInput" placeholder="Cerca una località..." />
+    </div>
+
+    <!-- Controlli Fluttuanti Destra -->
+    <div class="floating-controls">
+        <button id="gpsButton" title="La mia posizione">🎯</button>
+        <button id="editorButton" title="Editor Stile e Colori">🎨</button>
+        <button id="profileNavBtn" title="Profilo e Stampa">👤</button>
+    </div>
+
+    <!-- Menu FAB Aggiungi -->
+    <div class="fab-container">
+        <button id="addOptionButton" class="fab-main">＋</button>
+        <div id="addMenu" class="fab-menu hidden">
+            <button id="addPinOption">📍 Aggiungi Pin</button>
+            <button id="addZoneOption">📐 Crea Quartiere</button>
+        </div>
+    </div>
+
+    <!-- UI Selezione Coordinate Pin -->
+    <div id="mapPicker" class="picker-overlay hidden">
+        <div class="picker-center-icon">📍</div>
+        <div class="picker-bar">
+            <span>Sposta la mappa per posizionare il Pin</span>
+            <button id="confirmPick" class="btn-primary">Conferma</button>
+            <button id="cancelPick" class="btn-secondary">Annulla</button>
+        </div>
+    </div>
+
+    <!-- UI Tracciamento Zona/Quartiere -->
+    <div id="zonePicker" class="picker-overlay hidden">
+        <div class="picker-bar">
+            <span id="zoneInstruction">Clicca sulla mappa per aggiungere vertici (minimo 3)</span>
+            <button id="confirmZone" class="btn-primary" disabled>Conferma Quartiere</button>
+            <button id="cancelZone" class="btn-secondary">Annulla</button>
+        </div>
+    </div>
+
+    <!-- Modal: Editor Mappa & Colori -->
+    <div id="editorModal" class="modal">
+        <div class="modal-content">
+            <h3>🎨 Editor Stile Mappa</h3>
+            
+            <div class="editor-section">
+                <h4>Colori Personalizzati</h4>
+                <div class="color-picker-row">
+                    <label for="colorBackground">Terreno / Sfondo:</label>
+                    <input type="color" id="colorBackground" value="#0f172a">
+                </div>
+                <div class="color-picker-row">
+                    <label for="colorWater">Acqua e Fiumi:</label>
+                    <input type="color" id="colorWater" value="#0284c7">
+                </div>
+                <div class="color-picker-row">
+                    <label for="colorRoads">Strade:</label>
+                    <input type="color" id="colorRoads" value="#334155">
+                </div>
+                <div class="color-picker-row">
+                    <label for="colorParks">Aree Verdi / Parchi:</label>
+                    <input type="color" id="colorParks" value="#15803d">
+                </div>
+                <div class="color-picker-row">
+                    <label for="colorBuildings">Edifici:</label>
+                    <input type="color" id="colorBuildings" value="#1e293b">
+                </div>
+            </div>
+
+            <div class="editor-section">
+                <h4>Effetti e Stile Icone</h4>
+                <div class="toggle-row">
+                    <label for="toggle3d">Edifici 3D allo Zoom:</label>
+                    <input type="checkbox" id="toggle3d" checked>
+                </div>
+                <div class="color-picker-row">
+                    <label for="iconStyleSelect">Stile Icone / Pin:</label>
+                    <select id="iconStyleSelect">
+                        <option value="emoji">Emoji Classiche</option>
+                        <option value="minimal">Minimal Line</option>
+                        <option value="scifi">Cyber Neon</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="closeEditor" class="btn-primary">Chiudi Editor</button>
+        </div>
+    </div>
+
+    <!-- Modal: Profilo & Stampa GIS -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h3>👤 Profilo Cartografo</h3>
+            <div class="profile-header">
+                <div class="avatar-box">
+                    <span id="avatarPlaceholder">🗺️</span>
+                </div>
+                <div>
+                    <p>Pin creati: <strong id="totalPinsCount">0</strong></p>
+                    <p>Quartieri: <strong id="totalZonesCount">0</strong></p>
+                </div>
+            </div>
+
+            <div class="editor-section">
+                <h4>🖨️ Stampa & Layout Cartografico</h4>
+                <p class="sub-text">Genera un layout di stampa A4 in cui puoi trascinare elementi e salvare in PDF o PNG.</p>
+                <input type="text" id="printTitleInput" placeholder="Titolo Mappa (es. La Mia Roma)" value="Mappa Personalizzata">
+                <button id="printMapBtn" class="btn-primary">Apri Layout Studio</button>
+            </div>
+
+            <button id="closeProfile" class="btn-secondary">Chiudi</button>
+        </div>
+    </div>
+
+    <!-- Modal: Aggiungi / Modifica Pin -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h3 id="addModalTitle">📍 Nuovo Luogo</h3>
+            <input type="text" id="placeInput" placeholder="Nome del luogo..." />
+            <select id="categoryInput">
+                <option value="Casa|🏠">Casa / Abitazione</option>
+                <option value="Lavoro|💼">Lavoro / Ufficio</option>
+                <option value="Pub / Bar|🍺">Pub / Bar</option>
+                <option value="Ristorante|🍕">Ristorante / Cibo</option>
+                <option value="Caffè|☕">Caffè / Pasticceria</option>
+                <option value="Negozi|🛍️">Negozi / Shopping</option>
+                <option value="Supermercato|🛒">Supermercato</option>
+                <option value="Cultura|🏛️">Cultura / Monumento</option>
+                <option value="Natura / Parco|🌲">Natura / Parco</option>
+                <option value="Sport|🏋️">Sport / Palestra</option>
+                <option value="Svago|🎮">Svago / Intrattenimento</option>
+                <option value="Salute|🏥">Salute / Farmacia</option>
+                <option value="Trasporti|🚉">Trasporti / Stazione</option>
+                <option value="Punto panoramico|🌅">Punto Panoramico</option>
+                <option value="Altro|📌">Altro</option>
+            </select>
+            <input type="text" id="customEmojiInput" placeholder="Emoji personalizzata (opzionale)" />
+            <textarea id="noteInput" placeholder="Note sul luogo..."></textarea>
+            <div class="modal-actions">
+                <button id="savePlace" class="btn-primary">Salva Pin</button>
+                <button id="closeModal" class="btn-secondary">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Nome Quartiere -->
+    <div id="zoneModal" class="modal">
+        <div class="modal-content">
+            <h3 id="zoneModalTitle">📐 Assegna Nome al Quartiere</h3>
+            <input type="text" id="zoneNameInput" placeholder="Es. Quartiere Storico..." />
+            <div class="modal-actions">
+                <button id="saveZoneName" class="btn-primary">Salva Quartiere</button>
+                <button id="closeZoneModal" class="btn-secondary">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet: Dettaglio Pin -->
+    <div id="placeSheet" class="bottom-sheet">
+        <div class="sheet-content">
+            <span id="closeSheet" class="close-sheet">✕</span>
+            <div class="sheet-header">
+                <span id="placeIcon" class="sheet-icon">📍</span>
+                <div>
+                    <h2 id="placeName">Nome Luogo</h2>
+                    <span id="placeCategory" class="badge">Categoria</span>
+                </div>
+            </div>
+            <p id="placeNote">Note sul luogo...</p>
+            <div class="sheet-actions">
+                <button id="editPlaceBtn" class="btn-secondary">Modifica Pin</button>
+                <button id="deletePlaceBtn" class="btn-danger">Elimina Pin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet: Dettaglio Zona -->
+    <div id="zoneSheet" class="bottom-sheet">
+        <div class="sheet-content">
+            <span id="closeZoneSheet" class="close-sheet">✕</span>
+            <h2>📐 <span id="zoneSheetName">Quartiere</span></h2>
+            <div class="sheet-actions">
+                <button id="editZoneBtn" class="btn-secondary">Modifica Nome</button>
+                <button id="deleteZoneBtn" class="btn-danger">Elimina Quartiere</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mapbox GL JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
