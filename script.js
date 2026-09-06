@@ -1,5 +1,5 @@
-let userMapStyle = JSON.parse(localStorage.getItem('My World Map_mapStyle')) || { 
-    iconStyle: 'modern', 
+let userMapStyle = JSON.parse(localStorage.getItem('cartoQuest_mapStyle')) || { 
+    iconStyle: 'classico', 
     colors: {
         terrain: '#0f172a',
         water: '#1e3a8a',
@@ -8,17 +8,19 @@ let userMapStyle = JSON.parse(localStorage.getItem('My World Map_mapStyle')) || 
     }
 };
 
-let userProfile = JSON.parse(localStorage.getItem('My World Map_user')) || { name: "Utente", avatar: "" };
+let userProfile = JSON.parse(localStorage.getItem('cartoQuest_user')) || { name: "Utente", avatar: "" };
 
 const map = new maplibregl.Map({
     container: 'map',
     style: 'https://tiles.openfreemap.org/styles/dark',
     center: [12.4964, 41.9028],
     zoom: 15,
-    pitch: 0, // Vista rigorosamente zenitale (dall'alto, non a volo d'uccello)
+    pitch: 0,
     bearing: 0,
-    preserveDrawingBuffer: true // Fondamentale per catturare correttamente il canvas nell'esportazione immagine
+    preserveDrawingBuffer: true
 });
+
+let gpsMarker = null;
 
 map.on('load', () => {
     applyMapColors();
@@ -47,27 +49,39 @@ function enable3DBuildings() {
                     'id': id + '-3d',
                     'source': layer.source,
                     'source-layer': layer['source-layer'],
-                    'minzoom': 15.5, // L'estrusione 3D compare solo a scala ravvicinata
+                    'minzoom': 14.5, // Gli edifici appaiono leggermente prima
                     'type': 'fill-extrusion',
                     'filter': layer.filter,
                     'paint': {
                         'fill-extrusion-color': paint['fill-color'] || userMapStyle.colors.building,
                         'fill-extrusion-height': [
                             'interpolate', ['linear'], ['zoom'],
-                            15.5, 0,
-                            16.5, ['get', 'render_height']
+                            14.5, 0,
+                            15.5, ['get', 'render_height']
                         ],
                         'fill-extrusion-base': [
                             'interpolate', ['linear'], ['zoom'],
-                            15.5, 0,
-                            16.5, ['get', 'render_min_height']
+                            14.5, 0,
+                            15.5, ['get', 'render_min_height']
                         ],
-                        'fill-extrusion-opacity': 0.9
+                        'fill-extrusion-opacity': 0.95,
+                        // Effetto ombra/sfumatura verticale tipico di Mapbox Studio
+                        'fill-extrusion-vertical-gradient': true
                     }
                 }, labelLayerId);
             }
         }
     });
+
+    // Configurazione della luce ambientale/direzionale per dare volume e rilievo
+    if (map.setLight) {
+        map.setLight({
+            'anchor': 'viewport',
+            'color': '#ffffff',
+            'intensity': 0.5,
+            'position': [1.5, 180, 45] // Luce inclinata per evidenziare i profili dei tetti
+        });
+    }
 }
 
 function applyMapColors() {
@@ -87,7 +101,8 @@ function applyMapColors() {
             if (map.getLayer(layer.id + '-3d')) {
                 map.setPaintProperty(layer.id + '-3d', 'fill-extrusion-color', c.building);
             }
-            if (layer.id.includes('road') && layer.type === 'line') {
+            // Sostituisci questo controllo per catturare interamente ogni linea stradale e bordo
+            if (layer.type === 'line') {
                 map.setPaintProperty(layer.id, 'line-color', c.road);
             }
         });
@@ -95,7 +110,6 @@ function applyMapColors() {
         console.log("Aggiornamento colori strati...", err);
     }
 }
-
 function loadStyleUI() {
     document.getElementById('colorTerrain').value = userMapStyle.colors.terrain;
     document.getElementById('colorWater').value = userMapStyle.colors.water;
@@ -111,29 +125,31 @@ document.getElementById('applyStyle').addEventListener('click', () => {
     userMapStyle.colors.road = document.getElementById('colorRoad').value;
     userMapStyle.iconStyle = document.getElementById('iconStyleSelect').value;
 
-    localStorage.setItem('My World Map_mapStyle', JSON.stringify(userMapStyle));
+    localStorage.setItem('cartoQuest_mapStyle', JSON.stringify(userMapStyle));
     applyMapColors();
     renderMarkers();
     document.getElementById('styleModal').classList.remove('open');
 });
 
-let places = JSON.parse(localStorage.getItem('My World Map_places')) || {
+let places = JSON.parse(localStorage.getItem('cartoQuest_places')) || {
     "p1": { name: "Taverna Central", icon: "🍺", category: "Pub", tags: ["birra"], note: "Ottimo spot.", photo: "", lat: 41.9028, lng: 12.4964 }
 };
-let zones = JSON.parse(localStorage.getItem('My World Map_zones')) || {};
+let zones = JSON.parse(localStorage.getItem('cartoQuest_zones')) || {};
 
 let activeMarkers = [];
 let activeZoneLabels = [];
 let currentSelectedPlaceId = null;
 let currentSelectedZoneId = null;
 let pendingCoords = null;
+let isEditingPlace = false;
+let isEditingZone = false;
 let isDrawingZone = false;
 let currentZonePoints = [];
 
 function saveState() {
-    localStorage.setItem('My World Map_places', JSON.stringify(places));
-    localStorage.setItem('My World Map_zones', JSON.stringify(zones));
-    localStorage.setItem('My World Map_user', JSON.stringify(userProfile));
+    localStorage.setItem('cartoQuest_places', JSON.stringify(places));
+    localStorage.setItem('cartoQuest_zones', JSON.stringify(zones));
+    localStorage.setItem('cartoQuest_user', JSON.stringify(userProfile));
     updateProfileStats();
 }
 
@@ -146,10 +162,12 @@ function renderMarkers() {
         const el = document.createElement('div');
         el.className = 'custom-pin-wrapper';
         
-        if (userMapStyle.iconStyle === 'classic') {
-            el.innerHTML = `<div class="pin-classic">${item.icon}</div>`;
+        if (userMapStyle.iconStyle === 'neon') {
+            el.innerHTML = `<div class="pin-neon">${item.icon}</div>`;
+        } else if (userMapStyle.iconStyle === 'minimal') {
+            el.innerHTML = `<div class="pin-minimal"><span>${item.icon}</span></div>`;
         } else {
-            el.innerHTML = `<div class="pin-modern"><span>${item.icon}</span></div>`;
+            el.innerHTML = `<div class="pin-classico">${item.icon}</div>`;
         }
 
         el.addEventListener('click', (e) => {
@@ -291,24 +309,30 @@ function openPlace(id) {
     placeSheet.classList.add("open");
 }
 
-let deleteBtn = document.getElementById("deletePlaceBtn");
-if (!deleteBtn) {
-    deleteBtn = document.createElement("button");
-    deleteBtn.id = "deletePlaceBtn";
-    deleteBtn.textContent = "🗑️ Elimina Pin";
-    deleteBtn.className = "btn-danger";
-    deleteBtn.style.marginTop = "15px";
-    document.getElementById("sheetViewMode").appendChild(deleteBtn);
+document.getElementById("deletePlaceBtn").addEventListener("click", () => {
+    if (currentSelectedPlaceId && confirm("Eliminare questo pin?")) {
+        delete places[currentSelectedPlaceId];
+        saveState();
+        placeSheet.classList.remove("open");
+        renderMarkers();
+    }
+});
+
+document.getElementById("editPlaceBtn").addEventListener("click", () => {
+    const place = places[currentSelectedPlaceId];
+    if (!place) return;
     
-    deleteBtn.addEventListener("click", () => {
-        if (currentSelectedPlaceId && confirm("Eliminare questo pin?")) {
-            delete places[currentSelectedPlaceId];
-            saveState();
-            placeSheet.classList.remove("open");
-            renderMarkers();
-        }
-    });
-}
+    isEditingPlace = true;
+    document.getElementById("modalTitle").textContent = "Modifica Pin";
+    document.getElementById("placeInput").value = place.name;
+    document.getElementById("customEmojiInput").value = place.icon;
+    document.getElementById("tagsInput").value = (place.tags || []).join(",");
+    document.getElementById("photoInput").value = place.photo || "";
+    document.getElementById("noteInput").value = place.note || "";
+    
+    placeSheet.classList.remove("open");
+    document.getElementById("addModal").classList.add("open");
+});
 
 const zoneSheet = document.getElementById("zoneSheet");
 function openZoneSheet(id) {
@@ -327,6 +351,16 @@ document.getElementById("deleteZoneBtn").addEventListener("click", () => {
         }
     }
 });
+
+document.getElementById("editZoneBtn").addEventListener("click", () => {
+    const zone = zones[currentSelectedZoneId];
+    if (!zone) return;
+    isEditingZone = true;
+    document.getElementById("zoneNameInput").value = zone.name;
+    zoneSheet.classList.remove("open");
+    document.getElementById("zoneModal").classList.add("open");
+});
+
 document.getElementById("closeZoneSheet").addEventListener("click", () => zoneSheet.classList.remove("open"));
 
 document.getElementById("searchInput").addEventListener("keypress", function (e) {
@@ -346,7 +380,17 @@ document.getElementById("searchInput").addEventListener("keypress", function (e)
 document.getElementById("gpsButton").addEventListener("click", () => {
     if (!navigator.geolocation) return alert("Geolocalizzazione non supportata");
     navigator.geolocation.getCurrentPosition(pos => {
-        map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 16, pitch: 0 });
+        const lng = pos.coords.longitude;
+        const lat = pos.coords.latitude;
+
+        map.flyTo({ center: [lng, lat], zoom: 16, pitch: 0 });
+
+        if (gpsMarker) gpsMarker.remove();
+        const el = document.createElement('div');
+        el.className = 'gps-marker-dot';
+        gpsMarker = new maplibregl.Marker({ element: el })
+            .setLngLat([lng, lat])
+            .addTo(map);
     }, () => alert("Impossibile recuperare la posizione."));
 });
 
@@ -364,6 +408,14 @@ document.getElementById("cancelPick").addEventListener("click", () => {
 document.getElementById("confirmPick").addEventListener("click", () => {
     const center = map.getCenter();
     pendingCoords = { lat: center.lat, lng: center.lng };
+    isEditingPlace = false;
+    document.getElementById("modalTitle").textContent = "Nuovo Pin";
+    document.getElementById("placeInput").value = "";
+    document.getElementById("customEmojiInput").value = "";
+    document.getElementById("tagsInput").value = "";
+    document.getElementById("photoInput").value = "";
+    document.getElementById("noteInput").value = "";
+
     document.getElementById("mapPicker").classList.add("hidden");
     document.getElementById("addModal").classList.add("open");
 });
@@ -375,31 +427,41 @@ document.getElementById("savePlace").addEventListener("click", () => {
     const customEmoji = document.getElementById("customEmojiInput").value.trim();
     const [catName, defaultIcon] = document.getElementById("iconCategorySelect").value.split("|");
     const icon = customEmoji || defaultIcon;
-    const id = `place-${Date.now()}`;
 
-    places[id] = {
-        name: name, icon: icon, category: catName,
-        tags: document.getElementById("tagsInput").value.split(","),
-        photo: document.getElementById("photoInput").value.trim(),
-        note: document.getElementById("noteInput").value || "Nessuna nota.",
-        lat: pendingCoords.lat, lng: pendingCoords.lng
-    };
+    if (isEditingPlace && currentSelectedPlaceId) {
+        places[currentSelectedPlaceId].name = name;
+        places[currentSelectedPlaceId].icon = icon;
+        places[currentSelectedPlaceId].category = catName;
+        places[currentSelectedPlaceId].tags = document.getElementById("tagsInput").value.split(",");
+        places[currentSelectedPlaceId].photo = document.getElementById("photoInput").value.trim();
+        places[currentSelectedPlaceId].note = document.getElementById("noteInput").value || "Nessuna nota.";
+        
+        renderMarkers();
+        saveState();
+        document.getElementById("addModal").classList.remove("open");
+        openPlace(currentSelectedPlaceId);
+    } else {
+        const id = `place-${Date.now()}`;
+        places[id] = {
+            name: name, icon: icon, category: catName,
+            tags: document.getElementById("tagsInput").value.split(","),
+            photo: document.getElementById("photoInput").value.trim(),
+            note: document.getElementById("noteInput").value || "Nessuna nota.",
+            lat: pendingCoords.lat, lng: pendingCoords.lng
+        };
 
-    renderMarkers();
-    saveState();
-    document.getElementById("addModal").classList.remove("open");
-    document.getElementById("placeInput").value = "";
-    document.getElementById("customEmojiInput").value = "";
-    document.getElementById("tagsInput").value = "";
-    document.getElementById("photoInput").value = "";
-    document.getElementById("noteInput").value = "";
-    openPlace(id);
+        renderMarkers();
+        saveState();
+        document.getElementById("addModal").classList.remove("open");
+        openPlace(id);
+    }
 });
 
 document.getElementById("addZoneOption").addEventListener("click", () => {
     document.getElementById("addMenu").classList.add("hidden");
     currentZonePoints = [];
     isDrawingZone = true;
+    isEditingZone = false;
     document.getElementById("zoneCounterBadge").textContent = "Punti tracciati: 0";
     document.getElementById("confirmZone").setAttribute("disabled", "true");
     document.getElementById("zonePicker").classList.remove("hidden");
@@ -424,24 +486,31 @@ document.getElementById("confirmZone").addEventListener("click", () => {
     if (currentZonePoints.length < 3) return alert("Traccia almeno 3 punti sulla mappa!");
     isDrawingZone = false;
     document.getElementById("zonePicker").classList.add("hidden");
+    document.getElementById("zoneNameInput").value = "";
     document.getElementById("zoneModal").classList.add("open");
 });
 
 document.getElementById("saveZoneName").addEventListener("click", () => {
     const name = document.getElementById("zoneNameInput").value.trim();
     if (!name) return alert("Inserisci un nome per la zona!");
-    const id = `zone-${Date.now()}`;
-    zones[id] = { name: name, points: currentZonePoints };
-    renderZones();
-    saveState();
-    document.getElementById("zoneModal").classList.remove("open");
-    document.getElementById("zoneNameInput").value = "";
+
+    if (isEditingZone && currentSelectedZoneId) {
+        zones[currentSelectedZoneId].name = name;
+        renderZones();
+        saveState();
+        document.getElementById("zoneModal").classList.remove("open");
+        openZoneSheet(currentSelectedZoneId);
+    } else {
+        const id = `zone-${Date.now()}`;
+        zones[id] = { name: name, points: currentZonePoints };
+        renderZones();
+        saveState();
+        document.getElementById("zoneModal").classList.remove("open");
+    }
 });
 
-// Risoluzione anteprima immagine e fix rendering con attesa frame e repaint
 document.getElementById("openExportImgModal").addEventListener("click", () => {
     document.getElementById("profileModal").classList.remove("open");
-    
     map.triggerRepaint();
     
     setTimeout(() => {
@@ -477,7 +546,7 @@ document.getElementById("downloadImgBtn").addEventListener("click", () => {
     const previewWrapper = document.getElementById("exportPreviewContainer");
     html2canvas(previewWrapper, { scale: 2, useCORS: true, allowTaint: true }).then(canvas => {
         const link = document.createElement('a');
-        link.download = 'My World Map-map.jpg';
+        link.download = 'my-world-map.jpg';
         link.href = canvas.toDataURL('image/jpeg', 0.95);
         link.click();
     });
@@ -487,7 +556,7 @@ document.getElementById("exportJsonBtn").addEventListener("click", () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ places, zones, userProfile }));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "My World Map_backup.json");
+    downloadAnchor.setAttribute("download", "my_world_map_backup.json");
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
