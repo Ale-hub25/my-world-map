@@ -32,8 +32,8 @@
     </div>
 
     <div id="mapPicker" class="picker-overlay hidden">
+        <div class="picker-instructions-top">Sposta la mappa sul punto desiderato</div>
         <div class="picker-crosshair">🎯</div>
-        <div class="picker-instructions">Sposta la mappa sul punto desiderato</div>
         <div class="picker-actions">
             <button id="cancelPick" class="btn-secondary">Annulla</button>
             <button id="confirmPick" class="btn-primary">Conferma Punto</button>
@@ -41,7 +41,7 @@
     </div>
 
     <div id="zonePicker" class="picker-overlay hidden">
-        <div class="picker-instructions">Clicca sulla mappa in sequenza per tracciare la zona (min 3 punti)</div>
+        <div class="picker-instructions-top">Clicca sulla mappa per tracciare la zona</div>
         <div class="zone-counter-badge" id="zoneCounterBadge">Punti tracciati: 0</div>
         <div class="picker-actions">
             <button id="cancelZone" class="btn-secondary">Annulla</button>
@@ -51,7 +51,7 @@
 
     <div id="addModal" class="modal">
         <div class="modal-content">
-            <h2>Nuovo Pin</h2>
+            <h2 id="modalTitle">Nuovo Pin</h2>
             <input type="text" id="placeInput" placeholder="Nome del luogo...">
             
             <label style="font-size: 13px; color: #cbd5e1; margin-top: 5px;">Seleziona Icona / Categoria:</label>
@@ -120,7 +120,10 @@
             </div>
             <p id="placeNote" class="sheet-note">Note descrittive...</p>
             <div id="placeTags" class="sheet-tags"></div>
-            <div id="sheetViewMode"></div>
+            <div id="sheetViewMode" class="sheet-action-buttons">
+                <button id="editPlaceBtn" class="btn-secondary">✏️ Modifica</button>
+                <button id="deletePlaceBtn" class="btn-danger">🗑️ Elimina Pin</button>
+            </div>
         </div>
     </div>
 
@@ -135,7 +138,10 @@
                 </div>
                 <button id="closeZoneSheet" class="close-btn">&times;</button>
             </div>
-            <button id="deleteZoneBtn" class="btn-danger">🗑️ Elimina Zona</button>
+            <div class="sheet-action-buttons">
+                <button id="editZoneBtn" class="btn-secondary">✏️ Rinomina</button>
+                <button id="deleteZoneBtn" class="btn-danger">🗑️ Elimina Zona</button>
+            </div>
         </div>
     </div>
 
@@ -166,8 +172,9 @@
             <div class="editor-settings-row" style="margin-top: 15px;">
                 <label style="display:block; margin-bottom: 6px; font-size: 14px;">Stile Grafico Pin:</label>
                 <select id="iconStyleSelect">
-                    <option value="modern">Moderno (Goccia / Marker)</option>
-                    <option value="classic">Classico (Cerchio Sfumato)</option>
+                    <option value="classico">Classico (Standard)</option>
+                    <option value="minimal">Minimal (Pulito / Essenziale)</option>
+                    <option value="neon">Neon (Luminoso / Bagliore)</option>
                 </select>
             </div>
 
@@ -213,7 +220,6 @@
             <h2>Anteprima Esportazione Mappa</h2>
             <div id="exportPreviewContainer" class="export-preview-wrapper">
                 <div id="exportMapCanvas" class="export-canvas"></div>
-                <!-- Strumenti cartografici geografici reali -->
                 <svg id="geoNorthArrow" class="export-element north-arrow-geo" viewBox="0 0 40 60" width="36" height="54">
                     <polygon points="20,0 35,25 20,18" fill="#38bdf8"/>
                     <polygon points="20,0 5,25 20,18" fill="#0284c7"/>
