@@ -378,7 +378,16 @@ document.getElementById("searchInput").addEventListener("keypress", function (e)
 });
 
 document.getElementById("gpsButton").addEventListener("click", () => {
-    if (!navigator.geolocation) return alert("Geolocalizzazione non supportata");
+    if (!navigator.geolocation) {
+        return alert("La geolocalizzazione non è supportata da questo dispositivo/browser.");
+    }
+
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+    };
+
     navigator.geolocation.getCurrentPosition(pos => {
         const lng = pos.coords.longitude;
         const lat = pos.coords.latitude;
@@ -391,9 +400,11 @@ document.getElementById("gpsButton").addEventListener("click", () => {
         gpsMarker = new maplibregl.Marker({ element: el })
             .setLngLat([lng, lat])
             .addTo(map);
-    }, () => alert("Impossibile recuperare la posizione."));
+    }, err => {
+        console.error("Errore GPS:", err);
+        alert(`Errore GPS (${err.code}): ${err.message}. Assicurati di aver concesso i permessi di posizione all'app.`);
+    }, options);
 });
-
 document.getElementById("addOptionButton").addEventListener("click", () => {
     document.getElementById("addMenu").classList.toggle("hidden");
 });
