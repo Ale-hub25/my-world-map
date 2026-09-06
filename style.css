@@ -13,12 +13,14 @@ body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0f1
 .fab-menu { position: absolute; bottom: 95px; right: 25px; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; z-index: 10; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4); }
 .fab-menu button { background: transparent; border: none; color: white; padding: 12px 18px; text-align: left; font-size: 14px; cursor: pointer; white-space: nowrap; }
 .fab-menu button:hover { background: #334155; }
-.picker-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+
+.picker-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
 .picker-overlay > * { pointer-events: auto; }
-.picker-crosshair { font-size: 40px; color: #38bdf8; margin-bottom: 20px; }
-.picker-instructions { background: rgba(15, 23, 42, 0.9); padding: 10px 20px; border-radius: 8px; font-size: 15px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); }
-.zone-counter-badge { background: #38bdf8; color: #0f172a; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 15px; }
-.picker-actions { display: flex; gap: 12px; }
+.picker-crosshair { font-size: 40px; color: #38bdf8; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+.picker-instructions-top { position: absolute; top: 80px; background: rgba(15, 23, 42, 0.9); padding: 8px 16px; border-radius: 8px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.zone-counter-badge { position: absolute; top: 80px; background: #38bdf8; color: #0f172a; padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.picker-actions { position: absolute; bottom: 40px; display: flex; gap: 12px; width: 80%; max-width: 320px; }
+
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
 .modal.open { opacity: 1; pointer-events: auto; }
 .modal-content { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 420px; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 12px; max-height: 90vh; overflow-y: auto; }
@@ -40,6 +42,7 @@ body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0f1
 .btn-secondary { background: #334155; color: white; }
 .btn-danger { background: #ef4444; color: white; }
 .btn-small { padding: 6px 12px; font-size: 12px; background: #38bdf8; color: #0f172a; }
+
 .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 15px 20px 25px 20px; z-index: 50; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(255, 255, 255, 0.1); }
 .bottom-sheet.open { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 4px; background: #475569; border-radius: 2px; margin: 0 auto 15px auto; }
@@ -47,6 +50,8 @@ body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0f1
 .sheet-big-icon { font-size: 32px; background: #0f172a; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
 .badge { background: #0f172a; padding: 3px 8px; border-radius: 6px; font-size: 12px; color: #38bdf8; margin-top: 4px; }
 .close-btn { background: transparent; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; margin-left: auto; }
+.sheet-action-buttons { display: flex; gap: 10px; margin-top: 15px; }
+
 .profile-header { display: flex; gap: 15px; align-items: center; }
 .avatar-container { width: 70px; height: 70px; border-radius: 50%; background: #0f172a; border: 2px solid #38bdf8; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 #profileAvatarImg { width: 100%; height: 100%; object-fit: cover; }
@@ -68,11 +73,18 @@ body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0f1
 .export-controls { display: flex; gap: 15px; font-size: 13px; color: #cbd5e1; flex-wrap: wrap; }
 .hidden { display: none !important; }
 
-/* Stili migliorati per i PIN sulla mappa */
+/* Stili PIN: Classico, Minimal, Neon */
 .custom-pin-wrapper { display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.pin-modern { width: 36px; height: 44px; background: #38bdf8; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 10px rgba(0,0,0,0.3); border: 2px solid #ffffff; }
-.pin-modern span { transform: rotate(45deg); font-size: 16px; }
-.pin-classic { width: 36px; height: 36px; background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 8px rgba(0,0,0,0.4); border: 2px solid #ffffff; }
+.pin-classico { background: #38bdf8; color: #0f172a; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid #ffffff; }
+.pin-minimal { background: #0f172a; border: 2px solid #38bdf8; border-radius: 6px; padding: 4px 8px; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
+.pin-neon { background: #1e293b; border: 2px solid #38bdf8; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 10px #38bdf8, inset 0 0 5px #38bdf8; }
 
-/* Stile etichetta sopra i poligoni delle zone */
+/* Stile marker posizione GPS */
+.gps-marker-dot { width: 18px; height: 18px; background-color: #38bdf8; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 10px rgba(56, 189, 248, 0.8); animation: pulse-gps 2s infinite; }
+@keyframes pulse-gps {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
 .zone-label { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); white-space: nowrap; }
