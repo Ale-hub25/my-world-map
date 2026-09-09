@@ -47,12 +47,23 @@ body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0f1
 .btn-danger { background: #ef4444; color: white; }
 .btn-small { padding: 6px 12px; font-size: 12px; background: #38bdf8; color: #0f172a; }
 
-.bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 15px 20px 25px 20px; z-index: 50; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+/* Image Drag and Drop Zone */
+.image-drop-zone { position: relative; background: #0f172a; border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.2s, background-color 0.2s; }
+.image-drop-zone.dragover { border-color: #38bdf8; background-color: rgba(56, 189, 248, 0.1); }
+.file-input-hidden { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 5; }
+#imagePreviewWrapper { position: relative; width: 100%; height: 140px; border-radius: 8px; overflow: hidden; }
+#modalPhotoPreview { width: 100%; height: 100%; object-fit: cover; }
+.remove-photo-btn { position: absolute; top: 6px; right: 6px; background: rgba(15, 23, 42, 0.85); color: #ef4444; border: none; border-radius: 50%; width: 26px; height: 26px; font-weight: bold; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
+
+/* Bottom Sheet e Foto Pin */
+.bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 15px 20px 25px 20px; z-index: 50; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(255, 255, 255, 0.1); max-height: 80vh; overflow-y: auto; }
 .bottom-sheet.open { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 4px; background: #475569; border-radius: 2px; margin: 0 auto 15px auto; }
+.sheet-image-box { width: 100%; height: 180px; border-radius: 12px; overflow: hidden; margin-bottom: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
+.sheet-image-box img { width: 100%; height: 100%; object-fit: cover; }
 .sheet-header { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
 .sheet-big-icon { font-size: 32px; background: #0f172a; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
-.badge { background: #0f172a; padding: 3px 8px; border-radius: 6px; font-size: 12px; color: #38bdf8; margin-top: 4px; }
+.badge { background: #0f172a; padding: 3px 8px; border-radius: 6px; font-size: 12px; color: #38bdf8; margin-top: 4px; display: inline-block; }
 .close-btn { background: transparent; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; margin-left: auto; }
 .sheet-action-buttons { display: flex; gap: 10px; margin-top: 15px; }
 
@@ -93,31 +104,11 @@ body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0f1
 .export-preview-wrapper.ratio-4-3 { aspect-ratio: 4 / 3; max-width: 440px; }
 .export-preview-wrapper.ratio-3-4 { aspect-ratio: 3 / 4; max-width: 310px; }
 
-.export-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
-/* Rimuovi backdrop-filter dagli elementi sovrapposti e usa uno sfondo pieno e solido */
-.export-element { 
-    position: absolute; 
-    background: rgba(15, 23, 42, 0.95); /* Nessun blur, sfondo opaco per massima nitidezza */
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-    border-radius: 8px; 
-    padding: 8px 12px; 
-    font-size: 12px; 
-    z-index: 10; 
-    transform-origin: top left; 
-}
+.export-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+.export-element { position: absolute; background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 8px 12px; font-size: 12px; z-index: 10; transform-origin: top left; }
+.draggable-element { cursor: move; touch-action: none; }
 
-/* Fix per gli input testo della legenda nella finestra di anteprima */
-.custom-legend li input {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 500;
-    outline: none;
-    width: 100%;
-}
-
-/* Scala Grafica Dettagliata */
+/* Scala Grafica */
 .scale-bar-geo { display: flex; flex-direction: column; gap: 4px; align-items: center; padding: 6px 10px; min-width: 90px; }
 .scale-bar-line { display: flex; width: 80px; height: 6px; border: 1px solid #f8fafc; border-top: none; }
 .sb-segment { flex: 1; height: 100%; }
@@ -125,10 +116,13 @@ body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0f1
 .sb-segment:nth-child(even) { background: #0f172a; }
 .scale-bar-labels { font-size: 10px; font-weight: 700; color: #f8fafc; letter-spacing: 0.5px; }
 
-.custom-legend { max-width: 200px; max-height: 160px; overflow-y: auto; }
+/* Legenda Pulita (senza scrollbar) */
+.custom-legend { max-width: 220px; overflow: visible; }
 .custom-legend h4 { font-size: 12px; margin-bottom: 6px; color: #38bdf8; text-transform: uppercase; font-weight: 700; }
-.custom-legend ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
-.custom-legend li { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.custom-legend ul { list-style: none; display: flex; flex-direction: column; gap: 6px; padding: 0; margin: 0; }
+.custom-legend li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #ffffff; }
+.custom-legend li input { background: transparent; border: none; color: #ffffff; font-size: 12px; font-weight: 500; outline: none; width: 100%; }
+
 .export-controls { display: flex; gap: 10px; font-size: 12px; color: #cbd5e1; }
 .hidden { display: none !important; }
 
