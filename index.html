@@ -75,7 +75,20 @@
 
             <input type="text" id="customEmojiInput" placeholder="O scrivi un'emoji personalizzata (es. 🚀)">
             <input type="text" id="tagsInput" placeholder="Tag (separati da virgola)">
-            <input type="text" id="photoInput" placeholder="URL Foto (opzionale)">
+            
+            <label style="font-size: 13px; color: #cbd5e1; margin-top: 5px;">Foto del Luogo:</label>
+            <div id="imageDropZone" class="image-drop-zone">
+                <input type="file" id="photoFileInput" accept="image/*" class="file-input-hidden">
+                <div id="dropZoneContent">
+                    <span style="font-size: 24px;">📷</span>
+                    <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Clicca o trascina un'immagine qui</p>
+                </div>
+                <div id="imagePreviewWrapper" class="hidden">
+                    <img id="modalPhotoPreview" src="" alt="Anteprima">
+                    <button type="button" id="removePhotoBtn" class="remove-photo-btn">✕</button>
+                </div>
+            </div>
+
             <textarea id="noteInput" placeholder="Note o descrizione..."></textarea>
             <div class="modal-actions">
                 <button id="closeModal" class="btn-secondary">Annulla</button>
@@ -87,6 +100,9 @@
     <div id="placeSheet" class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-content">
+            <div id="placeImageContainer" class="sheet-image-box hidden">
+                <img id="placeImage" alt="Foto luogo">
+            </div>
             <div class="sheet-header">
                 <span id="placeIcon" class="sheet-big-icon">🍺</span>
                 <div>
@@ -94,9 +110,6 @@
                     <span id="placeCategory" class="badge">Categoria</span>
                 </div>
                 <button id="closeSheet" class="close-btn">&times;</button>
-            </div>
-            <div id="placeImageContainer" class="hidden">
-                <img id="placeImage" alt="Foto luogo">
             </div>
             <p id="placeNote" class="sheet-note">Note descrittive...</p>
             <div id="placeTags" class="sheet-tags"></div>
@@ -219,7 +232,7 @@
             </div>
 
             <div id="exportPreviewContainer" class="export-preview-wrapper ratio-1-1">
-                <div id="exportMapCanvas" class="export-canvas"></div>
+                <div id="exportMapContainer" class="export-canvas"></div>
                 
                 <svg id="geoNorthArrow" class="export-element draggable-element" style="top:15px; left:15px;" viewBox="0 0 40 60" width="36" height="54">
                     <polygon points="20,0 35,25 20,18" fill="#38bdf8"/>
@@ -245,13 +258,12 @@
 
             <div class="modal-actions" style="margin-top:10px;">
                 <button id="closeExportModal" class="btn-secondary">Annulla</button>
-                <button id="downloadImgBtn" class="btn-primary">📥 Scarica JPEG</button>
+                <button id="downloadImgBtn" class="btn-primary">📥 Scarica JPEG HD</button>
             </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
