@@ -21,6 +21,8 @@ const map = new maplibregl.Map({
     preserveDrawingBuffer: true
 });
 
+let exportMap = null;
+let currentBase64Photo = "";
 let gpsMarker = null;
 let tempSearchMarker = null;
 let searchDebounceTimeout = null;
@@ -52,19 +54,19 @@ function enable3DBuildings() {
                         'id': id + '-3d',
                         'source': layer.source,
                         'source-layer': layer['source-layer'],
-                        'minzoom': 12.5,
+                        'minzoom': 3, // Esteso a zoom distanti
                         'type': 'fill-extrusion',
                         'filter': layer.filter,
                         'paint': {
                             'fill-extrusion-color': paint['fill-color'] || userMapStyle.colors.building,
                             'fill-extrusion-height': [
                                 'interpolate', ['linear'], ['zoom'],
-                                12.5, 0,
+                                3, 0,
                                 14.5, ['get', 'render_height']
                             ],
                             'fill-extrusion-base': [
                                 'interpolate', ['linear'], ['zoom'],
-                                12.5, 0,
+                                3, 0,
                                 14.5, ['get', 'render_min_height']
                             ],
                             'fill-extrusion-opacity': 0.95,
@@ -132,6 +134,51 @@ function removeTempSearchMarker() {
         tempSearchMarker = null;
     }
 }
+
+// Upload Immagini Drag & Drop
+const photoFileInput = document.getElementById('photoFileInput');
+const imageDropZone = document.getElementById('imageDropZone');
+const dropZoneContent = document.getElementById('dropZoneContent');
+const imagePreviewWrapper = document.getElementById('imagePreviewWrapper');
+const modalPhotoPreview = document.getElementById('modalPhotoPreview');
+const removePhotoBtn = document.getElementById('removePhotoBtn');
+
+['dragenter', 'dragover'].forEach(eventName => {
+    imageDropZone.addEventListener(eventName, (e) => { e.preventDefault(); imageDropZone.classList.add('dragover'); }, false);
+});
+['dragleave', 'drop'].forEach(eventName => {
+    imageDropZone.addEventListener(eventName, (e) => { e.preventDefault(); imageDropZone.classList.remove('dragover'); }, false);
+});
+
+imageDropZone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length > 0) handleImageFile(files[0]);
+});
+
+photoFileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) handleImageFile(e.target.files[0]);
+});
+
+function handleImageFile(file) {
+    if (!file.type.startsWith('image/')) return alert('Seleziona un file immagine valido.');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        currentBase64Photo = e.target.result;
+        modalPhotoPreview.src = currentBase64Photo;
+        dropZoneContent.classList.add('hidden');
+        imagePreviewWrapper.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+removePhotoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentBase64Photo = "";
+    photoFileInput.value = "";
+    modalPhotoPreview.src = "";
+    dropZoneContent.classList.remove('hidden');
+    imagePreviewWrapper.classList.add('hidden');
+});
 
 // Search
 const searchInput = document.getElementById("searchInput");
@@ -308,7 +355,9 @@ function openPlace(id) {
     if (place.photo) {
         document.getElementById("placeImage").src = place.photo;
         imgContainer.classList.remove("hidden");
-    } else imgContainer.classList.add("hidden");
+    } else {
+        imgContainer.classList.add("hidden");
+    }
 
     const tagsContainer = document.getElementById("placeTags");
     tagsContainer.innerHTML = "";
@@ -340,9 +389,17 @@ document.getElementById("editPlaceBtn").addEventListener("click", () => {
     document.getElementById("placeInput").value = place.name;
     document.getElementById("customEmojiInput").value = place.icon;
     document.getElementById("tagsInput").value = (place.tags || []).join(",");
-    document.getElementById("photoInput").value = place.photo || "";
     document.getElementById("noteInput").value = place.note || "";
     
+    if (place.photo) {
+        currentBase64Photo = place.photo;
+        modalPhotoPreview.src = place.photo;
+        dropZoneContent.classList.add('hidden');
+        imagePreviewWrapper.classList.remove('hidden');
+    } else {
+        removePhotoBtn.click();
+    }
+
     placeSheet.classList.remove("open");
     document.getElementById("addModal").classList.add("open");
 });
@@ -378,8 +435,8 @@ document.getElementById("confirmPick").addEventListener("click", () => {
     document.getElementById("placeInput").value = "";
     document.getElementById("customEmojiInput").value = "";
     document.getElementById("tagsInput").value = "";
-    document.getElementById("photoInput").value = "";
     document.getElementById("noteInput").value = "";
+    removePhotoBtn.click();
 
     document.getElementById("mapPicker").classList.add("hidden");
     document.getElementById("addModal").classList.add("open");
@@ -400,7 +457,7 @@ document.getElementById("savePlace").addEventListener("click", () => {
         places[currentSelectedPlaceId].icon = icon;
         places[currentSelectedPlaceId].category = catName;
         places[currentSelectedPlaceId].tags = document.getElementById("tagsInput").value.split(",");
-        places[currentSelectedPlaceId].photo = document.getElementById("photoInput").value.trim();
+        places[currentSelectedPlaceId].photo = currentBase64Photo;
         places[currentSelectedPlaceId].note = document.getElementById("noteInput").value || "Nessuna nota.";
         
         renderMarkers();
@@ -412,7 +469,7 @@ document.getElementById("savePlace").addEventListener("click", () => {
         places[id] = {
             name: name, icon: icon, category: catName,
             tags: document.getElementById("tagsInput").value.split(","),
-            photo: document.getElementById("photoInput").value.trim(),
+            photo: currentBase64Photo,
             note: document.getElementById("noteInput").value || "Nessuna nota.",
             lat: pendingCoords.lat, lng: pendingCoords.lng
         };
@@ -442,7 +499,7 @@ document.getElementById("sizeLegend").addEventListener("input", (e) => {
     document.getElementById("exportLegend").style.transform = `scale(${e.target.value})`;
 });
 
-// Gestione Cambio Formato Anteprima (1:1, 16:9, 4:3, 3:4)
+// Gestione Cambio Formato Anteprima
 document.getElementById("exportFormatSelect").addEventListener("change", (e) => {
     const wrapper = document.getElementById("exportPreviewContainer");
     wrapper.className = "export-preview-wrapper";
@@ -452,18 +509,20 @@ document.getElementById("exportFormatSelect").addEventListener("change", (e) => 
     else if (val === "4/3") wrapper.classList.add("ratio-4-3");
     else if (val === "3/4") wrapper.classList.add("ratio-3-4");
     
-    // Ricalcola la scala e i confini dopo il cambio di formato
-    setTimeout(updateMapScaleText, 100);
+    if (exportMap) {
+        setTimeout(() => {
+            exportMap.resize();
+            updateMapScaleText();
+        }, 200);
+    }
 });
 
-// Funzione di Calcolo Dinamico della Scala Grafica della Mappa
+// Calcolo Dinamico Scala
 function updateMapScaleText() {
-    const y = map.getCanvas().clientHeight / 2;
-    const center = map.getCenter();
-    
-    // Calcolo distanza reale per pixel in metri
-    const point1 = map.unproject([0, y]);
-    const point2 = map.unproject([100, y]);
+    if (!exportMap) return;
+    const y = exportMap.getCanvas().clientHeight / 2;
+    const point1 = exportMap.unproject([0, y]);
+    const point2 = exportMap.unproject([100, y]);
     
     const rad = Math.PI / 180;
     const lat1 = point1.lat * rad;
@@ -481,42 +540,58 @@ function updateMapScaleText() {
     document.getElementById("scaleLabelText").textContent = labelText;
 }
 
-// Gestione Modale Esportazione Mappa
+// Inizializzazione Mappa Interattiva nell'Anteprima Esportazione
 document.getElementById("legendTitleInput").addEventListener("input", (e) => {
     document.getElementById("legendTitleDisplay").textContent = e.target.value || "Legenda";
 });
 
 document.getElementById("openExportImgModal").addEventListener("click", () => {
     document.getElementById("profileModal").classList.remove("open");
-    
-    map.resize();
-    map.triggerRepaint();
-    
-    setTimeout(() => {
-        const mapCanvas = map.getCanvas();
-        const dataURL = mapCanvas.toDataURL("image/png");
-        const exportCanvasEl = document.getElementById("exportMapCanvas");
-        
-        exportCanvasEl.style.backgroundImage = `url(${dataURL})`;
-        exportCanvasEl.style.backgroundSize = 'cover';
-        exportCanvasEl.style.backgroundPosition = 'center';
+    document.getElementById("exportImgModal").classList.add("open");
 
-        document.getElementById("exportImgModal").classList.add("open");
+    const currentCenter = map.getCenter();
+    const currentZoom = map.getZoom();
 
-        // Aggiorna la scala grafica dinamica
-        updateMapScaleText();
-
-        const legendList = document.getElementById("exportLegendList");
-        legendList.innerHTML = "";
-        Object.keys(places).forEach(id => {
-            const p = places[id];
-            const li = document.createElement('li');
-            li.innerHTML = `<span>${p.icon}</span> <input type="text" value="${p.name}" style="background:transparent; border:none; color:white; font-size:11px; width:110px;">`;
-            legendList.appendChild(li);
+    if (!exportMap) {
+        exportMap = new maplibregl.Map({
+            container: 'exportMapContainer',
+            style: 'https://tiles.openfreemap.org/styles/dark',
+            center: currentCenter,
+            zoom: currentZoom,
+            interactive: true,
+            preserveDrawingBuffer: true
         });
 
-        initDraggableElements();
-    }, 300);
+        exportMap.on('load', () => {
+            applyExportMapColors();
+            renderExportMarkers();
+            updateMapScaleText();
+        });
+
+        exportMap.on('move', () => {
+            updateMapScaleText();
+        });
+    } else {
+        exportMap.setCenter(currentCenter);
+        exportMap.setZoom(currentZoom);
+        setTimeout(() => {
+            exportMap.resize();
+            applyExportMapColors();
+            renderExportMarkers();
+            updateMapScaleText();
+        }, 200);
+    }
+
+    const legendList = document.getElementById("exportLegendList");
+    legendList.innerHTML = "";
+    Object.keys(places).forEach(id => {
+        const p = places[id];
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${p.icon}</span> <input type="text" value="${p.name}">`;
+        legendList.appendChild(li);
+    });
+
+    initDraggableElements();
 
     document.getElementById("toggleNorth").onchange = (e) => {
         document.getElementById("geoNorthArrow").style.display = e.target.checked ? 'block' : 'none';
@@ -529,30 +604,53 @@ document.getElementById("openExportImgModal").addEventListener("click", () => {
     };
 });
 
-// TRASCINAMENTO (DRAG & DROP) SOLIDO
+function applyExportMapColors() {
+    if (!exportMap) return;
+    const c = userMapStyle.colors;
+    try {
+        const layers = exportMap.getStyle().layers;
+        layers.forEach(layer => {
+            if (layer.type === 'background') exportMap.setPaintProperty(layer.id, 'background-color', c.nature || '#14532d');
+            if (layer.type === 'fill') {
+                if (layer.id.includes('water')) exportMap.setPaintProperty(layer.id, 'fill-color', c.water);
+                else if (layer.id.includes('park') || layer.id.includes('forest') || layer.id.includes('landcover') || layer.id.includes('grass')) exportMap.setPaintProperty(layer.id, 'fill-color', c.nature || '#14532d');
+                else if (layer.id.includes('building')) exportMap.setPaintProperty(layer.id, 'fill-color', c.building);
+            }
+            if (layer.type === 'line') {
+                if (layer.id.includes('rail') || layer.id.includes('transit')) exportMap.setPaintProperty(layer.id, 'line-color', c.railway || '#64748b');
+                else if (layer.id.includes('road') || layer.id.includes('highway')) exportMap.setPaintProperty(layer.id, 'line-color', c.road);
+            }
+        });
+    } catch (e) {}
+}
+
+function renderExportMarkers() {
+    if (!exportMap) return;
+    Object.keys(places).forEach(id => {
+        const item = places[id];
+        const el = document.createElement('div');
+        el.className = 'custom-pin-wrapper';
+        
+        if (userMapStyle.iconStyle === 'neon') el.innerHTML = `<div class="pin-neon">${item.icon}</div>`;
+        else if (userMapStyle.iconStyle === 'minimal') el.innerHTML = `<div class="pin-minimal"><span>${item.icon}</span></div>`;
+        else el.innerHTML = `<div class="pin-classico">${item.icon}</div>`;
+
+        new maplibregl.Marker({ element: el })
+            .setLngLat([item.lng, item.lat])
+            .addTo(exportMap);
+    });
+}
+
+// Drag & Drop Elementi Sovrapposti
 let activeDraggableEl = null;
-let dragStartX = 0;
-let dragStartY = 0;
-let initialElLeft = 0;
-let initialElTop = 0;
+let dragStartX = 0, dragStartY = 0, initialElLeft = 0, initialElTop = 0;
 
 function initDraggableElements() {
     const draggables = document.querySelectorAll('.draggable-element');
-    const container = document.getElementById('exportPreviewContainer');
 
     draggables.forEach(el => {
-        const rect = el.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-
-        const left = rect.left - containerRect.left;
-        const top = rect.top - containerRect.top;
-
-        el.style.right = 'auto';
-        el.style.bottom = 'auto';
-        el.style.left = `${left}px`;
-        el.style.top = `${top}px`;
-
         const startDrag = (e) => {
+            if (e.target.tagName === 'INPUT') return;
             activeDraggableEl = el;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -573,7 +671,6 @@ function initDraggableElements() {
 
 const handleMove = (e) => {
     if (!activeDraggableEl) return;
-
     if (e.cancelable) e.preventDefault();
 
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -589,11 +686,8 @@ const handleMove = (e) => {
     let newLeft = initialElLeft + dx;
     let newTop = initialElTop + dy;
 
-    const maxLeft = containerRect.width - elRect.width;
-    const maxTop = containerRect.height - elRect.height;
-
-    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-    newTop = Math.max(0, Math.min(newTop, maxTop));
+    newLeft = Math.max(0, Math.min(newLeft, containerRect.width - elRect.width));
+    newTop = Math.max(0, Math.min(newTop, containerRect.height - elRect.height));
 
     activeDraggableEl.style.left = `${newLeft}px`;
     activeDraggableEl.style.top = `${newTop}px`;
@@ -606,54 +700,107 @@ window.addEventListener('touchmove', handleMove, { passive: false });
 window.addEventListener('mouseup', handleEnd);
 window.addEventListener('touchend', handleEnd);
 
+// ESPORTAZIONE ULTRA-HD VETTORIALE (Senza sfocature o sgranature)
 document.getElementById("downloadImgBtn").addEventListener("click", () => {
-    const previewWrapper = document.getElementById("exportPreviewContainer");
     const downloadBtn = document.getElementById("downloadImgBtn");
-    
     downloadBtn.textContent = "⌛ Generazione HD...";
     downloadBtn.disabled = true;
 
-    // Configurazione avanzata per html2canvas ad altissima risoluzione
-    html2canvas(previewWrapper, {
-        scale: 3, // Aumenta la risoluzione (3x = qualità da stampa/HD)
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        logging: false,
-        onclone: (clonedDoc) => {
-            // Disattiva filtri di sfocatura nel clone prima di scattare la foto
-            const clonedElements = clonedDoc.querySelectorAll('.export-element');
-            clonedElements.forEach(el => {
-                el.style.backdropFilter = 'none';
-                el.style.webkitBackdropFilter = 'none';
-            });
-            
-            // Assicura che tutti gli input testo mostrino correttamente il valore digitato
-            const inputs = clonedDoc.querySelectorAll('.custom-legend li input');
-            inputs.forEach(input => {
-                const parent = input.parentElement;
-                const textSpan = clonedDoc.createElement('span');
-                textSpan.textContent = input.value;
-                textSpan.style.color = '#ffffff';
-                textSpan.style.fontSize = '12px';
-                textSpan.style.fontWeight = '500';
-                input.replaceWith(textSpan);
-            });
-        }
-    }).then(canvas => {
+    setTimeout(() => {
+        const previewWrapper = document.getElementById("exportPreviewContainer");
+        const mapCanvas = exportMap.getCanvas();
+
+        const scaleFactor = 3;
+        const renderCanvas = document.createElement("canvas");
+        renderCanvas.width = previewWrapper.clientWidth * scaleFactor;
+        renderCanvas.height = previewWrapper.clientHeight * scaleFactor;
+
+        const ctx = renderCanvas.getContext("2d");
+        ctx.scale(scaleFactor, scaleFactor);
+
+        // 1. Disegna il Canvas della Mappa
+        ctx.drawImage(mapCanvas, 0, 0, previewWrapper.clientWidth, previewWrapper.clientHeight);
+
+        // 2. Disegna gli elementi sovrapposti
+        const elements = document.querySelectorAll(".export-element");
+        const wrapperRect = previewWrapper.getBoundingClientRect();
+
+        elements.forEach(el => {
+            if (window.getComputedStyle(el).display === "none") return;
+
+            const rect = el.getBoundingClientRect();
+            const x = rect.left - wrapperRect.left;
+            const y = rect.top - wrapperRect.top;
+            const w = rect.width;
+            const h = rect.height;
+
+            // Sfondo box
+            ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, 8);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Disegna Freccia Nord
+            if (el.id === "geoNorthArrow") {
+                const svgText = new XMLSerializer().serializeToString(el);
+                const img = new Image();
+                img.src = 'data:image/svg+xml;base64,' + btoa(svgText);
+                ctx.drawImage(img, x, y, w, h);
+            }
+
+            // Disegna Scala
+            if (el.id === "geoScaleBar") {
+                const labelText = document.getElementById("scaleLabelText").textContent;
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 10px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(labelText, x + w / 2, y + h - 6);
+
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 10);
+                ctx.lineTo(x + 10, y + 16);
+                ctx.lineTo(x + w - 10, y + 16);
+                ctx.lineTo(x + w - 10, y + 10);
+                ctx.stroke();
+            }
+
+            // Disegna Legenda
+            if (el.id === "exportLegend") {
+                const title = document.getElementById("legendTitleDisplay").textContent;
+                ctx.fillStyle = "#38bdf8";
+                ctx.font = "bold 12px sans-serif";
+                ctx.textAlign = "left";
+                ctx.fillText(title, x + 10, y + 20);
+
+                let curY = y + 38;
+                const items = el.querySelectorAll("li");
+                items.forEach(li => {
+                    const icon = li.querySelector("span").textContent;
+                    const name = li.querySelector("input").value;
+
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "12px sans-serif";
+                    ctx.fillText(icon, x + 10, curY);
+                    ctx.fillText(name, x + 30, curY);
+                    curY += 18;
+                });
+            }
+        });
+
+        // Scarica JPEG HD
         const link = document.createElement('a');
-        link.download = `world-map-${Date.now()}.jpg`;
-        link.href = canvas.toDataURL('image/jpeg', 0.98); // Qualità JPEG al 98%
+        link.download = `my-world-map-hd.jpg`;
+        link.href = renderCanvas.toDataURL('image/jpeg', 0.95);
         link.click();
-        
-        downloadBtn.textContent = "📥 Scarica JPEG";
+
+        downloadBtn.textContent = "📥 Scarica JPEG HD";
         downloadBtn.disabled = false;
-    }).catch(err => {
-        console.error("Errore esportazione:", err);
-        alert("Errore durante la generazione dell'immagine.");
-        downloadBtn.textContent = "📥 Scarica JPEG";
-        downloadBtn.disabled = false;
-    });
+    }, 150);
 });
 
 document.getElementById("exportJsonBtn").addEventListener("click", () => {
@@ -672,8 +819,9 @@ document.getElementById("styleButton").addEventListener("click", () => {
     document.getElementById("styleModal").classList.add("open");
 });
 document.getElementById("closeStyle").addEventListener("click", () => document.getElementById("styleModal").classList.remove("open"));
-document.getElementById("profileNavBtn").addEventListener("click", () => { loadProfileUI(); document.getElementById("profileModal").classList.add("open"); });
+document.getElementById("profileNavBtn").addEventListener("click", () => { 
+    loadProfileUI(); 
+    document.getElementById("profileModal").classList.add("open"); 
+});
 document.getElementById("closeProfile").addEventListener("click", () => document.getElementById("profileModal").classList.remove("open"));
 document.getElementById("closeExportModal").addEventListener("click", () => document.getElementById("exportImgModal").classList.remove("open"));
-
-loadProfileUI();
