@@ -2,268 +2,329 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My World Map</title>
-    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My World Map - Personal Map Studio</title>
+    
+    <!-- MapLibre GL CSS -->
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Mappa Principale -->
     <div id="map"></div>
 
-    <div class="top-bar">
-        <div class="search-container">
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Cerca città o luogo..." autocomplete="off">
-            </div>
-            <div id="searchSuggestions" class="suggestions-dropdown hidden"></div>
-        </div>
-        <button class="icon-btn" id="styleButton" title="Editor Mappa">🎨</button>
-        <button class="icon-btn" id="profileNavBtn" title="Profilo">👤</button>
+    <!-- Barra di Ricerca Live -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="🔍 Cerca una città o luogo..." autocomplete="off">
+        <div id="searchSuggestions" class="suggestions-box hidden"></div>
     </div>
 
-    <div class="fab-container">
-        <button class="fab-secondary" id="gpsButton" title="La mia posizione">📍</button>
-        <button class="fab-primary" id="addOptionButton" title="Aggiungi Pin">＋</button>
+    <!-- Pulsanti di Navigazione Fluttuanti -->
+    <div class="floating-controls">
+        <button id="gpsButton" title="La mia Posizione">🎯</button>
+        <button id="styleButton" title="Stile Mappa">🎨</button>
+        <button id="addOptionButton" title="Aggiungi Pin">📍</button>
+        <button id="profileNavBtn" title="Profilo Utente">👤</button>
     </div>
 
-    <div id="mapPicker" class="picker-overlay hidden">
-        <div class="picker-instructions-top">Sposta la mappa sul punto desiderato</div>
-        <div class="picker-crosshair">🎯</div>
-        <div class="picker-actions">
+    <!-- Selettore Posizione Pin (Puntatore Mappa) -->
+    <div id="mapPicker" class="map-picker-overlay hidden">
+        <div class="picker-pointer">📍</div>
+        <div class="picker-bar">
+            <span>Sposta la mappa per posizionare il pin</span>
+            <button id="confirmPick" class="btn-primary">Conferma Posizione</button>
             <button id="cancelPick" class="btn-secondary">Annulla</button>
-            <button id="confirmPick" class="btn-primary">Conferma Punto</button>
         </div>
     </div>
 
+    <!-- Modal Aggiunta/Modifica Pin -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle">Nuovo Pin</h2>
-            <input type="text" id="placeInput" placeholder="Nome del luogo...">
             
-            <label style="font-size: 13px; color: #cbd5e1; margin-top: 5px;">Seleziona Icona / Categoria:</label>
-            <select id="iconCategorySelect" style="margin-bottom: 5px;">
-                <optgroup label="🏠 Abitazioni & Lavoro">
-                    <option value="Casa Principale|🏠">🏠 Casa Principale</option>
-                    <option value="Casa Amici|🏡">🏡 Casa Amici</option>
-                    <option value="Casa Famiglia|🏚️">🏚️ Casa Famiglia</option>
-                    <option value="Luogo di Lavoro|💼">💼 Luogo di Lavoro</option>
-                </optgroup>
-                <optgroup label="🍺 Cibo, Drink & Nightlife">
-                    <option value="Pub|🍺">🍺 Pub & Bar</option>
-                    <option value="Ristorante|🍕">🍕 Ristorante</option>
-                    <option value="Caffè|☕">☕ Caffetteria</option>
-                    <option value="Cocktail|🍸">🍸 Cocktail Bar / Nightlife</option>
-                </optgroup>
-                <optgroup label="🛍️ Commercio & Cura Persona">
-                    <option value="Negozio|🛍️">🛍️ Negozio / Boutique</option>
-                    <option value="Supermercato|🛒">🛒 Supermercato</option>
-                    <option value="Barbiere/Parrucchiere|💈">💈 Barbiere / Parrucchiere</option>
-                </optgroup>
-                <optgroup label="⚽ Sport & Palestra">
-                    <option value="Palestra|🏋️">🏋️ Palestra / Fitness</option>
-                    <option value="Sport|⚽">⚽ Campo / Impianto Sportivo</option>
-                </optgroup>
-                <optgroup label="⭐ Servizi & Cultura">
-                    <option value="Punto di Interesse|⭐">⭐ Punto d'Interesse</option>
-                    <option value="Museo|🏛️">🏛️ Museo / Arte</option>
-                    <option value="Hotel|🏨">🏨 Hotel / Alloggio</option>
-                    <option value="Scuola|🏫">🏫 Scuola / Università</option>
-                </optgroup>
+            <label>Nome Luogo</label>
+            <input type="text" id="placeInput" placeholder="Es. Bar Preferito">
+
+            <label>Seleziona Categoria / Emoji</label>
+            <select id="iconCategorySelect">
+                <option value="Preferito|⭐">⭐ Preferito</option>
+                <option value="Casa|🏠">🏠 Casa</option>
+                <option value="Lavoro|💼">💼 Lavoro / Ufficio</option>
+                <option value="Aeroporto|✈️">✈️ Aeroporto</option>
+                <option value="Ristorante|🍽️">🍽️ Ristorante / Cibo</option>
+                <option value="Bar & Caffè|☕">☕ Bar / Caffè</option>
+                <option value="Cocktail Bar|🍸">🍸 Cocktail Bar / Pub</option>
+                <option value="Barbiere & Parrucchiere|💈">💈 Barbiere / Parrucchiere</option>
+                <option value="Pub & Drink|🍺">🍺 Pub / Birreria</option>
+                <option value="Natura & Parchi|🌲">🌲 Natura / Parco</option>
+                <option value="Spiaggia|🏖️">🏖️ Spiaggia / Mare</option>
+                <option value="Montagna|⛰️">⛰️ Montagna / Trekking</option>
+                <option value="Viaggio & Hotel|🧳">🧳 Viaggio / Hotel</option>
+                <option value="Cultura & Monumenti|🏛️">🏛️ Cultura / Monumento</option>
+                <option value="Shopping|🛍️">🛍️ Shopping / Negozio</option>
+                <option value="Sport & Fitness|🏋️">🏋️ Sport / Palestra</option>
+                <option value="Svago & Relax|🎭">🎭 Svago / Cinema / Teatro</option>
             </select>
 
-            <input type="text" id="customEmojiInput" placeholder="O scrivi un'emoji personalizzata (es. 🚀)">
-            <input type="text" id="tagsInput" placeholder="Tag (separati da virgola)">
-            
-            <label style="font-size: 13px; color: #cbd5e1; margin-top: 5px;">Foto del Luogo:</label>
-            <div id="imageDropZone" class="image-drop-zone">
-                <input type="file" id="photoFileInput" accept="image/*" class="file-input-hidden">
+            <label>Oppure Emoji Personalizzata</label>
+            <input type="text" id="customEmojiInput" placeholder="Es. 🍕 o 🚀" maxlength="2">
+
+            <label>Tag (separati da virgola)</label>
+            <input type="text" id="tagsInput" placeholder="relax, cibo, estate">
+
+            <label>Carica Foto</label>
+            <div id="imageDropZone" class="drop-zone">
                 <div id="dropZoneContent">
-                    <span style="font-size: 24px;">📷</span>
-                    <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Clicca o trascina un'immagine qui</p>
+                    <p>Trascina qui un'immagine o <span class="highlight">sfoglia</span></p>
+                    <input type="file" id="photoFileInput" accept="image/*" class="file-input-hidden">
                 </div>
-                <div id="imagePreviewWrapper" class="hidden">
-                    <img id="modalPhotoPreview" src="" alt="Anteprima">
-                    <button type="button" id="removePhotoBtn" class="remove-photo-btn">✕</button>
+                <div id="imagePreviewWrapper" class="image-preview-wrapper hidden">
+                    <img id="modalPhotoPreview" src="" alt="Anteprima Foto">
+                    <button id="removePhotoBtn" class="btn-remove-photo">✕</button>
                 </div>
             </div>
 
-            <textarea id="noteInput" placeholder="Note o descrizione..."></textarea>
+            <label>Note / Ricordi</label>
+            <textarea id="noteInput" rows="3" placeholder="Scrivi un bel ricordo di questo posto..."></textarea>
+
             <div class="modal-actions">
-                <button id="closeModal" class="btn-secondary">Annulla</button>
                 <button id="savePlace" class="btn-primary">Salva Pin</button>
+                <button id="closeModal" class="btn-secondary">Chiudi</button>
             </div>
         </div>
     </div>
 
-    <div id="placeSheet" class="bottom-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-content">
-            <div id="placeImageContainer" class="sheet-image-box hidden">
-                <img id="placeImage" alt="Foto luogo">
+    <!-- Scheda Informativa Pin (PlaceSheet) -->
+    <div id="placeSheet" class="place-sheet">
+        <div class="sheet-header">
+            <span id="placeIcon" class="place-sheet-icon">📍</span>
+            <div>
+                <h3 id="placeName">Nome Luogo</h3>
+                <span id="placeCategory" class="badge">Categoria</span>
             </div>
-            <div class="sheet-header">
-                <span id="placeIcon" class="sheet-big-icon">🍺</span>
-                <div>
-                    <h3 id="placeName">Nome Luogo</h3>
-                    <span id="placeCategory" class="badge">Categoria</span>
-                </div>
-                <button id="closeSheet" class="close-btn">&times;</button>
+            <button id="closeSheet" class="btn-close">✕</button>
+        </div>
+        
+        <!-- Sezione Voli Collegati per Aeroporti -->
+        <div id="airportFlyContainer" class="airport-fly-box hidden">
+            <label>✈️ Vola verso un altro Aeroporto conosciuto:</label>
+            <div class="airport-fly-controls">
+                <select id="airportDestinationSelect">
+                    <option value="">Seleziona destinazione...</option>
+                </select>
+                <button id="flyToAirportBtn" class="btn-primary">Vola ✈️</button>
             </div>
-            <p id="placeNote" class="sheet-note">Note descrittive...</p>
-            <div id="placeTags" class="sheet-tags"></div>
-            <div id="sheetViewMode" class="sheet-action-buttons">
-                <button id="editPlaceBtn" class="btn-secondary">✏️ Modifica</button>
-                <button id="deletePlaceBtn" class="btn-danger">🗑️ Elimina Pin</button>
+        </div>
+
+        <div class="sheet-body">
+            <div id="placeImageContainer" class="place-image-container hidden">
+                <img id="placeImage" src="" alt="Foto Luogo">
             </div>
+            <p id="placeNote">Nessuna nota presente.</p>
+            <div id="placeTags" class="tags-list"></div>
+        </div>
+        <div class="sheet-footer">
+            <button id="editPlaceBtn" class="btn-secondary">✏️ Modifica</button>
+            <button id="deletePlaceBtn" class="btn-danger">🗑️ Elimina</button>
         </div>
     </div>
 
+    <!-- Modal Personalizzazione Stile Mappa -->
     <div id="styleModal" class="modal">
-        <div class="modal-content wide-modal">
-            <h2>Editor Stile Mappa ed Elementi</h2>
-            <p class="modal-subtext">Personalizza i colori degli elementi geografici vettoriali.</p>
+        <div class="modal-content">
+            <h2>Personalizza Mappa</h2>
             
+            <label>Stile Icona Marker</label>
+            <select id="iconStyleSelect">
+                <option value="classico">Classico (Bolla)</option>
+                <option value="neon">Neon Glow</option>
+                <option value="minimal">Minimal Circle</option>
+            </select>
+
+            <h3>Colori Mappa</h3>
             <div class="color-picker-grid">
-                <div class="color-control-item">
-                    <label>Natura / Sfondo Verde</label>
+                <div>
+                    <label>Natura / Sfondo</label>
                     <input type="color" id="colorNature" value="#14532d">
                 </div>
-                <div class="color-control-item">
-                    <label>Corpi Idrici</label>
+                <div>
+                    <label>Acqua</label>
                     <input type="color" id="colorWater" value="#1e3a8a">
                 </div>
-                <div class="color-control-item">
+                <div>
                     <label>Edifici</label>
                     <input type="color" id="colorBuilding" value="#1e293b">
                 </div>
-                <div class="color-control-item">
+                <div>
                     <label>Strade</label>
                     <input type="color" id="colorRoad" value="#334155">
                 </div>
-                <div class="color-control-item">
+                <div>
                     <label>Ferrovie</label>
                     <input type="color" id="colorRailway" value="#64748b">
                 </div>
             </div>
 
-            <div class="editor-settings-row" style="margin-top: 15px;">
-                <label style="display:block; margin-bottom: 6px; font-size: 14px;">Stile Grafico Pin:</label>
-                <select id="iconStyleSelect">
-                    <option value="classico">Classico (Stile WhatsApp)</option>
-                    <option value="minimal">Minimal (Monocolore Bianco)</option>
-                    <option value="neon">Neon (Effetto Bagliore)</option>
-                </select>
-            </div>
-
-            <div class="modal-actions" style="margin-top: 20px;">
+            <div class="modal-actions">
+                <button id="applyStyle" class="btn-primary">Applica Stile</button>
                 <button id="closeStyle" class="btn-secondary">Chiudi</button>
-                <button id="applyStyle" class="btn-primary">Applica Modifiche</button>
             </div>
         </div>
     </div>
 
+    <!-- Modal Profilo Utente -->
     <div id="profileModal" class="modal">
-        <div class="modal-content wide-modal">
-            <h2>Profilo</h2>
-            <div class="profile-header">
-                <div class="avatar-container">
-                    <div id="avatarPlaceholder" class="avatar-placeholder">👤</div>
-                    <img id="profileAvatarImg" alt="Avatar" class="hidden">
+        <div class="modal-content">
+            <h2>Profilo Utente</h2>
+            <div class="profile-header-modal">
+                <div id="profileAvatarContainer" class="profile-avatar-large">
+                    <img id="profileAvatarImg" src="" class="hidden" alt="Avatar">
+                    <span id="avatarPlaceholder">👤</span>
                 </div>
-                <div class="profile-info">
-                    <input type="text" id="profileNameInput" placeholder="Inserisci il tuo nome...">
-                    <input type="text" id="profileAvatarInput" placeholder="URL immagine avatar...">
-                    <button id="saveProfileAvatar" class="btn-small">Aggiorna Profilo</button>
+                <div style="flex: 1;">
+                    <label>Nome Utente</label>
+                    <input type="text" id="profileNameInput" placeholder="Il tuo nome">
                 </div>
             </div>
+
+            <label>URL Foto Profilo</label>
+            <input type="text" id="profileAvatarInput" placeholder="https://link-immagine.com/avatar.jpg">
+
+            <!-- Gestione Città Principali e Visitate -->
+            <hr class="modal-divider">
+            <h3>Luoghi Conosciuti</h3>
+            
+            <label>Città Principali (Max 2)</label>
+            <div class="city-search-box">
+                <input type="text" id="mainCitySearchInput" placeholder="Aggiungi città principale..." autocomplete="off">
+                <div id="mainCitySuggestions" class="suggestions-box hidden"></div>
+            </div>
+            <div id="mainCitiesList" class="city-chips-container"></div>
+
+            <label style="margin-top: 10px;">Città Visitate</label>
+            <div class="city-search-box">
+                <input type="text" id="visitedCitySearchInput" placeholder="Aggiungi città visitata..." autocomplete="off">
+                <div id="visitedCitySuggestions" class="suggestions-box hidden"></div>
+            </div>
+            <div id="visitedCitiesList" class="city-chips-container"></div>
 
             <div class="stats-box">
-                <div>Pin Salvati: <strong id="totalPinsCount">0</strong></div>
+                <div>
+                    <span id="totalPinsCount">0</span>
+                    <small>Pin Salvati</small>
+                </div>
             </div>
 
-            <div class="backup-actions">
-                <button id="exportJsonBtn" class="btn-secondary">Esporta Dati (JSON)</button>
-                <button id="openExportImgModal" class="btn-primary">📸 Esporta Immagine Mappa</button>
+            <div class="profile-actions">
+                <button id="openExportImgModal" class="btn-export">🖼️ Esporta Mappa come Immagine HD</button>
+                <button id="exportJsonBtn" class="btn-secondary" style="margin-top: 8px; width: 100%;">📥 Backup Dati (JSON)</button>
             </div>
 
             <div class="modal-actions">
+                <button id="saveProfileAvatar" class="btn-primary">Salva Profilo</button>
                 <button id="closeProfile" class="btn-secondary">Chiudi</button>
             </div>
         </div>
     </div>
 
-    <div id="exportImgModal" class="modal">
-        <div class="modal-content full-screen-modal">
-            <h2>Anteprima Esportazione Mappa</h2>
-            
-            <div class="export-options-bar">
-                <div class="option-item">
-                    <label style="font-size: 12px; color: #cbd5e1;">Formato:</label>
+    <!-- Modal Esportazione Immagine Vettoriale HD -->
+    <div id="exportImgModal" class="modal modal-large">
+        <div class="modal-content export-modal-content">
+            <h2>Esporta Immagine HD</h2>
+
+            <!-- Filtro Città per Esportazione -->
+            <div class="export-filter-container">
+                <label>Filtra Pin nella Legenda:</label>
+                <select id="exportCityFilterSelect">
+                    <option value="ALL">Tutti i Pin</option>
+                </select>
+            </div>
+
+            <div class="export-layout">
+                <!-- Sidebar Controlli -->
+                <div class="export-sidebar">
+                    <label>Formato Immagine</label>
                     <select id="exportFormatSelect">
-                        <option value="1/1">Quadrato (1:1)</option>
-                        <option value="16/9">Orizzontale (16:9)</option>
-                        <option value="4/3">Schermo (4:3)</option>
-                        <option value="3/4">Verticale / Post (3:4)</option>
+                        <option value="16/9">16:9 Orizzontale</option>
+                        <option value="1/1">1:1 Quadrato</option>
+                        <option value="4/3">4:3 Classico</option>
+                        <option value="3/4">3:4 Verticale</option>
                     </select>
-                </div>
-                <input type="text" id="legendTitleInput" placeholder="Titolo Legenda..." value="Legenda Pin">
-                <div class="export-controls">
-                    <label><input type="checkbox" id="toggleNorth" checked> Freccia Nord</label>
-                    <label><input type="checkbox" id="toggleScale" checked> Scala Grafica</label>
-                    <label><input type="checkbox" id="toggleLegend" checked> Legenda</label>
-                </div>
-            </div>
 
-            <div class="size-controls-bar">
-                <div class="size-slider-item">
-                    <label>Dim. Freccia:</label>
-                    <input type="range" id="sizeNorthArrow" min="0.5" max="2" step="0.1" value="1">
-                </div>
-                <div class="size-slider-item">
-                    <label>Dim. Scala:</label>
-                    <input type="range" id="sizeScaleBar" min="0.5" max="2" step="0.1" value="1">
-                </div>
-                <div class="size-slider-item">
-                    <label>Dim. Legenda:</label>
-                    <input type="range" id="sizeLegend" min="0.5" max="2" step="0.1" value="1">
-                </div>
-            </div>
+                    <label>Titolo Legenda</label>
+                    <input type="text" id="legendTitleInput" value="Legenda">
 
-            <div id="exportPreviewContainer" class="export-preview-wrapper ratio-1-1">
-                <div id="exportMapContainer" class="export-canvas"></div>
-                
-                <svg id="geoNorthArrow" class="export-element draggable-element" style="top:15px; left:15px;" viewBox="0 0 40 60" width="36" height="54">
-                    <polygon points="20,0 35,25 20,18" fill="#38bdf8"/>
-                    <polygon points="20,0 5,25 20,18" fill="#0284c7"/>
-                    <polygon points="20,60 35,35 20,42" fill="#94a3b8"/>
-                    <polygon points="20,60 5,35 20,42" fill="#64748b"/>
-                    <text x="20" y="14" font-size="10" fill="#0f172a" font-weight="bold" text-anchor="middle">N</text>
-                </svg>
-                
-                <div id="geoScaleBar" class="export-element scale-bar-geo draggable-element" style="top:280px; left:15px;">
-                    <div class="scale-bar-line" id="scaleBarLine">
-                        <div class="sb-segment"></div>
-                        <div class="sb-segment"></div>
+                    <h3>Elementi Sovrapposti</h3>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleNorth" checked> Freccia Nord
+                    </label>
+                    <div class="slider-group">
+                        <small>Dimensione Freccia</small>
+                        <input type="range" id="sizeNorthArrow" min="0.5" max="2" step="0.1" value="1">
                     </div>
-                    <div class="scale-bar-labels"><span id="scaleLabelText">1 km</span></div>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleScale" checked> Barra di Scala
+                    </label>
+                    <div class="slider-group">
+                        <small>Dimensione Scala</small>
+                        <input type="range" id="sizeScaleBar" min="0.5" max="2" step="0.1" value="1">
+                    </div>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleLegend" checked> Legenda
+                    </label>
+                    <div class="slider-group">
+                        <small>Dimensione Legenda</small>
+                        <input type="range" id="sizeLegend" min="0.5" max="2" step="0.1" value="1">
+                    </div>
+
+                    <button id="downloadImgBtn" class="btn-primary btn-full">📥 Scarica JPEG HD</button>
                 </div>
-                
-                <div id="exportLegend" class="export-element custom-legend draggable-element" style="top:15px; left:180px;">
-                    <h4 id="legendTitleDisplay">Legenda Pin</h4>
-                    <ul id="exportLegendList"></ul>
+
+                <!-- Anteprima Interactive -->
+                <div class="export-preview-container">
+                    <div id="exportPreviewContainer" class="export-preview-wrapper ratio-16-9">
+                        <div id="exportMapContainer"></div>
+
+                        <!-- Freccia Nord Vettoriale Drag -->
+                        <div id="geoNorthArrow" class="export-element draggable-element" style="top: 20px; left: 20px;">
+                            <svg width="40" height="40" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="rgba(15,23,42,0.8)" stroke="#ffffff" stroke-width="3"/>
+                                <polygon points="50,15 62,50 50,42" fill="#ef4444"/>
+                                <polygon points="50,15 38,50 50,42" fill="#ffffff"/>
+                                <polygon points="50,85 62,50 50,58" fill="#ffffff"/>
+                                <polygon points="50,85 38,50 50,58" fill="#64748b"/>
+                                <text x="50" y="32" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">N</text>
+                            </svg>
+                        </div>
+
+                        <!-- Barra di Scala Vettoriale Drag -->
+                        <div id="geoScaleBar" class="export-element draggable-element" style="bottom: 20px; left: 20px;">
+                            <div class="scale-inner">
+                                <span id="scaleLabelText">100 m</span>
+                                <div class="scale-graphic-bar"></div>
+                            </div>
+                        </div>
+
+                        <!-- Legenda Vettoriale Drag -->
+                        <div id="exportLegend" class="export-element draggable-element" style="top: 20px; right: 20px;">
+                            <h4 id="legendTitleDisplay">Legenda</h4>
+                            <ul id="exportLegendList"></ul>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="modal-actions" style="margin-top:10px;">
-                <button id="closeExportModal" class="btn-secondary">Annulla</button>
-                <button id="downloadImgBtn" class="btn-primary">📥 Scarica JPEG HD</button>
+            <div class="modal-actions">
+                <button id="closeExportModal" class="btn-secondary">Chiudi</button>
             </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
