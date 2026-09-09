@@ -1,4 +1,4 @@
-let userMapStyle = JSON.parse(localStorage.getItem('cartoQuest_mapStyle')) || { 
+let userMapStyle = JSON.parse(localStorage.getItem('My World Map_mapStyle')) || { 
     iconStyle: 'classico', 
     colors: {
         nature: '#14532d',
@@ -9,7 +9,12 @@ let userMapStyle = JSON.parse(localStorage.getItem('cartoQuest_mapStyle')) || {
     }
 };
 
-let userProfile = JSON.parse(localStorage.getItem('cartoQuest_user')) || { name: "Utente", avatar: "" };
+let userProfile = JSON.parse(localStorage.getItem('My World Map_user')) || { 
+    name: "Utente", 
+    avatar: "",
+    mainCities: [],     
+    visitedCities: []   
+};
 
 const map = new maplibregl.Map({
     container: 'map',
@@ -26,11 +31,19 @@ let currentBase64Photo = "";
 let gpsMarker = null;
 let tempSearchMarker = null;
 let searchDebounceTimeout = null;
+let macroCityMarkers = [];
 
 map.on('load', () => {
     applyMapColors();
     enable3DBuildings();
+    setupUnexploredAndBoundariesLayer();
     renderMarkers();
+    updateMacroCityMarkers();
+    updateBoundariesAndUnexploredLayer();
+});
+
+map.on('zoom', () => {
+    updateMacroCityMarkers();
 });
 
 function enable3DBuildings() {
@@ -54,7 +67,7 @@ function enable3DBuildings() {
                         'id': id + '-3d',
                         'source': layer.source,
                         'source-layer': layer['source-layer'],
-                        'minzoom': 3, // Esteso a zoom distanti
+                        'minzoom': 3,
                         'type': 'fill-extrusion',
                         'filter': layer.filter,
                         'paint': {
@@ -135,7 +148,147 @@ function removeTempSearchMarker() {
     }
 }
 
-// Upload Immagini Drag & Drop
+function toSexagesimal(dec, isLongitude) {
+    const absDec = Math.abs(dec);
+    const deg = Math.floor(absDec);
+    const minFull = (absDec - deg) * 60;
+    const min = Math.floor(minFull);
+    const sec = ((minFull - min) * 60).toFixed(1);
+
+    let direction = isLongitude ? (dec >= 0 ? "E" : "O") : (dec >= 0 ? "N" : "S");
+    return `${deg}° ${min}′ ${sec}″ ${direction}`;
+}
+
+/* =========================================================
+   CONFINI AMMINISTRATIVI & AREE INESPLORATE (PENOMBRA)
+========================================================= */
+function setupUnexploredAndBoundariesLayer() {
+    map.addSource('known-boundaries-src', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+    });
+
+    map.addLayer({
+        'id': 'known-boundaries-layer',
+        'type': 'line',
+        'source': 'known-boundaries-src',
+        'paint': {
+            'line-color': '#00f0ff',
+            'line-width': 3,
+            'line-dasharray': [2, 2]
+        }
+    });
+
+    map.addSource('unexplored-src', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+    });
+
+    map.addLayer({
+        'id': 'unexplored-layer',
+        'type': 'fill',
+        'source': 'unexplored-src',
+        'paint': {
+            'fill-color': '#020617',
+            'fill-opacity': 0.65
+        }
+    });
+}
+
+function updateBoundariesAndUnexploredLayer() {
+    const allKnown = [...(userProfile.mainCities || []), ...(userProfile.visitedCities || [])];
+    const boundaryFeatures = [];
+    const knownPolygons = [];
+
+    allKnown.forEach(c => {
+        if (c.geojson) {
+            boundaryFeatures.push({
+                type: 'Feature',
+                geometry: c.geojson,
+                properties: { name: c.name }
+            });
+            if (c.geojson.type === 'Polygon' || c.geojson.type === 'MultiPolygon') {
+                knownPolygons.push(c.geojson);
+            }
+        }
+    });
+
+    if (map.getSource('known-boundaries-src')) {
+        map.getSource('known-boundaries-src').setData({
+            type: 'FeatureCollection',
+            features: boundaryFeatures
+        });
+    }
+
+    if (map.getSource('unexplored-src')) {
+        if (knownPolygons.length > 0) {
+            const worldPolygon = [
+                [[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]
+            ];
+
+            knownPolygons.forEach(g => {
+                if (g.type === 'Polygon') {
+                    worldPolygon.push(g.coordinates[0]);
+                } else if (g.type === 'MultiPolygon') {
+                    g.coordinates.forEach(p => worldPolygon.push(p[0]));
+                }
+            });
+
+            map.getSource('unexplored-src').setData({
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: { type: 'Polygon', coordinates: worldPolygon }
+                }]
+            });
+        } else {
+            map.getSource('unexplored-src').setData({
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]]
+                    }
+                }]
+            });
+        }
+    }
+}
+
+/* =========================================================
+   MARKER LONTANI (ZOOM OUT < 11)
+========================================================= */
+function updateMacroCityMarkers() {
+    macroCityMarkers.forEach(m => m.remove());
+    macroCityMarkers = [];
+
+    const currentZoom = map.getZoom();
+
+    if (currentZoom < 11) {
+        (userProfile.mainCities || []).forEach(c => {
+            const el = document.createElement('div');
+            el.className = 'macro-city-marker main';
+            el.innerHTML = `🏠 ${c.name}`;
+            const m = new maplibregl.Marker({ element: el })
+                .setLngLat([c.lng, c.lat])
+                .addTo(map);
+            macroCityMarkers.push(m);
+        });
+
+        (userProfile.visitedCities || []).forEach(c => {
+            const el = document.createElement('div');
+            el.className = 'macro-city-marker visited';
+            el.innerHTML = `✈️ ${c.name}`;
+            const m = new maplibregl.Marker({ element: el })
+                .setLngLat([c.lng, c.lat])
+                .addTo(map);
+            macroCityMarkers.push(m);
+        });
+    }
+}
+
+// Upload Immagini
 const photoFileInput = document.getElementById('photoFileInput');
 const imageDropZone = document.getElementById('imageDropZone');
 const dropZoneContent = document.getElementById('dropZoneContent');
@@ -180,7 +333,7 @@ removePhotoBtn.addEventListener('click', (e) => {
     imagePreviewWrapper.classList.add('hidden');
 });
 
-// Search
+// Search Principale
 const searchInput = document.getElementById("searchInput");
 const searchSuggestions = document.getElementById("searchSuggestions");
 
@@ -241,7 +394,121 @@ function selectSearchResult(item) {
 
 document.addEventListener("click", (e) => {
     if (!e.target.closest(".search-container")) searchSuggestions.classList.add("hidden");
+    if (!e.target.closest(".city-search-box")) {
+        document.getElementById("mainCitySuggestions").classList.add("hidden");
+        document.getElementById("visitedCitySuggestions").classList.add("hidden");
+    }
 });
+
+/* =========================================================
+   RICERCA CITTÀ PROFILO
+========================================================= */
+function setupCityAutocomplete(inputId, suggestionsId, isMain) {
+    const inp = document.getElementById(inputId);
+    const sug = document.getElementById(suggestionsId);
+    let timeout = null;
+
+    inp.addEventListener("input", function() {
+        const query = this.value.trim();
+        clearTimeout(timeout);
+
+        if (query.length < 2) {
+            sug.innerHTML = "";
+            sug.classList.add("hidden");
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(query)}&limit=5`)
+                .then(res => res.json())
+                .then(data => {
+                    sug.innerHTML = "";
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const div = document.createElement("div");
+                            div.className = "suggestion-item";
+                            div.textContent = item.display_name;
+                            div.addEventListener("click", () => {
+                                addCityToProfile(item, isMain);
+                                inp.value = "";
+                                sug.classList.add("hidden");
+                            });
+                            sug.appendChild(div);
+                        });
+                        sug.classList.remove("hidden");
+                    } else {
+                        sug.classList.add("hidden");
+                    }
+                });
+        }, 300);
+    });
+}
+
+function addCityToProfile(item, isMain) {
+    const cityName = item.display_name.split(",")[0];
+    const cityObj = {
+        name: cityName,
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+        geojson: item.geojson,
+        boundingbox: item.boundingbox
+    };
+
+    if (isMain) {
+        if (!userProfile.mainCities) userProfile.mainCities = [];
+        if (userProfile.mainCities.length >= 2) {
+            alert("Puoi impostare al massimo 2 città principali!");
+            return;
+        }
+        userProfile.mainCities.push(cityObj);
+    } else {
+        if (!userProfile.visitedCities) userProfile.visitedCities = [];
+        userProfile.visitedCities.push(cityObj);
+    }
+
+    saveState();
+    renderProfileCityChips();
+    updateMacroCityMarkers();
+    updateBoundariesAndUnexploredLayer();
+}
+
+function renderProfileCityChips() {
+    const mainList = document.getElementById("mainCitiesList");
+    const visitedList = document.getElementById("visitedCitiesList");
+
+    mainList.innerHTML = "";
+    (userProfile.mainCities || []).forEach((c, idx) => {
+        const chip = document.createElement("div");
+        chip.className = "city-chip main-chip";
+        chip.innerHTML = `🏠 ${c.name} <span class="btn-remove-chip">✕</span>`;
+        chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
+            userProfile.mainCities.splice(idx, 1);
+            saveState();
+            renderProfileCityChips();
+            updateMacroCityMarkers();
+            updateBoundariesAndUnexploredLayer();
+        });
+        mainList.appendChild(chip);
+    });
+
+    visitedList.innerHTML = "";
+    (userProfile.visitedCities || []).forEach((c, idx) => {
+        const chip = document.createElement("div");
+        chip.className = "city-chip";
+        chip.innerHTML = `✈️ ${c.name} <span class="btn-remove-chip">✕</span>`;
+        chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
+            userProfile.visitedCities.splice(idx, 1);
+            saveState();
+            renderProfileCityChips();
+            updateMacroCityMarkers();
+            updateBoundariesAndUnexploredLayer();
+        });
+        visitedList.appendChild(chip);
+    });
+}
+
+setupCityAutocomplete("mainCitySearchInput", "mainCitySuggestions", true);
+setupCityAutocomplete("visitedCitySearchInput", "visitedCitySuggestions", false);
 
 function loadStyleUI() {
     document.getElementById('colorNature').value = userMapStyle.colors.nature || '#14532d';
@@ -260,14 +527,14 @@ document.getElementById('applyStyle').addEventListener('click', () => {
     userMapStyle.colors.railway = document.getElementById('colorRailway').value;
     userMapStyle.iconStyle = document.getElementById('iconStyleSelect').value;
 
-    localStorage.setItem('cartoQuest_mapStyle', JSON.stringify(userMapStyle));
+    localStorage.setItem('My World Map_mapStyle', JSON.stringify(userMapStyle));
     applyMapColors();
     renderMarkers();
     document.getElementById('styleModal').classList.remove('open');
 });
 
-let places = JSON.parse(localStorage.getItem('cartoQuest_places')) || {
-    "p1": { name: "Casa Mia", icon: "🏠", category: "Casa Principale", tags: ["casa"], note: "Abitazione principale.", photo: "", lat: 41.9028, lng: 12.4964 }
+let places = JSON.parse(localStorage.getItem('My World Map_places')) || {
+    "p1": { name: "Casa Mia", icon: "🏠", category: "Casa", tags: ["casa"], note: "Abitazione principale.", photo: "", lat: 41.9028, lng: 12.4964 }
 };
 
 let activeMarkers = [];
@@ -276,9 +543,23 @@ let pendingCoords = null;
 let isEditingPlace = false;
 
 function saveState() {
-    localStorage.setItem('cartoQuest_places', JSON.stringify(places));
-    localStorage.setItem('cartoQuest_user', JSON.stringify(userProfile));
+    localStorage.setItem('My World Map_places', JSON.stringify(places));
+    localStorage.setItem('My World Map_user', JSON.stringify(userProfile));
     updateProfileStats();
+}
+
+function createMarkerElement(item) {
+    const el = document.createElement('div');
+    el.className = 'custom-pin-wrapper';
+
+    if (userMapStyle.iconStyle === 'neon') {
+        el.innerHTML = `<div class="pin-neon">${item.icon}</div>`;
+    } else if (userMapStyle.iconStyle === 'minimal') {
+        el.innerHTML = `<div class="pin-minimal"><span>${item.icon}</span></div>`;
+    } else {
+        el.innerHTML = `<div class="pin-classico">${item.icon}</div>`;
+    }
+    return el;
 }
 
 function renderMarkers() {
@@ -287,16 +568,7 @@ function renderMarkers() {
 
     Object.keys(places).forEach(id => {
         const item = places[id];
-        const el = document.createElement('div');
-        el.className = 'custom-pin-wrapper';
-        
-        if (userMapStyle.iconStyle === 'neon') {
-            el.innerHTML = `<div class="pin-neon">${item.icon}</div>`;
-        } else if (userMapStyle.iconStyle === 'minimal') {
-            el.innerHTML = `<div class="pin-minimal"><span>${item.icon}</span></div>`;
-        } else {
-            el.innerHTML = `<div class="pin-classico">${item.icon}</div>`;
-        }
+        const el = createMarkerElement(item);
 
         el.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -325,6 +597,7 @@ function loadProfileUI() {
         imgEl.classList.add("hidden");
         placeholderEl.classList.remove("hidden");
     }
+    renderProfileCityChips();
     updateProfileStats();
 }
 
@@ -341,6 +614,10 @@ document.getElementById("saveProfileAvatar").addEventListener("click", () => {
 });
 
 const placeSheet = document.getElementById("placeSheet");
+
+/* =========================================================
+   APERTURA SCHEDA LUOGO & TRASFERIMENTO TRA AEROPORTI
+========================================================= */
 function openPlace(id) {
     currentSelectedPlaceId = id;
     const place = places[id];
@@ -350,6 +627,52 @@ function openPlace(id) {
     document.getElementById("placeName").textContent = place.name;
     document.getElementById("placeCategory").textContent = `${place.icon} ${place.category}`;
     document.getElementById("placeNote").textContent = place.note;
+
+    let coordsEl = document.getElementById("placeCoords");
+    if (!coordsEl) {
+        coordsEl = document.createElement("div");
+        coordsEl.id = "placeCoords";
+        coordsEl.style.fontSize = "0.85rem";
+        coordsEl.style.opacity = "0.75";
+        coordsEl.style.marginTop = "6px";
+        coordsEl.style.color = "#38bdf8";
+        document.getElementById("placeCategory").insertAdjacentElement("afterend", coordsEl);
+    }
+    
+    const latDMS = toSexagesimal(place.lat, false);
+    const lngDMS = toSexagesimal(place.lng, true);
+    coordsEl.innerHTML = `📍 ${latDMS}, ${lngDMS}`;
+
+    // Gestione Aeroporti: Abilita il volo soltanto verso altri Aeroporti salvati
+    const airportFlyContainer = document.getElementById("airportFlyContainer");
+    const airportSelect = document.getElementById("airportDestinationSelect");
+
+    if (place.icon === "✈️" || place.category.toLowerCase().includes("aeroporto")) {
+        airportSelect.innerHTML = '<option value="">Seleziona destinazione...</option>';
+        
+        let otherAirportsFound = false;
+
+        Object.keys(places).forEach(otherId => {
+            if (otherId !== id) {
+                const otherPlace = places[otherId];
+                if (otherPlace.icon === "✈️" || otherPlace.category.toLowerCase().includes("aeroporto")) {
+                    otherAirportsFound = true;
+                    const opt = document.createElement("option");
+                    opt.value = otherId;
+                    opt.textContent = `✈️ ${otherPlace.name}`;
+                    airportSelect.appendChild(opt);
+                }
+            }
+        });
+
+        if (otherAirportsFound) {
+            airportFlyContainer.classList.remove("hidden");
+        } else {
+            airportFlyContainer.classList.add("hidden");
+        }
+    } else {
+        airportFlyContainer.classList.add("hidden");
+    }
 
     const imgContainer = document.getElementById("placeImageContainer");
     if (place.photo) {
@@ -370,6 +693,27 @@ function openPlace(id) {
     });
     placeSheet.classList.add("open");
 }
+
+// Evento Volo da un Aeroporto all'altro
+document.getElementById("flyToAirportBtn").addEventListener("click", () => {
+    const destId = document.getElementById("airportDestinationSelect").value;
+    if (!destId) return alert("Seleziona un aeroporto di destinazione!");
+
+    const destPlace = places[destId];
+    if (destPlace) {
+        placeSheet.classList.remove("open");
+        map.flyTo({
+            center: [destPlace.lng, destPlace.lat],
+            zoom: 15,
+            pitch: 30,
+            speed: 1.2,
+            curve: 1.4
+        });
+        setTimeout(() => {
+            openPlace(destId);
+        }, 2000);
+    }
+});
 
 document.getElementById("deletePlaceBtn").addEventListener("click", () => {
     if (currentSelectedPlaceId && confirm("Eliminare questo pin?")) {
@@ -499,7 +843,7 @@ document.getElementById("sizeLegend").addEventListener("input", (e) => {
     document.getElementById("exportLegend").style.transform = `scale(${e.target.value})`;
 });
 
-// Gestione Cambio Formato Anteprima
+// Formato Anteprima
 document.getElementById("exportFormatSelect").addEventListener("change", (e) => {
     const wrapper = document.getElementById("exportPreviewContainer");
     wrapper.className = "export-preview-wrapper";
@@ -517,7 +861,6 @@ document.getElementById("exportFormatSelect").addEventListener("change", (e) => 
     }
 });
 
-// Calcolo Dinamico Scala
 function updateMapScaleText() {
     if (!exportMap) return;
     const y = exportMap.getCanvas().clientHeight / 2;
@@ -540,14 +883,69 @@ function updateMapScaleText() {
     document.getElementById("scaleLabelText").textContent = labelText;
 }
 
-// Inizializzazione Mappa Interattiva nell'Anteprima Esportazione
-document.getElementById("legendTitleInput").addEventListener("input", (e) => {
-    document.getElementById("legendTitleDisplay").textContent = e.target.value || "Legenda";
+/* =========================================================
+   ESPORTAZIONE LEGENDA CON FILTRO
+========================================================= */
+function updateExportFilterOptions() {
+    const select = document.getElementById("exportCityFilterSelect");
+    select.innerHTML = '<option value="ALL">Tutti i Pin</option>';
+
+    const allCities = [...(userProfile.mainCities || []), ...(userProfile.visitedCities || [])];
+    allCities.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.name;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+    });
+}
+
+document.getElementById("exportCityFilterSelect").addEventListener("change", () => {
+    renderExportLegendAndMarkers();
 });
+
+function renderExportLegendAndMarkers() {
+    if (!exportMap) return;
+
+    const filterVal = document.getElementById("exportCityFilterSelect").value;
+    const allCities = [...(userProfile.mainCities || []), ...(userProfile.visitedCities || [])];
+    const targetCity = allCities.find(c => c.name === filterVal);
+
+    const legendList = document.getElementById("exportLegendList");
+    legendList.innerHTML = "";
+
+    Object.keys(places).forEach(id => {
+        const p = places[id];
+        
+        let includePin = true;
+        if (filterVal !== "ALL" && targetCity && targetCity.boundingbox) {
+            const bbox = targetCity.boundingbox.map(Number);
+            if (p.lat < bbox[0] || p.lat > bbox[1] || p.lng < bbox[2] || p.lng > bbox[3]) {
+                includePin = false;
+            }
+        }
+
+        if (includePin) {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${p.icon}</span> <input type="text" value="${p.name}">`;
+            legendList.appendChild(li);
+
+            const el = createMarkerElement(p);
+            new maplibregl.Marker({ element: el })
+                .setLngLat([p.lng, p.lat])
+                .addTo(exportMap);
+        }
+    });
+
+    if (filterVal !== "ALL" && targetCity) {
+        exportMap.flyTo({ center: [targetCity.lng, targetCity.lat], zoom: 12 });
+    }
+}
 
 document.getElementById("openExportImgModal").addEventListener("click", () => {
     document.getElementById("profileModal").classList.remove("open");
     document.getElementById("exportImgModal").classList.add("open");
+
+    updateExportFilterOptions();
 
     const currentCenter = map.getCenter();
     const currentZoom = map.getZoom();
@@ -564,7 +962,7 @@ document.getElementById("openExportImgModal").addEventListener("click", () => {
 
         exportMap.on('load', () => {
             applyExportMapColors();
-            renderExportMarkers();
+            renderExportLegendAndMarkers();
             updateMapScaleText();
         });
 
@@ -577,19 +975,10 @@ document.getElementById("openExportImgModal").addEventListener("click", () => {
         setTimeout(() => {
             exportMap.resize();
             applyExportMapColors();
-            renderExportMarkers();
+            renderExportLegendAndMarkers();
             updateMapScaleText();
         }, 200);
     }
-
-    const legendList = document.getElementById("exportLegendList");
-    legendList.innerHTML = "";
-    Object.keys(places).forEach(id => {
-        const p = places[id];
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${p.icon}</span> <input type="text" value="${p.name}">`;
-        legendList.appendChild(li);
-    });
 
     initDraggableElements();
 
@@ -624,24 +1013,7 @@ function applyExportMapColors() {
     } catch (e) {}
 }
 
-function renderExportMarkers() {
-    if (!exportMap) return;
-    Object.keys(places).forEach(id => {
-        const item = places[id];
-        const el = document.createElement('div');
-        el.className = 'custom-pin-wrapper';
-        
-        if (userMapStyle.iconStyle === 'neon') el.innerHTML = `<div class="pin-neon">${item.icon}</div>`;
-        else if (userMapStyle.iconStyle === 'minimal') el.innerHTML = `<div class="pin-minimal"><span>${item.icon}</span></div>`;
-        else el.innerHTML = `<div class="pin-classico">${item.icon}</div>`;
-
-        new maplibregl.Marker({ element: el })
-            .setLngLat([item.lng, item.lat])
-            .addTo(exportMap);
-    });
-}
-
-// Drag & Drop Elementi Sovrapposti
+// Drag & Drop Elementi
 let activeDraggableEl = null;
 let dragStartX = 0, dragStartY = 0, initialElLeft = 0, initialElTop = 0;
 
@@ -700,7 +1072,7 @@ window.addEventListener('touchmove', handleMove, { passive: false });
 window.addEventListener('mouseup', handleEnd);
 window.addEventListener('touchend', handleEnd);
 
-// ESPORTAZIONE ULTRA-HD VETTORIALE (Senza sfocature o sgranature)
+// DOWNLOAD IMMAGINE HD
 document.getElementById("downloadImgBtn").addEventListener("click", () => {
     const downloadBtn = document.getElementById("downloadImgBtn");
     downloadBtn.textContent = "⌛ Generazione HD...";
@@ -718,10 +1090,8 @@ document.getElementById("downloadImgBtn").addEventListener("click", () => {
         const ctx = renderCanvas.getContext("2d");
         ctx.scale(scaleFactor, scaleFactor);
 
-        // 1. Disegna il Canvas della Mappa
         ctx.drawImage(mapCanvas, 0, 0, previewWrapper.clientWidth, previewWrapper.clientHeight);
 
-        // 2. Disegna gli elementi sovrapposti
         const elements = document.querySelectorAll(".export-element");
         const wrapperRect = previewWrapper.getBoundingClientRect();
 
@@ -734,7 +1104,6 @@ document.getElementById("downloadImgBtn").addEventListener("click", () => {
             const w = rect.width;
             const h = rect.height;
 
-            // Sfondo box
             ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, 8);
@@ -743,7 +1112,6 @@ document.getElementById("downloadImgBtn").addEventListener("click", () => {
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Disegna Freccia Nord
             if (el.id === "geoNorthArrow") {
                 const svgText = new XMLSerializer().serializeToString(el);
                 const img = new Image();
@@ -751,7 +1119,6 @@ document.getElementById("downloadImgBtn").addEventListener("click", () => {
                 ctx.drawImage(img, x, y, w, h);
             }
 
-            // Disegna Scala
             if (el.id === "geoScaleBar") {
                 const labelText = document.getElementById("scaleLabelText").textContent;
                 ctx.fillStyle = "#ffffff";
@@ -769,7 +1136,6 @@ document.getElementById("downloadImgBtn").addEventListener("click", () => {
                 ctx.stroke();
             }
 
-            // Disegna Legenda
             if (el.id === "exportLegend") {
                 const title = document.getElementById("legendTitleDisplay").textContent;
                 ctx.fillStyle = "#38bdf8";
@@ -792,7 +1158,6 @@ document.getElementById("downloadImgBtn").addEventListener("click", () => {
             }
         });
 
-        // Scarica JPEG HD
         const link = document.createElement('a');
         link.download = `my-world-map-hd.jpg`;
         link.href = renderCanvas.toDataURL('image/jpeg', 0.95);
@@ -819,7 +1184,10 @@ document.getElementById("styleButton").addEventListener("click", () => {
     document.getElementById("styleModal").classList.add("open");
 });
 document.getElementById("closeStyle").addEventListener("click", () => document.getElementById("styleModal").classList.remove("open"));
-document.getElementById("profileNavBtn").addEventListener("click", () => { 
+
+// EVENT LISTENERS PROFILO
+document.getElementById("profileNavBtn").addEventListener("click", (e) => { 
+    e.stopPropagation();
     loadProfileUI(); 
     document.getElementById("profileModal").classList.add("open"); 
 });
