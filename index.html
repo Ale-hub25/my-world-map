@@ -25,6 +25,7 @@
         <button id="gpsButton" title="La mia Posizione">🎯</button>
         <button id="styleButton" title="Stile Mappa">🎨</button>
         <button id="addOptionButton" title="Aggiungi Pin">📍</button>
+        <button id="helpButton" title="Istruzioni d'Uso">❓</button>
         <button id="profileNavBtn" title="Profilo Utente">👤</button>
     </div>
 
@@ -106,7 +107,6 @@
             <button id="closeSheet" class="btn-close">✕</button>
         </div>
         
-        <!-- Sezione Voli Collegati per Aeroporti -->
         <div id="airportFlyContainer" class="airport-fly-box hidden">
             <label>✈️ Vola verso un altro Aeroporto conosciuto:</label>
             <div class="airport-fly-controls">
@@ -130,6 +130,34 @@
         </div>
     </div>
 
+    <!-- Modal Guida / Istruzioni d'Uso -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content help-modal-content">
+            <h2>📖 Guida all'Uso</h2>
+            <div class="help-body">
+                <div class="help-section">
+                    <h3>🔍 Ricerca e Posizione</h3>
+                    <p>Usa la barra di ricerca in alto a sinistra per trovare qualsiasi città o indirizzo. Clicca sul mirino 🎯 per geolocalizzarti in tempo reale sulla mappa.</p>
+                </div>
+                <div class="help-section">
+                    <h3>📍 Aggiungere e Gestire i Pin</h3>
+                    <p>Premi il tasto 📍 per aprire il selettore di posizione. Sposta la mappa, conferma, compila i dati (nome, emoji, foto, note) e salva il tuo ricordo.</p>
+                </div>
+                <div class="help-section">
+                    <h3>✈️ Funzione Aeroporti e Voli</h3>
+                    <p>Se crei un pin contrassegnato come aeroporto, si attiverà un riquadro speciale nella scheda del luogo per "volare" rapidamente verso un altro aeroporto salvato.</p>
+                </div>
+                <div class="help-section">
+                    <h3>🎨 Personalizzazione e Profilo</h3>
+                    <p>Dal tasto 🎨 puoi cambiare i colori della mappa e scegliere tra tre stili di icone (**Classico**, **Neon**, **Minimal**). Nel profilo 👤 puoi impostare le tue città principali e città visitate (che delimitano i confini esplorati) ed eseguire il backup dei dati in formato JSON.</p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="closeHelp" class="btn-primary">Ho capito</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Personalizzazione Stile Mappa -->
     <div id="styleModal" class="modal">
         <div class="modal-content">
@@ -137,33 +165,18 @@
             
             <label>Stile Icona Marker</label>
             <select id="iconStyleSelect">
-                <option value="classico">Classico (Bolla)</option>
-                <option value="neon">Neon Glow</option>
-                <option value="minimal">Minimal Circle</option>
+                <option value="classico">Classico (Modern Pin 3D)</option>
+                <option value="neon">Neon (Glow & Glass)</option>
+                <option value="minimal">Minimal (Floating Badge)</option>
             </select>
 
             <h3>Colori Mappa</h3>
             <div class="color-picker-grid">
-                <div>
-                    <label>Natura / Sfondo</label>
-                    <input type="color" id="colorNature" value="#14532d">
-                </div>
-                <div>
-                    <label>Acqua</label>
-                    <input type="color" id="colorWater" value="#1e3a8a">
-                </div>
-                <div>
-                    <label>Edifici</label>
-                    <input type="color" id="colorBuilding" value="#1e293b">
-                </div>
-                <div>
-                    <label>Strade</label>
-                    <input type="color" id="colorRoad" value="#334155">
-                </div>
-                <div>
-                    <label>Ferrovie</label>
-                    <input type="color" id="colorRailway" value="#64748b">
-                </div>
+                <div><label>Natura</label><input type="color" id="colorNature" value="#14532d"></div>
+                <div><label>Acqua</label><input type="color" id="colorWater" value="#1e3a8a"></div>
+                <div><label>Edifici</label><input type="color" id="colorBuilding" value="#1e293b"></div>
+                <div><label>Strade</label><input type="color" id="colorRoad" value="#334155"></div>
+                <div><label>Ferrovie</label><input type="color" id="colorRailway" value="#64748b"></div>
             </div>
 
             <div class="modal-actions">
@@ -188,10 +201,12 @@
                 </div>
             </div>
 
-            <label>URL Foto Profilo</label>
-            <input type="text" id="profileAvatarInput" placeholder="https://link-immagine.com/avatar.jpg">
+            <label>Carica Foto Profilo</label>
+            <div id="profileAvatarDropZone" class="drop-zone" style="margin-top: 5px; padding: 10px;">
+                <p style="font-size: 0.8rem; margin: 0; pointer-events: none;">Clicca qui per caricare l'immagine</p>
+                <input type="file" id="profileAvatarFileInput" accept="image/*" class="file-input-hidden">
+            </div>
 
-            <!-- Gestione Città Principali e Visitate -->
             <hr class="modal-divider">
             <h3>Luoghi Conosciuti</h3>
             
@@ -216,109 +231,13 @@
                 </div>
             </div>
 
-            <div class="profile-actions">
-                <button id="openExportImgModal" class="btn-export">🖼️ Esporta Mappa come Immagine HD</button>
-                <button id="exportJsonBtn" class="btn-secondary" style="margin-top: 8px; width: 100%;">📥 Backup Dati (JSON)</button>
+            <div class="profile-actions" style="margin-top: 15px;">
+                <button id="exportJsonBtn" class="btn-export" style="background: linear-gradient(135deg, #38bdf8, #2563eb);">📥 Backup Dati (JSON)</button>
             </div>
 
             <div class="modal-actions">
                 <button id="saveProfileAvatar" class="btn-primary">Salva Profilo</button>
                 <button id="closeProfile" class="btn-secondary">Chiudi</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Esportazione Immagine Vettoriale HD -->
-    <div id="exportImgModal" class="modal modal-large">
-        <div class="modal-content export-modal-content">
-            <h2>Esporta Immagine HD</h2>
-
-            <!-- Filtro Città per Esportazione -->
-            <div class="export-filter-container">
-                <label>Filtra Pin nella Legenda:</label>
-                <select id="exportCityFilterSelect">
-                    <option value="ALL">Tutti i Pin</option>
-                </select>
-            </div>
-
-            <div class="export-layout">
-                <!-- Sidebar Controlli -->
-                <div class="export-sidebar">
-                    <label>Formato Immagine</label>
-                    <select id="exportFormatSelect">
-                        <option value="16/9">16:9 Orizzontale</option>
-                        <option value="1/1">1:1 Quadrato</option>
-                        <option value="4/3">4:3 Classico</option>
-                        <option value="3/4">3:4 Verticale</option>
-                    </select>
-
-                    <label>Titolo Legenda</label>
-                    <input type="text" id="legendTitleInput" value="Legenda">
-
-                    <h3>Elementi Sovrapposti</h3>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="toggleNorth" checked> Freccia Nord
-                    </label>
-                    <div class="slider-group">
-                        <small>Dimensione Freccia</small>
-                        <input type="range" id="sizeNorthArrow" min="0.5" max="2" step="0.1" value="1">
-                    </div>
-
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="toggleScale" checked> Barra di Scala
-                    </label>
-                    <div class="slider-group">
-                        <small>Dimensione Scala</small>
-                        <input type="range" id="sizeScaleBar" min="0.5" max="2" step="0.1" value="1">
-                    </div>
-
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="toggleLegend" checked> Legenda
-                    </label>
-                    <div class="slider-group">
-                        <small>Dimensione Legenda</small>
-                        <input type="range" id="sizeLegend" min="0.5" max="2" step="0.1" value="1">
-                    </div>
-
-                    <button id="downloadImgBtn" class="btn-primary btn-full">📥 Scarica JPEG HD</button>
-                </div>
-
-                <!-- Anteprima Interactive -->
-                <div class="export-preview-container">
-                    <div id="exportPreviewContainer" class="export-preview-wrapper ratio-16-9">
-                        <div id="exportMapContainer"></div>
-
-                        <!-- Freccia Nord Vettoriale Drag -->
-                        <div id="geoNorthArrow" class="export-element draggable-element" style="top: 20px; left: 20px;">
-                            <svg width="40" height="40" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="45" fill="rgba(15,23,42,0.8)" stroke="#ffffff" stroke-width="3"/>
-                                <polygon points="50,15 62,50 50,42" fill="#ef4444"/>
-                                <polygon points="50,15 38,50 50,42" fill="#ffffff"/>
-                                <polygon points="50,85 62,50 50,58" fill="#ffffff"/>
-                                <polygon points="50,85 38,50 50,58" fill="#64748b"/>
-                                <text x="50" y="32" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">N</text>
-                            </svg>
-                        </div>
-
-                        <!-- Barra di Scala Vettoriale Drag -->
-                        <div id="geoScaleBar" class="export-element draggable-element" style="bottom: 20px; left: 20px;">
-                            <div class="scale-inner">
-                                <span id="scaleLabelText">100 m</span>
-                                <div class="scale-graphic-bar"></div>
-                            </div>
-                        </div>
-
-                        <!-- Legenda Vettoriale Drag -->
-                        <div id="exportLegend" class="export-element draggable-element" style="top: 20px; right: 20px;">
-                            <h4 id="legendTitleDisplay">Legenda</h4>
-                            <ul id="exportLegendList"></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <button id="closeExportModal" class="btn-secondary">Chiudi</button>
             </div>
         </div>
     </div>
