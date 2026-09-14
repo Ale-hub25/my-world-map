@@ -244,7 +244,7 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// Profile Cities Search
+// Profile Cities Search (Corretto per funzionare senza blocchi)[cite: 5]
 function setupCityAutocomplete(inputId, suggestionsId, isMain) {
     const inp = document.getElementById(inputId), sug = document.getElementById(suggestionsId);
     let timeout = null;
@@ -255,7 +255,7 @@ function setupCityAutocomplete(inputId, suggestionsId, isMain) {
         if (query.length < 2) return sug.classList.add("hidden");
 
         timeout = setTimeout(() => {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(query)}&limit=5`)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
                 .then(res => res.json())
                 .then(data => {
                     sug.innerHTML = "";
