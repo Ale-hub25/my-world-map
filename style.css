@@ -1,16 +1,13 @@
-* {
-    box-sizing: border-box;
+/* Stili Generali e Reset */
+body, html {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-body, html {
     width: 100%;
     height: 100%;
-    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #0f172a;
     color: #f8fafc;
+    overflow: hidden;
 }
 
 #map {
@@ -21,687 +18,297 @@ body, html {
     left: 0;
 }
 
-/* Search Bar */
+/* Barra di Ricerca Live */
 .search-container {
     position: absolute;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 30;
-    width: 90%;
-    max-width: 420px;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    width: 320px;
 }
 
-.search-container input {
+.search-container input, .city-search-box input {
     width: 100%;
-    padding: 12px 18px;
-    border-radius: 24px;
+    padding: 12px 16px;
+    background: rgba(15, 23, 42, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(8px);
+    border-radius: 12px;
     color: #fff;
     font-size: 0.95rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     outline: none;
-    transition: all 0.2s ease;
-}
-
-.search-container input:focus {
-    border-color: #38bdf8;
-    background: rgba(15, 23, 42, 0.95);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    box-sizing: border-box;
 }
 
 .suggestions-box {
     position: absolute;
-    top: 50px;
+    top: 100%;
     left: 0;
     width: 100%;
     background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    z-index: 35;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 20;
 }
 
 .suggestion-item {
-    padding: 10px 16px;
+    padding: 10px 14px;
     font-size: 0.85rem;
     cursor: pointer;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 .suggestion-item:hover {
     background: rgba(56, 189, 248, 0.2);
 }
 
-/* Floating Navigation Controls */
+.hidden { display: none !important; }
+
+/* Pulsanti Fluttuanti */
 .floating-controls {
     position: absolute;
-    bottom: 24px;
+    top: 20px;
     right: 20px;
+    z-index: 10;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    z-index: 40;
-    pointer-events: auto;
+    gap: 10px;
 }
 
 .floating-controls button {
     width: 48px;
     height: 48px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
     background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(8px);
-    font-size: 1.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 1.2rem;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    outline: none;
+    transition: transform 0.2s, background 0.2s;
 }
 
 .floating-controls button:hover {
-    transform: scale(1.1);
-    background: rgba(30, 41, 59, 1);
-    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.3);
+    transform: scale(1.05);
 }
 
-/* Map Picker Pointer Overlay */
-.map-picker-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 25;
+/* Stili Icone Marker */
+.custom-pin-wrapper {
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-pin-wrapper:hover {
+    transform: scale(1.2) translateY(-4px);
+    z-index: 100;
+}
+
+/* 1. Stile Classico: Modern Pin 3D a Goccia con ombra morbida */
+.pin-classico {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    box-shadow: -4px 6px 14px rgba(0, 0, 0, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
-.picker-pointer {
-    font-size: 2.5rem;
-    transform: translateY(-50%);
-    animation: bounce 1.5s infinite;
+.pin-classico span {
+    transform: rotate(45deg);
+    font-size: 1.2rem;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(-50%); }
-    50% { transform: translateY(-65%); }
+/* 2. Stile Neon: Glassmorphism circolare con bagliore luminoso intenso */
+.pin-neon {
+    width: 42px;
+    height: 42px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(6px);
+    border: 2px solid #38bdf8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.6), inset 0 0 8px rgba(56, 189, 248, 0.4);
 }
 
-.picker-bar {
+/* 3. Stile Minimal: Elegante pillola/badge fluttuante con freccina inferiore */
+.pin-minimal {
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    position: relative;
+    white-space: nowrap;
+}
+
+.pin-minimal span {
+    font-size: 1.1rem;
+}
+
+/* Pallino GPS */
+.gps-marker-dot {
+    width: 16px;
+    height: 16px;
+    background-color: #3b82f6;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+    animation: gps-pulse 1.5s infinite;
+}
+
+@keyframes gps-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+    70% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+/* Macro City Markers */
+.macro-city-marker {
+    background: rgba(15, 23, 42, 0.9);
+    border: 2px solid #38bdf8;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+.macro-city-marker.main { border-color: #f59e0b; }
+
+/* Scheda Luogo (PlaceSheet) */
+.place-sheet {
     position: absolute;
-    bottom: 40px;
-    pointer-events: auto;
+    bottom: -100%;
+    left: 20px;
+    width: 360px;
     background: rgba(15, 23, 42, 0.95);
-    padding: 12px 20px;
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    z-index: 30;
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    overflow: hidden;
+}
+
+.place-sheet.open { bottom: 20px; }
+
+.sheet-header {
+    padding: 16px;
     display: flex;
     align-items: center;
     gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Modals */
+.place-sheet-icon { font-size: 2rem; }
+.sheet-header h3 { margin: 0; font-size: 1.1rem; }
+.badge { font-size: 0.75rem; padding: 2px 8px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 10px; }
+.btn-close { margin-left: auto; background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+
+.sheet-body { padding: 16px; max-height: 250px; overflow-y: auto; }
+.place-image-container img { width: 100%; border-radius: 10px; max-height: 150px; object-fit: cover; margin-bottom: 10px; }
+.tags-list { margin-top: 10px; font-size: 0.8rem; color: #38bdf8; }
+
+.sheet-footer { padding: 12px 16px; background: rgba(0,0,0,0.2); display: flex; gap: 10px; }
+
+/* Modali Generali */
 .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.65);
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
-    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
 }
 
-.modal.open {
-    opacity: 1;
-    pointer-events: auto;
-}
+.modal.open { opacity: 1; pointer-events: auto; }
 
 .modal-content {
     background: #0f172a;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 16px;
+    border-radius: 20px;
+    width: 400px;
+    max-width: 90vw;
     padding: 24px;
-    width: 90%;
-    max-width: 440px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.modal-large .modal-content {
-    max-width: 900px;
+.modal-content h2 { margin-top: 0; font-size: 1.3rem; }
+.modal-content label { display: block; font-size: 0.85rem; margin-top: 12px; margin-bottom: 4px; color: #94a3b8; }
+.modal-content input[type="text"], .modal-content select, .modal-content textarea {
+    width: 100%; padding: 10px 12px; background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; color: #fff; font-size: 0.9rem; box-sizing: border-box;
 }
 
-.modal h2 {
-    font-size: 1.3rem;
-    margin-bottom: 16px;
-    color: #38bdf8;
-}
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 
-.modal h3 {
-    font-size: 1rem;
-    margin: 16px 0 8px;
-    color: #cbd5e1;
-}
+.btn-primary { background: #38bdf8; color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; }
+.btn-secondary { background: #334155; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; flex: 1; }
+.btn-danger { background: #ef4444; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
 
-.modal label {
-    display: block;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin-top: 10px;
-    margin-bottom: 4px;
-}
-
-.modal input[type="text"],
-.modal select,
-.modal textarea {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: #1e293b;
-    color: #fff;
-    font-size: 0.9rem;
-    outline: none;
-}
-
-.modal textarea {
-    resize: vertical;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.modal-divider {
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin: 16px 0;
-}
-
-/* Buttons */
-.btn-primary {
-    background: #38bdf8;
-    color: #0f172a;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    flex: 1;
-}
-
-.btn-secondary {
-    background: #334155;
-    color: #fff;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.btn-danger {
-    background: #ef4444;
-    color: #fff;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.btn-export {
-    background: #10b981;
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.btn-full {
-    width: 100%;
-}
+/* Stili specifici per Modal Guida */
+.help-modal-content { width: 460px; }
+.help-body { max-height: 60vh; overflow-y: auto; padding-right: 4px; }
+.help-section { margin-bottom: 16px; background: #1e293b; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+.help-section h3 { margin: 0 0 6px 0; font-size: 0.95rem; color: #38bdf8; }
+.help-section p { margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
 
 /* Dropzone Immagini */
 .drop-zone {
-    border: 2px dashed rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 16px;
-    text-align: center;
-    background: #1e293b;
-    cursor: pointer;
-    position: relative;
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; background: #1e293b; position: relative;
 }
+.drop-zone.dragover { border-color: #38bdf8; background: rgba(56,189,248,0.1); }
+.file-input-hidden { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0; cursor: pointer; }
+.highlight { color: #38bdf8; text-decoration: underline; }
+.image-preview-wrapper { position: relative; }
+.image-preview-wrapper img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px; }
+.btn-remove-photo { position: absolute; top: 5px; right: 5px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; }
 
-.drop-zone.dragover {
-    border-color: #38bdf8;
-    background: rgba(56, 189, 248, 0.1);
-}
+/* Color Grid */
+.color-picker-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+.color-picker-grid input[type="color"] { width: 100%; height: 35px; border: none; border-radius: 6px; cursor: pointer; background: none; }
 
-.file-input-hidden {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-}
+/* Profilo Chips */
+.profile-header-modal { display: flex; gap: 15px; align-items: center; }
+.profile-avatar-large { width: 64px; height: 64px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; overflow: hidden; border: 2px solid #38bdf8; }
+.profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
+.city-chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.city-chip { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+.city-chip.main-chip { border-color: #f59e0b; }
+.btn-remove-chip { cursor: pointer; color: #ef4444; font-weight: bold; }
+.stats-box { background: #1e293b; padding: 10px; border-radius: 8px; text-align: center; margin-top: 15px; }
+.stats-box span { font-size: 1.2rem; font-weight: bold; color: #38bdf8; display: block; }
+.btn-export { background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
 
-.image-preview-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
-.image-preview-wrapper img {
-    max-width: 100%;
-    max-height: 120px;
-    border-radius: 6px;
-}
-
-.btn-remove-photo {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #ef4444;
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-/* PlaceSheet Side Panel */
-.place-sheet {
-    position: fixed;
-    bottom: -100%;
-    left: 0;
-    width: 100%;
-    background: #0f172a;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px 20px 0 0;
-    padding: 20px;
-    z-index: 500;
-    transition: bottom 0.3s ease;
-    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.place-sheet.open {
-    bottom: 0;
-}
-
-.sheet-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: relative;
-}
-
-.place-sheet-icon {
-    font-size: 2rem;
-}
-
-.badge {
-    font-size: 0.75rem;
-    background: rgba(56, 189, 248, 0.2);
-    color: #38bdf8;
-    padding: 2px 8px;
-    border-radius: 12px;
-}
-
-.btn-close {
-    position: absolute;
-    right: 0;
-    top: 0;
-    background: none;
-    border: none;
-    color: #94a3b8;
-    font-size: 1.2rem;
-    cursor: pointer;
-}
-
-/* Box Volo Aeroporti */
-.airport-fly-box {
-    margin-top: 14px;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    padding: 12px;
-    border-radius: 10px;
-}
-
-.airport-fly-box label {
-    font-size: 0.8rem;
-    color: #38bdf8;
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-}
-
-.airport-fly-controls {
-    display: flex;
-    gap: 8px;
-}
-
-.airport-fly-controls select {
-    flex: 1;
-    background: #1e293b;
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #fff;
-    padding: 8px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-}
-
-.sheet-body {
-    margin: 16px 0;
-}
-
-.place-image-container img {
-    width: 100%;
-    max-height: 180px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 12px;
-}
-
-.tags-list {
-    margin-top: 8px;
-    color: #38bdf8;
-    font-size: 0.85rem;
-}
-
-.sheet-footer {
-    display: flex;
-    gap: 10px;
-}
-
-/* Profilo */
-.profile-header-modal {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.profile-avatar-large {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #1e293b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    border: 2px solid #38bdf8;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.profile-avatar-large img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.stats-box {
-    display: flex;
-    justify-content: space-around;
-    background: #1e293b;
-    padding: 12px;
-    border-radius: 10px;
-    margin: 16px 0;
-    text-align: center;
-}
-
-.stats-box span {
-    display: block;
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #38bdf8;
-}
-
-/* Città Principali & Visitate Chips */
-.city-search-box {
-    position: relative;
-}
-
-.city-chips-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-}
-
-.city-chip {
-    background: #1e293b;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 16px;
-    padding: 4px 10px;
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.city-chip.main-chip {
-    border-color: #38bdf8;
-    background: rgba(56, 189, 248, 0.15);
-}
-
-.city-chip .btn-remove-chip {
-    cursor: pointer;
-    color: #ef4444;
-    font-weight: bold;
-}
-
-/* Marker Stili Custom sulla Mappa */
-.custom-pin-wrapper {
-    cursor: pointer;
-}
-
-.pin-classico {
-    font-size: 1.8rem;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
-}
-
-.pin-neon {
-    font-size: 1.6rem;
-    text-shadow: 0 0 8px #38bdf8, 0 0 16px #38bdf8;
-}
-
-.pin-minimal {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #38bdf8;
-    border: 2px solid #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    box-shadow: 0 0 10px rgba(56,189,248,0.8);
-}
-
-/* Marker Lontani (Zoom Out) per Città Principali/Visitate */
-.macro-city-marker {
-    background: rgba(15, 23, 42, 0.9);
-    border: 2px solid #38bdf8;
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: #fff;
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.macro-city-marker.visited {
-    border-color: #f59e0b;
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
-}
-
-/* Esportazione Modal Layout */
-.export-filter-container {
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.export-filter-container select {
-    padding: 6px 12px;
-    border-radius: 6px;
-    background: #1e293b;
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.export-layout {
-    display: flex;
-    gap: 20px;
-}
-
-.export-sidebar {
-    width: 260px;
-    flex-shrink: 0;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.slider-group {
-    margin-left: 24px;
-    margin-bottom: 10px;
-}
-
-.export-preview-container {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #020617;
-    border-radius: 12px;
-    padding: 20px;
-    overflow: hidden;
-}
-
-.export-preview-wrapper {
-    position: relative;
-    width: 100%;
-    max-height: 500px;
-    background: #000;
-    box-shadow: 0 0 20px rgba(0,0,0,0.8);
-    overflow: hidden;
-}
-
-.export-preview-wrapper.ratio-16-9 { aspect-ratio: 16/9; }
-.export-preview-wrapper.ratio-1-1 { aspect-ratio: 1/1; }
-.export-preview-wrapper.ratio-4-3 { aspect-ratio: 4/3; }
-.export-preview-wrapper.ratio-3-4 { aspect-ratio: 3/4; }
-
-#exportMapContainer {
-    width: 100%;
-    height: 100%;
-}
-
-.draggable-element {
-    position: absolute;
-    cursor: move;
-    user-select: none;
-    z-index: 20;
-}
-
-#geoScaleBar {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    padding: 6px 10px;
-}
-
-.scale-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.scale-inner span {
-    font-size: 10px;
-    font-weight: bold;
-}
-
-.scale-graphic-bar {
-    width: 60px;
-    height: 4px;
-    border-left: 2px solid #fff;
-    border-right: 2px solid #fff;
-    border-bottom: 2px solid #fff;
-    margin-top: 2px;
-}
-
-#exportLegend {
-    background: rgba(15, 23, 42, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 10px 14px;
-    min-width: 140px;
-}
-
-#exportLegend h4 {
-    color: #38bdf8;
-    font-size: 0.85rem;
-    margin-bottom: 6px;
-}
-
-#exportLegend ul {
-    list-style: none;
-}
-
-#exportLegend li {
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
-}
-
-#exportLegend li input {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 0.8rem;
-    width: 90px;
-}
-
-.hidden {
-    display: none !important;
-}
+/* Map Picker Overlay */
+.map-picker-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+.picker-pointer { font-size: 3rem; margin-bottom: 40px; animation: bounce 1s infinite alternate; }
+@keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+.picker-bar { background: rgba(15,23,42,0.95); padding: 15px 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); display: flex; gap: 15px; align-items: center; pointer-events: auto; }
