@@ -5,22 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My World Map - Personal Map Studio</title>
     
-    <!-- MapLibre GL CSS -->
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Mappa Principale -->
     <div id="map"></div>
 
-    <!-- Barra di Ricerca Live -->
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="🔍 Cerca una città o luogo..." autocomplete="off">
         <div id="searchSuggestions" class="suggestions-box hidden"></div>
     </div>
 
-    <!-- Pulsanti di Navigazione Fluttuanti -->
     <div class="floating-controls">
         <button id="gpsButton" title="La mia Posizione">🎯</button>
         <button id="styleButton" title="Stile Mappa">🎨</button>
@@ -29,7 +25,6 @@
         <button id="profileNavBtn" title="Profilo Utente">👤</button>
     </div>
 
-    <!-- Selettore Posizione Pin (Puntatore Mappa) -->
     <div id="mapPicker" class="map-picker-overlay hidden">
         <div class="picker-pointer">📍</div>
         <div class="picker-bar">
@@ -39,7 +34,6 @@
         </div>
     </div>
 
-    <!-- Modal Aggiunta/Modifica Pin -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle">Nuovo Pin</h2>
@@ -96,7 +90,6 @@
         </div>
     </div>
 
-    <!-- Scheda Informativa Pin (PlaceSheet) -->
     <div id="placeSheet" class="place-sheet">
         <div class="sheet-header">
             <span id="placeIcon" class="place-sheet-icon">📍</span>
@@ -130,7 +123,6 @@
         </div>
     </div>
 
-    <!-- Modal Guida / Istruzioni d'Uso -->
     <div id="helpModal" class="modal">
         <div class="modal-content help-modal-content">
             <h2>📖 Guida all'Uso</h2>
@@ -149,7 +141,7 @@
                 </div>
                 <div class="help-section">
                     <h3>🎨 Personalizzazione e Profilo</h3>
-                    <p>Dal tasto 🎨 puoi cambiare i colori della mappa e scegliere tra tre stili di icone (**Classico**, **Neon**, **Minimal**). Nel profilo 👤 puoi impostare le tue città principali e città visitate (che delimitano i confini esplorati) ed eseguire il backup dei dati in formato JSON.</p>
+                    <p>Dal tasto 🎨 puoi cambiare i colori della mappa e scegliere tra i nuovi stili di icone fissi. Nel profilo 👤 puoi impostare le tue città principali e città visitate ed eseguire il backup dei dati in JSON.</p>
                 </div>
             </div>
             <div class="modal-actions">
@@ -158,16 +150,16 @@
         </div>
     </div>
 
-    <!-- Modal Personalizzazione Stile Mappa -->
     <div id="styleModal" class="modal">
         <div class="modal-content">
             <h2>Personalizza Mappa</h2>
             
-            <label>Stile Icona Marker</label>
+            <label>Stile Icona Marker (Fisso)</label>
             <select id="iconStyleSelect">
                 <option value="classico">Classico (Modern Pin 3D)</option>
                 <option value="neon">Neon (Glow & Glass)</option>
-                <option value="minimal">Minimal (Floating Badge)</option>
+                <option value="vintage">Vintage (Retrò / Pergamena)</option>
+                <option value="cyberpunk">Cyberpunk (Futuristico / Tech)</option>
             </select>
 
             <h3>Colori Mappa</h3>
@@ -186,7 +178,6 @@
         </div>
     </div>
 
-    <!-- Modal Profilo Utente -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <h2>Profilo Utente</h2>
@@ -224,12 +215,7 @@
             </div>
             <div id="visitedCitiesList" class="city-chips-container"></div>
 
-            <div class="stats-box">
-                <div>
-                    <span id="totalPinsCount">0</span>
-                    <small>Pin Salvati</small>
-                </div>
-            </div>
+            <div id="advancedStatsContainer"></div>
 
             <div class="profile-actions" style="margin-top: 15px;">
                 <button id="exportJsonBtn" class="btn-export" style="background: linear-gradient(135deg, #38bdf8, #2563eb);">📥 Backup Dati (JSON)</button>
@@ -242,7 +228,6 @@
         </div>
     </div>
 
-    <!-- MapLibre GL JS -->
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <script src="script.js"></script>
 </body>
