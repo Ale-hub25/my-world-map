@@ -99,70 +99,81 @@ body, html {
     transform: scale(1.05);
 }
 
-/* Stili Icone Marker */
+/* ==========================================
+   STILI MARKER FISSI (Puliti, Moderni, Senza Floating)
+   ================================---------- */
+
 .custom-pin-wrapper {
     cursor: pointer;
-    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: translate(-50%, -100%); /* Ancoraggio perfetto della punta alla coordinata */
 }
 
-.custom-pin-wrapper:hover {
-    transform: scale(1.2) translateY(-4px);
-    z-index: 100;
-}
-
-/* 1. Stile Classico: Modern Pin 3D a Goccia con ombra morbida */
+/* 1. Stile Classico Moderno (Goccia Minimal con bordo pulito) */
 .pin-classico {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border: 2px solid #ffffff;
     width: 38px;
     height: 38px;
-    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
     border-radius: 50% 50% 50% 0;
     transform: rotate(-45deg);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: -4px 6px 14px rgba(0, 0, 0, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.8);
-    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
-
 .pin-classico span {
     transform: rotate(45deg);
-    font-size: 1.2rem;
+    font-size: 1.15rem;
 }
 
-/* 2. Stile Neon: Glassmorphism circolare con bagliore luminoso intenso */
+/* 2. Stile Neon / Glassmorphism (Trasparenza ed effetto luminoso elegante) */
 .pin-neon {
-    width: 42px;
-    height: 42px;
     background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
     border: 2px solid #38bdf8;
-    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem;
-    box-shadow: 0 0 16px rgba(56, 189, 248, 0.6), inset 0 0 8px rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+}
+.pin-neon span {
+    font-size: 1.2rem;
 }
 
-/* 3. Stile Minimal: Elegante pillola/badge fluttuante con freccina inferiore */
-.pin-minimal {
-    background: rgba(15, 23, 42, 0.92);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    padding: 6px 12px;
-    border-radius: 20px;
+/* 3. Stile Vintage (Effetto Carta Pergamena / Caldo) */
+.pin-vintage {
+    background: linear-gradient(135deg, #b45309, #78350f);
+    border: 2px solid #fde68a;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-    position: relative;
-    white-space: nowrap;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+.pin-vintage span {
+    font-size: 1.15rem;
 }
 
-.pin-minimal span {
+/* 4. Stile Cyberpunk (Futuristico con taglio geometrico angolare) */
+.pin-cyberpunk {
+    background: linear-gradient(135deg, #831843, #500724);
+    border: 2px solid #fb7185;
+    width: 40px;
+    height: 40px;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px rgba(251, 113, 133, 0.6);
+}
+.pin-cyberpunk span {
     font-size: 1.1rem;
 }
-
 /* Pallino GPS */
 .gps-marker-dot {
     width: 16px;
