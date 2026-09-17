@@ -244,7 +244,7 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// Profile Cities Search (Corretto per funzionare senza blocchi)[cite: 5]
+// Profile Cities Search
 function setupCityAutocomplete(inputId, suggestionsId, isMain) {
     const inp = document.getElementById(inputId), sug = document.getElementById(suggestionsId);
     let timeout = null;
@@ -263,7 +263,7 @@ function setupCityAutocomplete(inputId, suggestionsId, isMain) {
                         data.forEach(item => {
                             const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
                             div.addEventListener("click", () => {
-                                addCityToProfile(item, isMain);
+                                addCityToProfileWithPolygon(item, isMain);
                                 inp.value = ""; sug.classList.add("hidden");
                             });
                             sug.appendChild(div);
@@ -275,17 +275,48 @@ function setupCityAutocomplete(inputId, suggestionsId, isMain) {
     });
 }
 
-function addCityToProfile(item, isMain) {
-    const cityObj = { name: item.display_name.split(",")[0], lat: parseFloat(item.lat), lng: parseFloat(item.lon), geojson: item.geojson, boundingbox: item.boundingbox };
-    if (isMain) {
-        if (!userProfile.mainCities) userProfile.mainCities = [];
-        if (userProfile.mainCities.length >= 2) return alert("Puoi impostare al massimo 2 città principali!");
-        userProfile.mainCities.push(cityObj);
-    } else {
-        if (!userProfile.visitedCities) userProfile.visitedCities = [];
-        userProfile.visitedCities.push(cityObj);
-    }
-    saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer();
+function addCityToProfileWithPolygon(item, isMain) {
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(item.display_name)}&limit=1`)
+        .then(res => res.json())
+        .then(data => {
+            let geojson = null;
+            let boundingbox = item.boundingbox;
+            if (data && data.length > 0 && data[0].geojson) {
+                geojson = data[0].geojson;
+                boundingbox = data[0].boundingbox;
+            }
+            const cityObj = { 
+                name: item.display_name.split(",")[0], 
+                fullName: item.display_name,
+                lat: parseFloat(item.lat), 
+                lng: parseFloat(item.lon), 
+                geojson: geojson, 
+                boundingbox: boundingbox 
+            };
+            if (isMain) {
+                if (!userProfile.mainCities) userProfile.mainCities = [];
+                if (userProfile.mainCities.length >= 2) return alert("Puoi impostare al massimo 2 città principali!");
+                userProfile.mainCities.push(cityObj);
+            } else {
+                if (!userProfile.visitedCities) userProfile.visitedCities = [];
+                userProfile.visitedCities.push(cityObj);
+            }
+            saveState(); 
+            renderProfileCityChips(); 
+            updateMacroCityMarkers(); 
+            updateBoundariesAndUnexploredLayer();
+        }).catch(() => {
+            const cityObj = { name: item.display_name.split(",")[0], fullName: item.display_name, lat: parseFloat(item.lat), lng: parseFloat(item.lon), geojson: null, boundingbox: item.boundingbox };
+            if (isMain) {
+                if (!userProfile.mainCities) userProfile.mainCities = [];
+                if (userProfile.mainCities.length >= 2) return alert("Puoi impostare al massimo 2 città principali!");
+                userProfile.mainCities.push(cityObj);
+            } else {
+                if (!userProfile.visitedCities) userProfile.visitedCities = [];
+                userProfile.visitedCities.push(cityObj);
+            }
+            saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer();
+        });
 }
 
 function renderProfileCityChips() {
@@ -339,10 +370,13 @@ function saveState() {
 function createMarkerElement(item) {
     const el = document.createElement('div');
     el.className = 'custom-pin-wrapper';
+    
     if (userMapStyle.iconStyle === 'neon') {
         el.innerHTML = `<div class="pin-neon"><span>${item.icon}</span></div>`;
-    } else if (userMapStyle.iconStyle === 'minimal') {
-        el.innerHTML = `<div class="pin-minimal"><span>${item.icon}</span></div>`;
+    } else if (userMapStyle.iconStyle === 'vintage') {
+        el.innerHTML = `<div class="pin-vintage"><span>${item.icon}</span></div>`;
+    } else if (userMapStyle.iconStyle === 'cyberpunk') {
+        el.innerHTML = `<div class="pin-cyberpunk"><span>${item.icon}</span></div>`;
     } else {
         el.innerHTML = `<div class="pin-classico"><span>${item.icon}</span></div>`;
     }
@@ -365,10 +399,52 @@ function loadProfileUI() {
     const placeholderEl = document.getElementById("avatarPlaceholder");
     if (userProfile.avatar) { imgEl.src = userProfile.avatar; imgEl.classList.remove("hidden"); placeholderEl.classList.add("hidden"); } 
     else { imgEl.classList.add("hidden"); placeholderEl.classList.remove("hidden"); }
-    renderProfileCityChips(); updateProfileStats();
+    renderProfileCityChips(); 
+    updateProfileStats();
 }
 
-function updateProfileStats() { document.getElementById("totalPinsCount").textContent = Object.keys(places).length; }
+function updateProfileStats() { 
+    const totalPins = Object.keys(places).length;
+    const countEl = document.getElementById("totalPinsCount");
+    if (countEl) countEl.textContent = totalPins;
+
+    const allCities = [...(userProfile.mainCities || []), ...(userProfile.visitedCities || [])];
+    const uniqueCitiesCount = allCities.length;
+
+    const countriesSet = new Set();
+    allCities.forEach(c => {
+        if (c.fullName) {
+            const parts = c.fullName.split(',');
+            countriesSet.add(parts[parts.length - 1].trim());
+        }
+    });
+    const uniqueCountriesCount = countriesSet.size;
+
+    let airportsCount = 0;
+    Object.values(places).forEach(p => {
+        if (p.icon === "✈️" || (p.category && p.category.toLowerCase().includes("aeroporto"))) {
+            airportsCount++;
+        }
+    });
+
+    const mainCitiesCount = (userProfile.mainCities || []).length;
+    let polygonCount = allCities.filter(c => c.geojson).length;
+    let explorationPercent = Math.min(100, (polygonCount * 2.5 + uniqueCitiesCount * 1.5)).toFixed(1);
+
+    const statsContainer = document.getElementById("advancedStatsContainer");
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                <div>🏙️ Città esplorate: <b>${uniqueCitiesCount}</b></div>
+                <div>🌍 Paesi esplorati: <b>${uniqueCountriesCount}</b></div>
+                <div>📍 Luoghi segnati: <b>${totalPins}</b></div>
+                <div>🏠 Città principali: <b>${mainCitiesCount}</b></div>
+                <div>✈️ Aeroporti usati: <b>${airportsCount}</b></div>
+                <div>🗺️ Territorio: <b>${explorationPercent}%</b></div>
+            </div>
+        `;
+    }
+}
 
 const profileAvatarFileInput = document.getElementById('profileAvatarFileInput');
 if (profileAvatarFileInput) {
@@ -527,5 +603,14 @@ document.getElementById("closeHelp").addEventListener("click", () => document.ge
 document.getElementById("closeSheet").addEventListener("click", () => placeSheet.classList.remove("open"));
 document.getElementById("styleButton").addEventListener("click", () => { loadStyleUI(); document.getElementById("styleModal").classList.add("open"); });
 document.getElementById("closeStyle").addEventListener("click", () => document.getElementById("styleModal").classList.remove("open"));
-document.getElementById("profileNavBtn").addEventListener("click", (e) => { e.stopPropagation(); loadProfileUI(); document.getElementById("profileModal").classList.add("open"); });
-document.getElementById("closeProfile").addEventListener("click", () => document.getElementById("profileModal").classList.remove("open"));
+
+// Gestione Profilo
+document.getElementById("profileNavBtn").addEventListener("click", (e) => { 
+    e.stopPropagation(); 
+    loadProfileUI(); 
+    document.getElementById("profileModal").classList.add("open"); 
+});
+
+document.getElementById("closeProfile").addEventListener("click", () => {
+    document.getElementById("profileModal").classList.remove("open");
+});
