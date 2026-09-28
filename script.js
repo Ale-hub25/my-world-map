@@ -1,5 +1,7 @@
 let userMapStyle = JSON.parse(localStorage.getItem('My World Map_mapStyle')) || { 
+    isDarkMode: true,
     iconStyle: 'classico', 
+    markerColor: '#3b82f6',
     colors: {
         nature: '#14532d',
         water: '#1e3a8a',
@@ -16,9 +18,11 @@ let userProfile = JSON.parse(localStorage.getItem('My World Map_user')) || {
     visitedCities: []   
 };
 
+const mapStyleUrl = userMapStyle.isDarkMode ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/liberty';
+
 const map = new maplibregl.Map({
     container: 'map',
-    style: 'https://tiles.openfreemap.org/styles/dark',
+    style: mapStyleUrl,
     center: [12.4964, 41.9028],
     zoom: 14,
     pitch: 0,
@@ -31,8 +35,127 @@ let gpsMarker = null;
 let tempSearchMarker = null;
 let searchDebounceTimeout = null;
 let macroCityMarkers = [];
+let activeFilterCategory = "ALL";
+
+// ==========================================
+// 🎵 SOUNDSCAPE & AUDIO (Web Audio API)
+// ==========================================
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let windNode = null;
+let windGain = null;
+let waveGain = null;
+
+function initSoundscapes() {
+    try {
+        // Generatore di Vento (Rumore bianco filtrato passa-banda)
+        const bufferSize = audioCtx.sampleRate * 2;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+
+        const whiteNoise = audioCtx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 300;
+        filter.Q.value = 3.0;
+
+        windGain = audioCtx.createGain();
+        windGain.gain.value = 0.0; // Inizia muto
+
+        whiteNoise.connect(filter);
+        filter.connect(windGain);
+        windGain.connect(audioCtx.destination);
+        whiteNoise.start();
+
+        // Generatore di Onde (Rumore filtrato a bassa frequenza)
+        const waveSource = audioCtx.createBufferSource();
+        waveSource.buffer = noiseBuffer;
+        waveSource.loop = true;
+
+        const waveFilter = audioCtx.createBiquadFilter();
+        waveFilter.type = 'lowpass';
+        waveFilter.frequency.value = 180;
+
+        waveGain = audioCtx.createGain();
+        waveGain.gain.value = 0.0;
+
+        waveSource.connect(waveFilter);
+        waveFilter.connect(waveGain);
+        waveGain.connect(audioCtx.destination);
+        waveSource.start();
+    } catch(e) { console.log("Audio non avviato automaticamente", e); }
+}
+
+function updateSoundscapes() {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const zoom = map.getZoom();
+    
+    // 1. Vento leggero quando si è a zoom basso (mappa lontana)
+    if (windGain) {
+        if (zoom < 8) {
+            let intensity = (8 - zoom) * 0.008;
+            windGain.gain.setTargetAtTime(Math.min(intensity, 0.06), audioCtx.currentTime, 1);
+        } else {
+            windGain.gain.setTargetAtTime(0.0, audioCtx.currentTime, 1);
+        }
+    }
+}
+
+function checkWaterSound(lngLat) {
+    if (!waveGain) return;
+    try {
+        const features = map.queryRenderedFeatures(map.project(lngLat));
+        let isNearWater = features.some(f => f.layer && f.layer.id && f.layer.id.includes('water'));
+        if (isNearWater) {
+            waveGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.5);
+            setTimeout(() => { if(waveGain) waveGain.gain.setTargetAtTime(0.0, audioCtx.currentTime, 1.5); }, 3000);
+        }
+    } catch(e) {}
+}
+
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const now = audioCtx.currentTime;
+
+    if (type === 'pop') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    } 
+    else if (type === 'flight') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.8);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 1.5);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0.15, now + 0.7);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 1.5);
+    }
+}
 
 map.on('load', () => {
+    initSoundscapes();
     applyMapColors();
     enable3DBuildings();
     setupUnexploredAndBoundariesLayer();
@@ -41,7 +164,14 @@ map.on('load', () => {
     updateBoundariesAndUnexploredLayer();
 });
 
-map.on('zoom', updateMacroCityMarkers);
+map.on('zoom', () => {
+    updateMacroCityMarkers();
+    updateSoundscapes();
+});
+
+map.on('click', (e) => {
+    checkWaterSound(e.lngLat);
+});
 
 function enable3DBuildings() {
     try {
@@ -119,7 +249,7 @@ function setupUnexploredAndBoundariesLayer() {
     map.addLayer({ 'id': 'known-boundaries-layer', 'type': 'line', 'source': 'known-boundaries-src', 'paint': { 'line-color': '#00f0ff', 'line-width': 3, 'line-dasharray': [2, 2] } });
 
     map.addSource('unexplored-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-    map.addLayer({ 'id': 'unexplored-layer', 'type': 'fill', 'source': 'unexplored-src', 'paint': { 'fill-color': '#020617', 'fill-opacity': 0.65 } });
+    map.addLayer({ 'id': 'unexplored-layer', 'type': 'fill', 'source': 'unexplored-src', 'paint': { 'fill-color': userMapStyle.isDarkMode ? '#020617' : '#94a3b8', 'fill-opacity': 0.55 } });
 }
 
 function updateBoundariesAndUnexploredLayer() {
@@ -163,6 +293,34 @@ function updateMacroCityMarkers() {
         });
     }
 }
+
+// Filtri Categorie Pin
+document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        e.target.classList.add('active');
+        activeFilterCategory = e.target.getAttribute('data-category');
+        renderMarkers();
+    });
+});
+
+// Toggle Giorno / Notte
+document.getElementById('dayNightButton').addEventListener('click', () => {
+    userMapStyle.isDarkMode = !userMapStyle.isDarkMode;
+    if (userMapStyle.isDarkMode) {
+        userMapStyle.colors = { nature: '#14532d', water: '#1e3a8a', building: '#1e293b', road: '#334155', railway: '#64748b' };
+        map.setStyle('https://tiles.openfreemap.org/styles/dark');
+    } else {
+        userMapStyle.colors = { nature: '#86efac', water: '#93c5fd', building: '#e2e8f0', road: '#cbd5e1', railway: '#94a3b8' };
+        map.setStyle('https://tiles.openfreemap.org/styles/liberty');
+    }
+    localStorage.setItem('My World Map_mapStyle', JSON.stringify(userMapStyle));
+    setTimeout(() => {
+        applyMapColors();
+        setupUnexploredAndBoundariesLayer();
+        updateBoundariesAndUnexploredLayer();
+    }, 500);
+});
 
 // Immagini
 const photoFileInput = document.getElementById('photoFileInput');
@@ -345,6 +503,7 @@ function loadStyleUI() {
     document.getElementById('colorRoad').value = userMapStyle.colors.road;
     document.getElementById('colorRailway').value = userMapStyle.colors.railway || '#64748b';
     document.getElementById('iconStyleSelect').value = userMapStyle.iconStyle;
+    document.getElementById('markerCustomColor').value = userMapStyle.markerColor || '#3b82f6';
 }
 
 document.getElementById('applyStyle').addEventListener('click', () => {
@@ -354,6 +513,7 @@ document.getElementById('applyStyle').addEventListener('click', () => {
     userMapStyle.colors.road = document.getElementById('colorRoad').value;
     userMapStyle.colors.railway = document.getElementById('colorRailway').value;
     userMapStyle.iconStyle = document.getElementById('iconStyleSelect').value;
+    userMapStyle.markerColor = document.getElementById('markerCustomColor').value;
     localStorage.setItem('My World Map_mapStyle', JSON.stringify(userMapStyle));
     applyMapColors(); renderMarkers(); document.getElementById('styleModal').classList.remove('open');
 });
@@ -370,6 +530,7 @@ function saveState() {
 function createMarkerElement(item) {
     const el = document.createElement('div');
     el.className = 'custom-pin-wrapper';
+    el.style.setProperty('--marker-color', userMapStyle.markerColor || '#3b82f6');
     
     if (userMapStyle.iconStyle === 'neon') {
         el.innerHTML = `<div class="pin-neon"><span>${item.icon}</span></div>`;
@@ -387,6 +548,16 @@ function renderMarkers() {
     activeMarkers.forEach(m => m.remove()); activeMarkers = [];
     Object.keys(places).forEach(id => {
         const item = places[id];
+        
+        // Filtro Categoria
+        if (activeFilterCategory !== "ALL") {
+            if (activeFilterCategory === "✈️") {
+                if (item.icon !== "✈️" && !item.category.toLowerCase().includes("aeroporto") && !item.category.toLowerCase().includes("viaggio")) return;
+            } else if (!item.category.includes(activeFilterCategory) && item.icon !== activeFilterCategory) {
+                return;
+            }
+        }
+
         const el = createMarkerElement(item);
         el.addEventListener('click', (e) => { e.stopPropagation(); removeTempSearchMarker(); openPlace(id); });
         activeMarkers.push(new maplibregl.Marker({ element: el }).setLngLat([item.lng, item.lat]).addTo(map));
@@ -519,6 +690,7 @@ document.getElementById("flyToAirportBtn").addEventListener("click", () => {
     if (!destId) return alert("Seleziona un aeroporto di destinazione!");
     const destPlace = places[destId];
     if (destPlace) {
+        playSound('flight');
         placeSheet.classList.remove("open");
         map.flyTo({ center: [destPlace.lng, destPlace.lat], zoom: 15, pitch: 30, speed: 1.2, curve: 1.4 });
         setTimeout(() => openPlace(destId), 2000);
@@ -584,6 +756,7 @@ document.getElementById("savePlace").addEventListener("click", () => {
     } else {
         const id = `place-${Date.now()}`;
         places[id] = { name: name, icon: icon, category: catName, tags: document.getElementById("tagsInput").value.split(","), photo: currentBase64Photo, note: document.getElementById("noteInput").value || "Nessuna nota.", lat: pendingCoords.lat, lng: pendingCoords.lng };
+        playSound('pop');
         renderMarkers(); saveState(); document.getElementById("addModal").classList.remove("open"); openPlace(id);
     }
 });
