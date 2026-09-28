@@ -5,26 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My World Map - Personal Map Studio</title>
     
+    <!-- MapLibre GL CSS -->
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Mappa Principale -->
     <div id="map"></div>
 
+    <!-- Barra di Ricerca Live -->
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="🔍 Cerca una città o luogo..." autocomplete="off">
         <div id="searchSuggestions" class="suggestions-box hidden"></div>
     </div>
 
+    <!-- Barra Filtri Categorie Pin -->
+    <div class="filter-bar" id="filterBar">
+        <button class="filter-chip active" data-category="ALL">Tutti</button>
+        <button class="filter-chip" data-category="⭐">⭐ Preferiti</button>
+        <button class="filter-chip" data-category="🏠">🏠 Casa</button>
+        <button class="filter-chip" data-category="✈️">✈️ Viaggi/Aeroporti</button>
+        <button class="filter-chip" data-category="🍽️">🍽️ Cibo</button>
+        <button class="filter-chip" data-category="🌲">🌲 Natura</button>
+    </div>
+
+    <!-- Pulsanti di Navigazione Fluttuanti -->
     <div class="floating-controls">
         <button id="gpsButton" title="La mia Posizione">🎯</button>
+        <button id="dayNightButton" title="Cambia Modalità Giorno/Notte">🌓</button>
         <button id="styleButton" title="Stile Mappa">🎨</button>
         <button id="addOptionButton" title="Aggiungi Pin">📍</button>
         <button id="helpButton" title="Istruzioni d'Uso">❓</button>
         <button id="profileNavBtn" title="Profilo Utente">👤</button>
     </div>
 
+    <!-- Selettore Posizione Pin (Puntatore Mappa) -->
     <div id="mapPicker" class="map-picker-overlay hidden">
         <div class="picker-pointer">📍</div>
         <div class="picker-bar">
@@ -34,6 +50,7 @@
         </div>
     </div>
 
+    <!-- Modal Aggiunta/Modifica Pin -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle">Nuovo Pin</h2>
@@ -90,6 +107,7 @@
         </div>
     </div>
 
+    <!-- Scheda Informativa Pin (PlaceSheet) -->
     <div id="placeSheet" class="place-sheet">
         <div class="sheet-header">
             <span id="placeIcon" class="place-sheet-icon">📍</span>
@@ -123,25 +141,18 @@
         </div>
     </div>
 
+    <!-- Modal Guida / Istruzioni d'Uso -->
     <div id="helpModal" class="modal">
         <div class="modal-content help-modal-content">
             <h2>📖 Guida all'Uso</h2>
             <div class="help-body">
                 <div class="help-section">
-                    <h3>🔍 Ricerca e Posizione</h3>
-                    <p>Usa la barra di ricerca in alto a sinistra per trovare qualsiasi città o indirizzo. Clicca sul mirino 🎯 per geolocalizzarti in tempo reale sulla mappa.</p>
+                    <h3>🔍 Ricerca e Filtri</h3>
+                    <p>Usa la barra di ricerca o i filtri rapidi in alto per trovare subito i pin che ti interessano per categoria.</p>
                 </div>
                 <div class="help-section">
-                    <h3>📍 Aggiungere e Gestire i Pin</h3>
-                    <p>Premi il tasto 📍 per aprire il selettore di posizione. Sposta la mappa, conferma, compila i dati (nome, emoji, foto, note) e salva il tuo ricordo.</p>
-                </div>
-                <div class="help-section">
-                    <h3>✈️ Funzione Aeroporti e Voli</h3>
-                    <p>Se crei un pin contrassegnato come aeroporto, si attiverà un riquadro speciale nella scheda del luogo per "volare" rapidamente verso un altro aeroporto salvato.</p>
-                </div>
-                <div class="help-section">
-                    <h3>🎨 Personalizzazione e Profilo</h3>
-                    <p>Dal tasto 🎨 puoi cambiare i colori della mappa e scegliere tra i nuovi stili di icone fissi. Nel profilo 👤 puoi impostare le tue città principali e città visitate ed eseguire il backup dei dati in JSON.</p>
+                    <h3>🌓 Modalità Giorno / Notte & Soundscape</h3>
+                    <p>Attiva la modalità giorno/notte dal tasto dedicato. Ascolta il vento leggero sorvolando la mappa da lontano e il suono delle onde vicino al mare!</p>
                 </div>
             </div>
             <div class="modal-actions">
@@ -150,6 +161,7 @@
         </div>
     </div>
 
+    <!-- Modal Personalizzazione Stile Mappa -->
     <div id="styleModal" class="modal">
         <div class="modal-content">
             <h2>Personalizza Mappa</h2>
@@ -162,7 +174,10 @@
                 <option value="cyberpunk">Cyberpunk (Futuristico / Tech)</option>
             </select>
 
-            <h3>Colori Mappa</h3>
+            <label style="margin-top: 10px;">Colore Personalizzato Marker</label>
+            <input type="color" id="markerCustomColor" value="#3b82f6" style="width:100%; height:40px; border:none; border-radius:8px; cursor:pointer; background:transparent;">
+
+            <h3 style="margin-top: 15px;">Colori Mappa</h3>
             <div class="color-picker-grid">
                 <div><label>Natura</label><input type="color" id="colorNature" value="#14532d"></div>
                 <div><label>Acqua</label><input type="color" id="colorWater" value="#1e3a8a"></div>
@@ -178,6 +193,7 @@
         </div>
     </div>
 
+    <!-- Modal Profilo Utente -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <h2>Profilo Utente</h2>
@@ -215,6 +231,7 @@
             </div>
             <div id="visitedCitiesList" class="city-chips-container"></div>
 
+            <!-- Contenitore Statistiche Avanzate -->
             <div id="advancedStatsContainer"></div>
 
             <div class="profile-actions" style="margin-top: 15px;">
@@ -228,6 +245,7 @@
         </div>
     </div>
 
+    <!-- MapLibre GL JS -->
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <script src="script.js"></script>
 </body>
