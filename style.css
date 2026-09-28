@@ -1,13 +1,19 @@
-/* Stili Generali e Reset */
-body, html {
+/* ==========================================
+   RESET & STRUTTURA BASE
+   ========================================== */
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+body, html {
     width: 100%;
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
     background-color: #0f172a;
     color: #f8fafc;
-    overflow: hidden;
 }
 
 #map {
@@ -18,56 +24,120 @@ body, html {
     left: 0;
 }
 
-/* Barra di Ricerca Live */
+.hidden {
+    display: none !important;
+}
+
+/* ==========================================
+   BARRA DI RICERCA LIVE
+   ========================================== */
 .search-container {
     position: absolute;
     top: 20px;
     left: 20px;
     z-index: 10;
     width: 320px;
+    max-width: calc(100vw - 100px);
 }
 
-.search-container input, .city-search-box input {
+.search-container input {
     width: 100%;
     padding: 12px 16px;
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
     color: #fff;
     font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     outline: none;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.search-container input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
 }
 
 .suggestions-box {
     position: absolute;
-    top: 100%;
+    top: 52px;
     left: 0;
     width: 100%;
     background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    margin-top: 5px;
-    max-height: 200px;
-    overflow-y: auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     z-index: 20;
 }
 
 .suggestion-item {
     padding: 10px 14px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    color: #cbd5e1;
     cursor: pointer;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.15s ease;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
 }
 
 .suggestion-item:hover {
-    background: rgba(56, 189, 248, 0.2);
+    background: rgba(59, 130, 246, 0.2);
+    color: #fff;
 }
 
-.hidden { display: none !important; }
+/* ==========================================
+   BARRA FILTRI CATEGORIA PIN
+   ========================================== */
+.filter-bar {
+    position: absolute;
+    top: 78px;
+    left: 20px;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    overflow-x: auto;
+    max-width: calc(100vw - 40px);
+}
 
-/* Pulsanti Fluttuanti */
+.filter-chip {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.filter-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.filter-chip.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+/* ==========================================
+   PULSANTI DI NAVIGAZIONE FLUTTUANTI
+   ========================================== */
 .floating-controls {
     position: absolute;
     top: 20px;
@@ -79,38 +149,39 @@ body, html {
 }
 
 .floating-controls button {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: rgba(15, 23, 42, 0.9);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: #fff;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
 }
 
 .floating-controls button:hover {
-    background: rgba(56, 189, 248, 0.3);
+    background: #3b82f6;
+    border-color: #3b82f6;
     transform: scale(1.05);
 }
 
 /* ==========================================
-   STILI MARKER FISSI (Puliti, Moderni, Senza Floating)
-   ================================---------- */
-
+   MARKER PERSONALIZZATI (Stili & Colori)
+   ========================================== */
 .custom-pin-wrapper {
     cursor: pointer;
-    transform: translate(-50%, -100%); /* Ancoraggio perfetto della punta alla coordinata */
+    transform: translate(-50%, -100%);
 }
 
-/* 1. Stile Classico Moderno (Goccia Minimal con bordo pulito) */
+/* 1. Stile Classico Moderno */
 .pin-classico {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: var(--marker-color, #2563eb);
     border: 2px solid #ffffff;
     width: 38px;
     height: 38px;
@@ -126,26 +197,26 @@ body, html {
     font-size: 1.15rem;
 }
 
-/* 2. Stile Neon / Glassmorphism (Trasparenza ed effetto luminoso elegante) */
+/* 2. Stile Neon / Glassmorphism */
 .pin-neon {
     background: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(4px);
-    border: 2px solid #38bdf8;
+    border: 2px solid var(--marker-color, #38bdf8);
     width: 40px;
     height: 40px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    box-shadow: 0 0 12px var(--marker-color, #38bdf8);
 }
 .pin-neon span {
     font-size: 1.2rem;
 }
 
-/* 3. Stile Vintage (Effetto Carta Pergamena / Caldo) */
+/* 3. Stile Vintage */
 .pin-vintage {
-    background: linear-gradient(135deg, #b45309, #78350f);
+    background: var(--marker-color, #b45309);
     border: 2px solid #fde68a;
     width: 38px;
     height: 38px;
@@ -159,9 +230,9 @@ body, html {
     font-size: 1.15rem;
 }
 
-/* 4. Stile Cyberpunk (Futuristico con taglio geometrico angolare) */
+/* 4. Stile Cyberpunk */
 .pin-cyberpunk {
-    background: linear-gradient(135deg, #831843, #500724);
+    background: var(--marker-color, #831843);
     border: 2px solid #fb7185;
     width: 40px;
     height: 40px;
@@ -169,172 +240,336 @@ body, html {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 12px rgba(251, 113, 133, 0.6);
+    box-shadow: 0 0 12px var(--marker-color, #fb7185);
 }
 .pin-cyberpunk span {
     font-size: 1.1rem;
 }
-/* Pallino GPS */
-.gps-marker-dot {
-    width: 16px;
-    height: 16px;
-    background-color: #3b82f6;
-    border: 3px solid #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
-    animation: gps-pulse 1.5s infinite;
+
+/* Marker Temporanei e GPS */
+.temp-search-marker {
+    cursor: pointer;
+    transform: translate(-50%, -100%);
+    animation: bounce 1.5s infinite;
 }
-
-@keyframes gps-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-    70% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-}
-
-/* Macro City Markers */
-.macro-city-marker {
-    background: rgba(15, 23, 42, 0.9);
-    border: 2px solid #38bdf8;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    color: #fff;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    white-space: nowrap;
-}
-.macro-city-marker.main { border-color: #f59e0b; }
-
-/* Scheda Luogo (PlaceSheet) */
-.place-sheet {
-    position: absolute;
-    bottom: -100%;
-    left: 20px;
-    width: 360px;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    z-index: 30;
-    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    overflow: hidden;
-}
-
-.place-sheet.open { bottom: 20px; }
-
-.sheet-header {
-    padding: 16px;
+.temp-pin-inner {
+    background: #ef4444;
+    border: 2px solid #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
     display: flex;
     align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+}
+.temp-pin-inner span {
+    transform: rotate(45deg);
+    font-size: 1.1rem;
 }
 
-.place-sheet-icon { font-size: 2rem; }
-.sheet-header h3 { margin: 0; font-size: 1.1rem; }
-.badge { font-size: 0.75rem; padding: 2px 8px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 10px; }
-.btn-close { margin-left: auto; background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+.gps-marker-dot {
+    width: 20px;
+    height: 20px;
+    background: #3b82f6;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #3b82f6;
+}
 
-.sheet-body { padding: 16px; max-height: 250px; overflow-y: auto; }
-.place-image-container img { width: 100%; border-radius: 10px; max-height: 150px; object-fit: cover; margin-bottom: 10px; }
-.tags-list { margin-top: 10px; font-size: 0.8rem; color: #38bdf8; }
+.macro-city-marker {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transform: translate(-50%, -50%);
+}
+.macro-city-marker.main { border-color: #38bdf8; color: #38bdf8; }
+.macro-city-marker.visited { border-color: #34d399; color: #34d399; }
 
-.sheet-footer { padding: 12px 16px; background: rgba(0,0,0,0.2); display: flex; gap: 10px; }
+@keyframes bounce {
+    0%, 100% { transform: translate(-50%, -100%) translateY(0); }
+    50% { transform: translate(-50%, -100%) translateY(-8px); }
+}
 
-/* Modali Generali */
+/* ==========================================
+   MAP PICKER OVERLAY (Puntatore centrale)
+   ========================================== */
+.map-picker-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 15;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.picker-pointer {
+    font-size: 2.5rem;
+    transform: translateY(-20px);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    animation: bounce 1s infinite;
+}
+
+.picker-bar {
+    position: absolute;
+    bottom: 30px;
+    pointer-events: auto;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(12px);
+    padding: 12px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.picker-bar span {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+}
+
+/* ==========================================
+   MODALI E PANNELLI (Modals & Sheet)
+   ========================================== */
 .modal {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 100;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.2s;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
 }
 
-.modal.open { opacity: 1; pointer-events: auto; }
+.modal.open {
+    opacity: 1;
+    pointer-events: auto;
+}
 
 .modal-content {
-    background: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    width: 400px;
-    max-width: 90vw;
-    padding: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    width: 420px;
+    max-width: calc(100vw - 30px);
     max-height: 90vh;
     overflow-y: auto;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.modal-content h2 { margin-top: 0; font-size: 1.3rem; }
-.modal-content label { display: block; font-size: 0.85rem; margin-top: 12px; margin-bottom: 4px; color: #94a3b8; }
-.modal-content input[type="text"], .modal-content select, .modal-content textarea {
-    width: 100%; padding: 10px 12px; background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px; color: #fff; font-size: 0.9rem; box-sizing: border-box;
+.modal-content h2 {
+    font-size: 1.25rem;
+    color: #fff;
+    margin-bottom: 4px;
 }
 
-.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-content label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-top: 4px;
+}
 
-.btn-primary { background: #38bdf8; color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; }
-.btn-secondary { background: #334155; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; flex: 1; }
-.btn-danger { background: #ef4444; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+.modal-content input[type="text"],
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+}
 
-/* Stili specifici per Modal Guida */
-.help-modal-content { width: 460px; }
-.help-body { max-height: 60vh; overflow-y: auto; padding-right: 4px; }
-.help-section { margin-bottom: 16px; background: #1e293b; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-.help-section h3 { margin: 0 0 6px 0; font-size: 0.95rem; color: #38bdf8; }
-.help-section p { margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
+.modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
+    border-color: #3b82f6;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    flex: 1;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    padding: 11px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-primary:hover { background: #2563eb; }
+
+.btn-secondary {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 11px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-secondary:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+.btn-danger {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-danger:hover { background: rgba(239, 68, 68, 0.4); color: #fff; }
 
 /* Dropzone Immagini */
 .drop-zone {
-    border: 2px dashed rgba(255,255,255,0.2);
-    border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; background: #1e293b; position: relative;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #0f172a;
+    position: relative;
+    transition: border-color 0.2s;
 }
-.drop-zone.dragover { border-color: #38bdf8; background: rgba(56,189,248,0.1); }
-.file-input-hidden { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0; cursor: pointer; }
-.highlight { color: #38bdf8; text-decoration: underline; }
-.image-preview-wrapper { position: relative; }
-.image-preview-wrapper img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px; }
-.btn-remove-photo { position: absolute; top: 5px; right: 5px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; }
-
-/* Color Grid */
-.color-picker-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
-.color-picker-grid input[type="color"] { width: 100%; height: 35px; border: none; border-radius: 6px; cursor: pointer; background: none; }
-
-/* Profilo Chips */
-.profile-header-modal { display: flex; gap: 15px; align-items: center; }
-.profile-avatar-large { width: 64px; height: 64px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; overflow: hidden; border: 2px solid #38bdf8; }
-.profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
-.city-chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.city-chip { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
-.city-chip.main-chip { border-color: #f59e0b; }
-.btn-remove-chip { cursor: pointer; color: #ef4444; font-weight: bold; }
-.stats-box { background: #1e293b; padding: 10px; border-radius: 8px; text-align: center; margin-top: 15px; }
-.stats-box span { font-size: 1.2rem; font-weight: bold; color: #38bdf8; display: block; }
-.btn-export { background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
-
-/* Map Picker Overlay */
-.map-picker-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-.picker-pointer { font-size: 3rem; margin-bottom: 40px; animation: bounce 1s infinite alternate; }
-@keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
-.picker-bar { background: rgba(15,23,42,0.95); padding: 15px 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); display: flex; gap: 15px; align-items: center; pointer-events: auto; }
-
-/* Correzione suggerimenti profilo */
-#mainCitySuggestions, #visitedCitySuggestions {
-    position: absolute;
-    z-index: 999999;
-    background: #1e293b;
-    border: 1px solid #334155;
-    width: 100%;
-    max-height: 150px;
-    overflow-y: auto;
-    border-radius: 0 0 8px 8px;
+.drop-zone.dragover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+.file-input-hidden { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.highlight { color: #38bdf8; font-weight: 600; }
+.image-preview-wrapper { position: relative; width: 100%; max-height: 160px; overflow: hidden; border-radius: 8px; }
+.image-preview-wrapper img { width: 100%; height: auto; display: block; max-height: 160px; object-fit: cover; }
+.btn-remove-photo {
+    position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.7); color: #fff;
+    border: none; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 0.8rem;
 }
-.city-search-box {
+
+/* PlaceSheet (Scheda Dettaglio Luogo) */
+.place-sheet {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 360px;
+    max-width: calc(100vw - 40px);
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 20px;
+    z-index: 50;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    transform: translateY(120%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.place-sheet.open {
+    transform: translateY(0);
+}
+
+.sheet-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     position: relative;
 }
+
+.place-sheet-icon {
+    font-size: 2rem;
+    background: rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sheet-header h3 { font-size: 1.1rem; color: #fff; }
+.badge { font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); color: #93c5fd; padding: 2px 8px; border-radius: 6px; }
+
+.btn-close {
+    position: absolute; top: 0; right: 0; background: transparent; border: none;
+    color: #94a3b8; font-size: 1.1rem; cursor: pointer;
+}
+.btn-close:hover { color: #fff; }
+
+.sheet-body { display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; color: #cbd5e1; }
+.place-image-container img { width: 100%; max-height: 140px; object-fit: cover; border-radius: 8px; }
+.tags-list span { font-size: 0.8rem; color: #38bdf8; margin-right: 6px; }
+.sheet-footer { display: flex; gap: 10px; margin-top: 4px; }
+
+/* Aeroporto Fly Box e Selettori Profilo */
+.airport-fly-box {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.85srem;
+}
+.airport-fly-controls { display: flex; gap: 8px; margin-top: 6px; }
+.city-search-box { position: relative; }
+.city-chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.city-chip {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+}
+.city-chip.main-chip { border-color: #38bdf8; color: #38bdf8; }
+.btn-remove-chip { cursor: pointer; opacity: 0.7; font-size: 0.75rem; }
+.btn-remove-chip:hover { opacity: 1; color: #fca5a5; }
+
+.profile-header-modal { display: flex; gap: 15px; align-items: center; }
+.profile-avatar-large {
+    width: 64px; height: 64px; border-radius: 50%; background: #0f172a;
+    border: 2px solid #3b82f6; display: flex; align-items: center; justify-content: center;
+    overflow: hidden; font-size: 1.5rem;
+}
+.profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
+.modal-divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0; }
+.color-picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.color-picker-grid label { font-size: 0.75rem; }
+.color-picker-grid input { width: 100%; height: 32px; border: none; border-radius: 6px; background: transparent; cursor: pointer; }
