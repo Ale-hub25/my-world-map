@@ -1,0 +1,11 @@
+{
+  "name": "my-world-map",
+  "version": "0.1.0",
+  "description": "Client-side personal map studio using MapLibre GL JS",
+  "private": true,
+  "scripts": {
+    "start": "npx http-server -p 8000"
+  },
+  "author": "Ale-hub25",
+  "license": "MIT"
+}

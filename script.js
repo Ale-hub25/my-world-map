@@ -135,6 +135,9 @@ let userProfile = JSON.parse(localStorage.getItem('My World Map_user')) || {
     visitedCities: []   
 };
 
+// small in-memory cache for Nominatim search results during the session
+const searchCache = {};
+
 const mapStyleUrl = userMapStyle.isDarkMode ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/liberty';
 
 const map = new maplibregl.Map({
@@ -493,11 +496,14 @@ if (dayNightButton) {
             map.setStyle('https://tiles.openfreemap.org/styles/liberty');
         }
         localStorage.setItem('My World Map_mapStyle', JSON.stringify(userMapStyle));
-        setTimeout(() => {
+
+        // wait for the new style to load, then re-apply our custom layers/colors
+        map.once('style.load', () => {
             applyMapColors();
             setupUnexploredAndBoundariesLayer();
             updateBoundariesAndUnexploredLayer();
-        }, 500);
+            renderMarkers();
+        });
     });
 }
 
@@ -525,9 +531,10 @@ if (generatePrintPreviewBtn) {
         
         const titleText = document.getElementById('printTitleInput').value || "My World Map";
         const format = document.getElementById('printFormatSelect').value;
-        const showNorth = document.getElementById('chkNorthNorthArrow') ? document.getElementById('chkNorthNorthArrow').checked : document.getElementById('chkNorth').checked;
-        const showScale = document.getElementById('chkScaleBar') ? document.getElementById('chkScaleBar').checked : document.getElementById('chkScale').checked;
-        const showLegend = document.getElementById('chkLegend').checked;
+
+        const showNorth = document.getElementById('chkNorthArrow') ? document.getElementById('chkNorthArrow').checked : (document.getElementById('chkNorth') ? document.getElementById('chkNorth').checked : true);
+        const showScale = document.getElementById('chkScaleBar') ? document.getElementById('chkScaleBar').checked : (document.getElementById('chkScale') ? document.getElementById('chkScale').checked : true);
+        const showLegend = document.getElementById('chkLegend') ? document.getElementById('chkLegend').checked : true;
 
         document.getElementById('compHeaderTitle').textContent = titleText;
         
@@ -555,9 +562,14 @@ if (generatePrintPreviewBtn) {
 
         // Cattura screenshot della mappa tramite MapLibre canvas buffer
         map.once('render', () => {
-            const snapshotUrl = map.getCanvas().toDataURL('image/png');
-            document.getElementById('composerMapSnapshot').src = snapshotUrl;
-            printComposerOverlay.classList.remove('hidden');
+            try {
+                const snapshotUrl = map.getCanvas().toDataURL('image/png');
+                document.getElementById('composerMapSnapshot').src = snapshotUrl;
+                printComposerOverlay.classList.remove('hidden');
+            } catch (err) {
+                console.warn('Impossibile catturare snapshot della mappa (possibile problema CORS):', err);
+                alert('Impossibile creare l\'anteprima: risorse esterne bloccatE da CORS. Vedi README per dettagli.');
+            }
         });
         map.triggerRepaint();
     });
@@ -576,7 +588,7 @@ if (downloadImageBtn) {
             link.href = canvas.toDataURL('image/png');
             link.click();
             link.remove();
-        });
+        }).catch(err => alert('Errore esportazione immagine: ' + err.message));
     });
 }
 
@@ -656,21 +668,33 @@ if (searchInput) {
         if (query.length < 3) return searchSuggestions.classList.add("hidden");
 
         searchDebounceTimeout = setTimeout(() => {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+            const lang = userProfile.language || 'it';
+            const cacheKey = `nominatim_search:${query}:${lang}`;
+            if (searchCache[cacheKey]) {
+                renderSearchSuggestions(searchCache[cacheKey]);
+                return;
+            }
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=${lang}`)
                 .then(res => res.json())
                 .then(data => {
-                    searchSuggestions.innerHTML = "";
-                    if (data && data.length > 0) {
-                        data.forEach(item => {
-                            const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
-                            div.addEventListener("click", () => selectSearchResult(item));
-                            searchSuggestions.appendChild(div);
-                        });
-                        searchSuggestions.classList.remove("hidden");
-                    } else searchSuggestions.classList.add("hidden");
+                    searchCache[cacheKey] = data;
+                    renderSearchSuggestions(data);
                 }).catch(() => searchSuggestions.classList.add("hidden"));
         }, 300);
     });
+}
+
+function renderSearchSuggestions(data) {
+    searchSuggestions.innerHTML = "";
+    if (data && data.length > 0) {
+        data.forEach(item => {
+            const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
+            div.addEventListener("click", () => selectSearchResult(item));
+            searchSuggestions.appendChild(div);
+        });
+        searchSuggestions.classList.remove("hidden");
+    } else searchSuggestions.classList.add("hidden");
 }
 
 function selectSearchResult(item) {
@@ -707,28 +731,42 @@ function setupCityAutocomplete(inputId, suggestionsId, isMain) {
         if (query.length < 2) return sug.classList.add("hidden");
 
         timeout = setTimeout(() => {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+            const lang = userProfile.language || 'it';
+            const cacheKey = `nominatim_search:${query}:${lang}`;
+            if (searchCache[cacheKey]) {
+                renderCitySuggestions(searchCache[cacheKey], sug, isMain);
+                return;
+            }
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=${lang}`)
                 .then(res => res.json())
                 .then(data => {
-                    sug.innerHTML = "";
-                    if (data && data.length > 0) {
-                        data.forEach(item => {
-                            const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
-                            div.addEventListener("click", () => {
-                                addCityToProfileWithPolygon(item, isMain);
-                                inp.value = ""; sug.classList.add("hidden");
-                            });
-                            sug.appendChild(div);
-                        });
-                        sug.classList.remove("hidden");
-                    } else sug.classList.add("hidden");
+                    searchCache[cacheKey] = data;
+                    renderCitySuggestions(data, sug, isMain);
                 });
         }, 300);
     });
 }
 
+function renderCitySuggestions(data, sug, isMain) {
+    sug.innerHTML = "";
+    if (data && data.length > 0) {
+        data.forEach(item => {
+            const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
+            div.addEventListener("click", () => {
+                addCityToProfileWithPolygon(item, isMain);
+                const inp = isMain ? document.getElementById('mainCitySearchInput') : document.getElementById('visitedCitySearchInput');
+                if (inp) inp.value = "";
+                sug.classList.add("hidden");
+            });
+            sug.appendChild(div);
+        });
+        sug.classList.remove("hidden");
+    } else sug.classList.add("hidden");
+}
+
 function addCityToProfileWithPolygon(item, isMain) {
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(item.display_name)}&limit=1`)
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(item.display_name)}&limit=1&accept-language=${userProfile.language || 'it'}`)
         .then(res => res.json())
         .then(data => {
             let geojson = null;
