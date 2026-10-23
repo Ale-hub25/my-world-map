@@ -9,8 +9,7 @@ const translations = {
         catAirports: "✈️ Aeroporti / Viaggi", catFood: "🍽️ Ristoranti & Cibo", catCoffee: "☕ Bar & Caffè",
         catNature: "🌲 Natura & Parchi", catBeach: "🏖️ Spiaggia & Mare", catCulture: "🏛️ Cultura & Monumenti",
         
-        titleGps: "La mia Posizione", titleDayNight: "Cambia Modalità Giorno/Notte",
-        titleStyle: "Stile Mappa", titlePrint: "Stampa / Esporta Mappa (GIS)", titleAddPin: "Aggiungi Pin", titleHelp: "Istruzioni d'Uso", titleProfile: "Profilo Utente",
+        titleGps: "La mia Posizione", titleStyle: "Stile Mappa", titleAddPin: "Aggiungi Pin", titleSettings: "Impostazioni", titleProfile: "Profilo Utente",
 
         pickerText: "Sposta la mappa per posizionare il pin", confirm: "Conferma Posizione", cancel: "Annulla",
         newPinTitle: "Nuovo Pin", editPinTitle: "Modifica Pin", lblPlaceName: "Nome Luogo",
@@ -22,26 +21,15 @@ const translations = {
         selectDestination: "Seleziona destinazione...", btnFly: "Vola ✈️", 
         noNotes: "Nessuna nota presente.", btnEdit: "✏️ Modifica", btnDelete: "🗑️ Elimina", 
         
-        printModalTitle: "🖨️ Esporta / Stampa Mappa (GIS Layout)",
-        lblPrintTitle: "Titolo Mappa / Map Title",
-        lblPrintFormat: "Formato Pagina / Page Format",
-        lblPrintElements: "Elementi Opzionali Layout",
-        chkNorth: "Mostra Freccia del Nord 🧭",
-        chkScale: "Mostra Scala Grafica 📏",
-        chkLegend: "Mostra Legenda Pin 📋",
-        btnOpenComposer: "Apri Anteprima di Stampa",
-        btnDownloadImg: "💾 Salva Immagine (PNG)",
-        legendHeader: "Legenda Pin",
-        composerEditorTitle: "Layout Editor - Trascina gli elementi per posizionarli",
-
-        helpTitle: "📖 Guida Completa all'Uso",
+        settingsTitle: "⚙️ Impostazioni",
+        helpTitle: "📖 Guida e Istruzioni d'Uso",
         helpSec1Title: "🔍 Ricerca e Filtri",
-        helpSec1Text: "Usa la barra di ricerca per trovare qualsiasi città o indirizzo globale con suggerimenti automatici.",
+        helpSec1Text: "Usa la barra di ricerca per trovare qualsiasi città o indirizzo globale con suggerimenti automatici. Il pulsante Filtra Categoria consente di mostrare sulla mappa solo i pin appartenenti a una specifica categoria.",
         helpSec2Title: "📍 Aggiunta e Gestione Pin",
-        helpSec2Text: "Premi il tasto per attivare il mirino centrale sulla mappa e salvare luoghi con note, tag e foto.",
-        helpSec3Title: "🖨️ Stampa ed Esportazione GIS",
-        helpSec3Text: "Usa il pulsante di stampa per creare un layout personalizzato con titolo, freccia del nord, scala e legenda trascinabili.",
-        btnGotIt: "Ho Capito", 
+        helpSec2Text: "Premi il tasto per attivare il mirino centrale sulla mappa. Sposta la mappa fino al punto esatto, conferma e compila la scheda aggiungendo un nome, un'emoji, foto, tag e ricordi personali.",
+        helpSec3Title: "✈️ Voli Animati tra Aeroporti",
+        helpSec3Text: "Quando selezioni la categoria Aeroporto per un pin, apri la sua scheda per scegliere un altro aeroporto memorizzato e spiccare il volo.",
+        btnSaveSettings: "Salva e Chiudi", 
 
         styleModalTitle: "Personalizza Mappa", lblIconStyle: "Stile Icona Marker (Fisso)",
         lblMarkerColor: "Colore Personalizzato Marker", lblMapColors: "Colori Mappa", 
@@ -51,7 +39,7 @@ const translations = {
         profileTitle: "Profilo Utente", lblUserName: "Nome Utente", lblLanguage: "Lingua Applicazione / Language",
         lblAvatarUpload: "Carica Foto Profilo", avatarUploadText: "Clicca qui per caricare l'immagine", 
         lblKnownPlaces: "Luoghi Conosciuti", lblMainCities: "Città Principali (Max 2)", 
-        lblVisitedCities: "Città Visitate", btnBackup: "📥 Backup Dati (JSON)", btnSaveProfile: "Salva Profilo",
+        lblVisitedCities: "Città Visitate", btnSaveProfile: "Salva Profilo",
 
         statsExploredCities: "🏙️ Città esplorate:", statsExploredCountries: "🌍 Paesi esplorati:",
         statsMarkedPlaces: "📍 Luoghi segnati:", statsMainCities: "🏠 Città principali:",
@@ -64,8 +52,7 @@ const translations = {
         catAirports: "✈️ Airports / Travel", catFood: "🍽️ Restaurants & Food", catCoffee: "☕ Bar & Coffee",
         catNature: "🌲 Nature & Parks", catBeach: "🏖️ Beach & Sea", catCulture: "🏛️ Culture & Monuments",
         
-        titleGps: "My Location", titleDayNight: "Toggle Day/Night Mode",
-        titleStyle: "Map Style", titlePrint: "Print / Export Map (GIS)", titleAddPin: "Add Pin", titleHelp: "User Guide", titleProfile: "User Profile",
+        titleGps: "My Location", titleStyle: "Map Style", titleAddPin: "Add Pin", titleSettings: "Settings", titleProfile: "User Profile",
 
         pickerText: "Move map to position the pin", confirm: "Confirm Position", cancel: "Cancel",
         newPinTitle: "New Pin", editPinTitle: "Edit Pin", lblPlaceName: "Place Name",
@@ -77,26 +64,15 @@ const translations = {
         selectDestination: "Select destination...", btnFly: "Fly ✈️", 
         noNotes: "No notes available.", btnEdit: "✏️ Edit", btnDelete: "🗑️ Delete", 
         
-        printModalTitle: "🖨️ Export / Print Map (GIS Layout)",
-        lblPrintTitle: "Map Title",
-        lblPrintFormat: "Page Format",
-        lblPrintElements: "Optional Layout Elements",
-        chkNorth: "Show North Arrow 🧭",
-        chkScale: "Show Scale Bar 📏",
-        chkLegend: "Show Pin Legend 📋",
-        btnOpenComposer: "Open Print Preview",
-        btnDownloadImg: "💾 Save Image (PNG)",
-        legendHeader: "Pin Legend",
-        composerEditorTitle: "Layout Editor - Drag elements to position them",
-
+        settingsTitle: "⚙️ Settings",
         helpTitle: "📖 User Guide",
         helpSec1Title: "🔍 Search and Filters",
-        helpSec1Text: "Use the search bar to find any city or global address with automatic suggestions.",
+        helpSec1Text: "Use the search bar to find any city or global address with automatic suggestions. The Filter Category button allows you to display only pins belonging to a specific category.",
         helpSec2Title: "📍 Adding and Managing Pins",
-        helpSec2Text: "Press the button to activate the central crosshair on the map and save locations with notes, tags, and photos.",
-        helpSec3Title: "🖨️ GIS Printing & Export",
-        helpSec3Text: "Use the print button to create a custom layout with draggable title, north arrow, scale bar, and legend.",
-        btnGotIt: "Got It", 
+        helpSec2Text: "Press the button to activate the central crosshair on the map. Move the map to the exact spot, confirm, and fill out the form.",
+        helpSec3Title: "✈️ Animated Flights Between Airports",
+        helpSec3Text: "When you select the Airport category for a pin, open its sheet to choose another stored airport and take flight.",
+        btnSaveSettings: "Save and Close", 
 
         styleModalTitle: "Customize Map", lblIconStyle: "Marker Icon Style (Fixed)",
         lblMarkerColor: "Custom Marker Color", lblMapColors: "Map Colors", 
@@ -106,7 +82,7 @@ const translations = {
         profileTitle: "User Profile", lblUserName: "User Name", lblLanguage: "App Language",
         lblAvatarUpload: "Upload Profile Picture", avatarUploadText: "Click here to upload image", 
         lblKnownPlaces: "Known Places", lblMainCities: "Main Cities (Max 2)", 
-        lblVisitedCities: "Visited Cities", btnBackup: "📥 Data Backup (JSON)", btnSaveProfile: "Save Profile",
+        lblVisitedCities: "Visited Cities", btnSaveProfile: "Save Profile",
 
         statsExploredCities: "🏙️ Explored cities:", statsExploredCountries: "🌍 Explored countries:",
         statsMarkedPlaces: "📍 Marked places:", statsMainCities: "🏠 Main cities:",
@@ -127,16 +103,24 @@ let userMapStyle = JSON.parse(localStorage.getItem('My World Map_mapStyle')) || 
     }
 };
 
+// Generatore ID Anonimo Univoco
+let uniqueUserId = localStorage.getItem('My World Map_userId');
+if (!uniqueUserId) {
+    uniqueUserId = 'MAP-USER-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    localStorage.setItem('My World Map_userId', uniqueUserId);
+}
+
 let userProfile = JSON.parse(localStorage.getItem('My World Map_user')) || { 
     name: "Utente", 
+    userId: uniqueUserId,
     avatar: "",
     language: "it",
+    privacy: "all", // 'all', 'cities', 'private'
     mainCities: [],     
-    visitedCities: []   
+    knownPlaces: [],    
+    visitedCities: [],
+    friends: [] // Lista amici salvati
 };
-
-// small in-memory cache for Nominatim search results during the session
-const searchCache = {};
 
 const mapStyleUrl = userMapStyle.isDarkMode ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/liberty';
 
@@ -156,6 +140,11 @@ let tempSearchMarker = null;
 let searchDebounceTimeout = null;
 let macroCityMarkers = [];
 let activeFilterCategory = "ALL";
+let isMovingExistingPlace = false;
+
+// Gestione Modalità Spettatore
+let isSpectating = false;
+let originalMyData = null;
 
 function applyLanguageTranslations() {
     const lang = userProfile.language || 'it';
@@ -175,19 +164,15 @@ function applyLanguageTranslations() {
     }
 
     const gpsBtn = document.getElementById('gpsButton');
-    const dayNightBtn = document.getElementById('dayNightButton');
     const styleBtn = document.getElementById('styleButton');
-    const printBtn = document.getElementById('printLayoutBtn');
     const addBtn = document.getElementById('addOptionButton');
-    const helpBtn = document.getElementById('helpButton');
+    const settingsBtn = document.getElementById('settingsButton');
     const profBtn = document.getElementById('profileNavBtn');
 
     if (gpsBtn) gpsBtn.title = dict.titleGps;
-    if (dayNightBtn) dayNightBtn.title = dict.titleDayNight;
     if (styleBtn) styleBtn.title = dict.titleStyle;
-    if (printBtn) printBtn.title = dict.titlePrint;
     if (addBtn) addBtn.title = dict.titleAddPin;
-    if (helpBtn) helpBtn.title = dict.titleHelp;
+    if (settingsBtn) settingsBtn.title = dict.titleSettings;
     if (profBtn) profBtn.title = dict.titleProfile;
 
     updateProfileStats();
@@ -204,13 +189,10 @@ function initSoundscapes() {
     if (audioCtx) return;
     try {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
         const bufferSize = audioCtx.sampleRate * 2;
         const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;
-        }
+        for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; }
 
         const whiteNoise = audioCtx.createBufferSource();
         whiteNoise.buffer = noiseBuffer;
@@ -244,15 +226,13 @@ function initSoundscapes() {
         waveFilter.connect(waveGain);
         waveGain.connect(audioCtx.destination);
         waveSource.start();
-    } catch(e) { console.log("Audio non inizializzato:", e); }
+    } catch(e) {}
 }
 
 function updateSoundscapes() {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
-
     const zoom = map.getZoom();
-    
     if (windGain) {
         if (zoom < 8) {
             let intensity = (8 - zoom) * 0.012;
@@ -261,7 +241,6 @@ function updateSoundscapes() {
             windGain.gain.setTargetAtTime(0.0, audioCtx.currentTime, 0.5);
         }
     }
-
     checkWaterSound(map.getCenter());
 }
 
@@ -274,7 +253,6 @@ function checkWaterSound(lngLat) {
             (f.layer && f.layer.id && f.layer.id.includes('water')) ||
             (f.properties && f.properties.natural === 'water')
         );
-
         if (isOverWater) {
             waveGain.gain.setTargetAtTime(0.09, audioCtx.currentTime, 0.8);
         } else {
@@ -287,7 +265,6 @@ function playSound(type) {
     if (!audioCtx) initSoundscapes();
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     if (!audioCtx) return;
-
     const now = audioCtx.currentTime;
 
     if (type === 'pop') {
@@ -302,21 +279,49 @@ function playSound(type) {
         gain.connect(audioCtx.destination);
         osc.start(now);
         osc.stop(now + 0.15);
-    } 
-    else if (type === 'flight') {
+    } else if (type === 'flight') {
+        const duration = 2.2;
+        const bufferSize = audioCtx.sampleRate * duration;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; }
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.Q.value = 1.5;
+        filter.frequency.setValueAtTime(100, now);
+        filter.frequency.exponentialRampToValueAtTime(600, now + (duration / 2));
+        filter.frequency.exponentialRampToValueAtTime(120, now + duration);
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(0.01, now);
+        noiseGain.gain.linearRampToValueAtTime(0.25, now + 0.8);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+
         const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const oscGain = audioCtx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.exponentialRampToValueAtTime(600, now + 0.8);
-        osc.frequency.exponentialRampToValueAtTime(200, now + 1.5);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.linearRampToValueAtTime(0.15, now + 0.7);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(60, now);
+        osc.frequency.exponentialRampToValueAtTime(180, now + (duration / 2));
+        osc.frequency.exponentialRampToValueAtTime(50, now + duration);
+        oscGain.gain.setValueAtTime(0.01, now);
+        oscGain.gain.linearRampToValueAtTime(0.18, now + 0.9);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        osc.connect(oscGain);
+        oscGain.connect(audioCtx.destination);
+
+        noise.start(now);
         osc.start(now);
-        osc.stop(now + 1.5);
+        noise.stop(now + duration);
+        osc.stop(now + duration);
     }
 }
 
@@ -347,12 +352,10 @@ function enable3DBuildings() {
                 break;
             }
         }
-
         layers.forEach(layer => {
             if (layer.id.includes('building') && layer.type === 'fill') {
                 const id = layer.id;
                 const paint = layer.paint || {};
-                
                 if (!map.getLayer(id + '-3d')) {
                     map.addLayer({
                         'id': id + '-3d',
@@ -372,7 +375,7 @@ function enable3DBuildings() {
                 }
             }
         });
-    } catch (e) { console.log(e); }
+    } catch (e) {}
 }
 
 function applyMapColors() {
@@ -413,11 +416,11 @@ function setupUnexploredAndBoundariesLayer() {
     map.addLayer({ 'id': 'known-boundaries-layer', 'type': 'line', 'source': 'known-boundaries-src', 'paint': { 'line-color': '#00f0ff', 'line-width': 3, 'line-dasharray': [2, 2] } });
 
     map.addSource('unexplored-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-    map.addLayer({ 'id': 'unexplored-layer', 'type': 'fill', 'source': 'unexplored-src', 'paint': { 'fill-color': userMapStyle.isDarkMode ? '#020617' : '#94a3b8', 'fill-opacity': 0.55 } });
+    map.addLayer({ 'id': 'unexplored-layer', 'type': 'fill', 'source': 'unexplored-src', 'paint': { 'fill-color': '#020617', 'fill-opacity': 0.55 } });
 }
 
 function updateBoundariesAndUnexploredLayer() {
-    const allKnown = [...(userProfile.mainCities || []), ...(userProfile.visitedCities || [])];
+    const allKnown = [...(userProfile.mainCities || []), ...(userProfile.knownPlaces || []), ...(userProfile.visitedCities || [])];
     const boundaryFeatures = [];
     const knownPolygons = [];
 
@@ -451,6 +454,10 @@ function updateMacroCityMarkers() {
             const el = document.createElement('div'); el.className = 'macro-city-marker main'; el.innerHTML = `🏠 ${c.name}`;
             macroCityMarkers.push(new maplibregl.Marker({ element: el }).setLngLat([c.lng, c.lat]).addTo(map));
         });
+        (userProfile.knownPlaces || []).forEach(c => {
+            const el = document.createElement('div'); el.className = 'macro-city-marker known'; el.innerHTML = `📌 ${c.name}`;
+            macroCityMarkers.push(new maplibregl.Marker({ element: el }).setLngLat([c.lng, c.lat]).addTo(map));
+        });
         (userProfile.visitedCities || []).forEach(c => {
             const el = document.createElement('div'); el.className = 'macro-city-marker visited'; el.innerHTML = `✈️ ${c.name}`;
             macroCityMarkers.push(new maplibregl.Marker({ element: el }).setLngLat([c.lng, c.lat]).addTo(map));
@@ -479,170 +486,8 @@ if (filterDropdownBtn && filterDropdownMenu) {
         });
     });
 
-    document.addEventListener('click', () => {
-        filterDropdownMenu.classList.add('hidden');
-    });
+    document.addEventListener('click', () => { filterDropdownMenu.classList.add('hidden'); });
 }
-
-const dayNightButton = document.getElementById('dayNightButton');
-if (dayNightButton) {
-    dayNightButton.addEventListener('click', () => {
-        userMapStyle.isDarkMode = !userMapStyle.isDarkMode;
-        if (userMapStyle.isDarkMode) {
-            userMapStyle.colors = { nature: '#14532d', water: '#1e3a8a', building: '#1e293b', road: '#334155', railway: '#64748b' };
-            map.setStyle('https://tiles.openfreemap.org/styles/dark');
-        } else {
-            userMapStyle.colors = { nature: '#86efac', water: '#93c5fd', building: '#e2e8f0', road: '#cbd5e1', railway: '#94a3b8' };
-            map.setStyle('https://tiles.openfreemap.org/styles/liberty');
-        }
-        localStorage.setItem('My World Map_mapStyle', JSON.stringify(userMapStyle));
-
-        // wait for the new style to load, then re-apply our custom layers/colors
-        map.once('style.load', () => {
-            applyMapColors();
-            setupUnexploredAndBoundariesLayer();
-            updateBoundariesAndUnexploredLayer();
-            renderMarkers();
-        });
-    });
-}
-
-// ==========================================
-// 🖨️ GESTIONE STAMPA E LAYOUT GIS COMPOSER
-// ==========================================
-const printLayoutBtn = document.getElementById('printLayoutBtn');
-const printModal = document.getElementById('printModal');
-const closePrintModal = document.getElementById('closePrintModal');
-const generatePrintPreviewBtn = document.getElementById('generatePrintPreviewBtn');
-const printComposerOverlay = document.getElementById('printComposerOverlay');
-const closeComposerBtn = document.getElementById('closeComposerBtn');
-const downloadImageBtn = document.getElementById('downloadImageBtn');
-
-if (printLayoutBtn) {
-    printLayoutBtn.addEventListener('click', () => printModal.classList.add('open'));
-}
-if (closePrintModal) {
-    closePrintModal.addEventListener('click', () => printModal.classList.remove('open'));
-}
-
-if (generatePrintPreviewBtn) {
-    generatePrintPreviewBtn.addEventListener('click', () => {
-        printModal.classList.remove('open');
-        
-        const titleText = document.getElementById('printTitleInput').value || "My World Map";
-        const format = document.getElementById('printFormatSelect').value;
-
-        const showNorth = document.getElementById('chkNorthArrow') ? document.getElementById('chkNorthArrow').checked : (document.getElementById('chkNorth') ? document.getElementById('chkNorth').checked : true);
-        const showScale = document.getElementById('chkScaleBar') ? document.getElementById('chkScaleBar').checked : (document.getElementById('chkScale') ? document.getElementById('chkScale').checked : true);
-        const showLegend = document.getElementById('chkLegend') ? document.getElementById('chkLegend').checked : true;
-
-        document.getElementById('compHeaderTitle').textContent = titleText;
-        
-        const page = document.getElementById('composerPage');
-        page.className = `composer-page ${format}`;
-
-        document.getElementById('compNorthBox').style.display = showNorth ? 'block' : 'none';
-        document.getElementById('compScaleBox').style.display = showScale ? 'block' : 'none';
-        document.getElementById('compLegendBox').style.display = showLegend ? 'block' : 'none';
-
-        // Calcola scala approssimativa in base allo zoom di MapLibre
-        const zoom = map.getZoom();
-        const kmVal = Math.max(0.5, (100 / Math.pow(2, zoom - 10))).toFixed(1);
-        document.getElementById('scaleBarText').textContent = `0 — ${kmVal} km`;
-
-        // Popola la legenda con i pin attivi visibili
-        const legendContainer = document.getElementById('composerLegendItems');
-        legendContainer.innerHTML = "";
-        Object.values(places).forEach(p => {
-            const row = document.createElement('div');
-            row.className = 'legend-item-row';
-            row.innerHTML = `<span>${p.icon}</span> <span>${p.name}</span>`;
-            legendContainer.appendChild(row);
-        });
-
-        // Cattura screenshot della mappa tramite MapLibre canvas buffer; se fallisce fai fallback con html2canvas sul div #map
-        map.once('render', () => {
-            try {
-                const snapshotUrl = map.getCanvas().toDataURL('image/png');
-                document.getElementById('composerMapSnapshot').src = snapshotUrl;
-                printComposerOverlay.classList.remove('hidden');
-            } catch (err) {
-                // fallback usando html2canvas del div #map
-                console.warn('Impossibile catturare snapshot della mappa tramite canvas (probabile CORS). Provo fallback con html2canvas...', err);
-                const mapEl = document.getElementById('map');
-                if (typeof html2canvas !== 'undefined' && mapEl) {
-                    html2canvas(mapEl, { scale: 1, useCORS: true }).then(canvas => {
-                        try {
-                            const dataUrl = canvas.toDataURL('image/png');
-                            document.getElementById('composerMapSnapshot').src = dataUrl;
-                        } catch (e) {
-                            console.warn('Fallback html2canvas ha prodotto canvas non utilizzabile:', e);
-                            document.getElementById('composerMapSnapshot').src = '';
-                        }
-                        printComposerOverlay.classList.remove('hidden');
-                    }).catch(e => {
-                        console.warn('html2canvas fallback fallito:', e);
-                        alert('Impossibile creare l\'anteprima della mappa a causa di restrizioni CORS sulle risorse remote. Vedi README per soluzioni. Verrà comunque aperto il composer con una mappa vuota.');
-                        document.getElementById('composerMapSnapshot').src = '';
-                        printComposerOverlay.classList.remove('hidden');
-                    });
-                } else {
-                    alert('Impossibile creare l\'anteprima della mappa: html2canvas non disponibile.');
-                    document.getElementById('composerMapSnapshot').src = '';
-                    printComposerOverlay.classList.remove('hidden');
-                }
-            }
-        });
-        map.triggerRepaint();
-    });
-}
-
-if (closeComposerBtn) {
-    closeComposerBtn.addEventListener('click', () => printComposerOverlay.classList.add('hidden'));
-}
-
-if (downloadImageBtn) {
-    downloadImageBtn.addEventListener('click', () => {
-        const composerPage = document.getElementById('composerPage');
-        html2canvas(composerPage, { scale: 2, useCORS: true }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'my_world_map_layout.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            link.remove();
-        }).catch(err => alert('Errore esportazione immagine: ' + err.message));
-    });
-}
-
-// Logica Drag & Drop per gli elementi GIS nel Composer
-let activeDraggable = null;
-let dragOffsetX = 0, dragOffsetY = 0;
-
-document.querySelectorAll('.composer-element').forEach(el => {
-    el.addEventListener('mousedown', (e) => {
-        activeDraggable = el;
-        const rect = el.getBoundingClientRect();
-        dragOffsetX = e.clientX - rect.left;
-        dragOffsetY = e.clientY - rect.top;
-        e.stopPropagation();
-    });
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (!activeDraggable) return;
-    const parentRect = document.getElementById('composerPage').getBoundingClientRect();
-    let newX = e.clientX - parentRect.left - dragOffsetX;
-    let newY = e.clientY - parentRect.top - dragOffsetY;
-    
-    activeDraggable.style.left = `${newX}px`;
-    activeDraggable.style.top = `${newY}px`;
-    activeDraggable.style.right = 'auto';
-    activeDraggable.style.bottom = 'auto';
-});
-
-document.addEventListener('mouseup', () => {
-    activeDraggable = null;
-});
 
 const photoFileInput = document.getElementById('photoFileInput');
 const imageDropZone = document.getElementById('imageDropZone');
@@ -690,33 +535,21 @@ if (searchInput) {
         if (query.length < 3) return searchSuggestions.classList.add("hidden");
 
         searchDebounceTimeout = setTimeout(() => {
-            const lang = userProfile.language || 'it';
-            const cacheKey = `nominatim_search:${query}:${lang}`;
-            if (searchCache[cacheKey]) {
-                renderSearchSuggestions(searchCache[cacheKey]);
-                return;
-            }
-
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=${lang}`)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
                 .then(res => res.json())
                 .then(data => {
-                    searchCache[cacheKey] = data;
-                    renderSearchSuggestions(data);
+                    searchSuggestions.innerHTML = "";
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
+                            div.addEventListener("click", () => selectSearchResult(item));
+                            searchSuggestions.appendChild(div);
+                        });
+                        searchSuggestions.classList.remove("hidden");
+                    } else searchSuggestions.classList.add("hidden");
                 }).catch(() => searchSuggestions.classList.add("hidden"));
         }, 300);
     });
-}
-
-function renderSearchSuggestions(data) {
-    searchSuggestions.innerHTML = "";
-    if (data && data.length > 0) {
-        data.forEach(item => {
-            const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
-            div.addEventListener("click", () => selectSearchResult(item));
-            searchSuggestions.appendChild(div);
-        });
-        searchSuggestions.classList.remove("hidden");
-    } else searchSuggestions.classList.add("hidden");
 }
 
 function selectSearchResult(item) {
@@ -736,13 +569,15 @@ document.addEventListener("click", (e) => {
     if (!e.target.closest(".search-container")) searchSuggestions.classList.add("hidden");
     if (!e.target.closest(".city-search-box")) {
         const mainSugg = document.getElementById("mainCitySuggestions");
+        const knownSugg = document.getElementById("knownCitySuggestions");
         const visitedSugg = document.getElementById("visitedCitySuggestions");
         if (mainSugg) mainSugg.classList.add("hidden");
+        if (knownSugg) knownSugg.classList.add("hidden");
         if (visitedSugg) visitedSugg.classList.add("hidden");
     }
 });
 
-function setupCityAutocomplete(inputId, suggestionsId, isMain) {
+function setupCityAutocomplete(inputId, suggestionsId, type) {
     const inp = document.getElementById(inputId), sug = document.getElementById(suggestionsId);
     if (!inp || !sug) return;
     let timeout = null;
@@ -753,42 +588,29 @@ function setupCityAutocomplete(inputId, suggestionsId, isMain) {
         if (query.length < 2) return sug.classList.add("hidden");
 
         timeout = setTimeout(() => {
-            const lang = userProfile.language || 'it';
-            const cacheKey = `nominatim_search:${query}:${lang}`;
-            if (searchCache[cacheKey]) {
-                renderCitySuggestions(searchCache[cacheKey], sug, isMain);
-                return;
-            }
-
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=${lang}`)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
                 .then(res => res.json())
                 .then(data => {
-                    searchCache[cacheKey] = data;
-                    renderCitySuggestions(data, sug, isMain);
+                    sug.innerHTML = "";
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
+                            div.addEventListener("click", () => {
+                                addCityToProfileWithPolygon(item, type);
+                                inp.value = ""; sug.classList.add("hidden");
+                            });
+                            sug.appendChild(div);
+                        });
+                        sug.classList.remove("hidden");
+                    } else sug.classList.add("hidden");
                 });
         }, 300);
     });
 }
 
-function renderCitySuggestions(data, sug, isMain) {
-    sug.innerHTML = "";
-    if (data && data.length > 0) {
-        data.forEach(item => {
-            const div = document.createElement("div"); div.className = "suggestion-item"; div.textContent = item.display_name;
-            div.addEventListener("click", () => {
-                addCityToProfileWithPolygon(item, isMain);
-                const inp = isMain ? document.getElementById('mainCitySearchInput') : document.getElementById('visitedCitySearchInput');
-                if (inp) inp.value = "";
-                sug.classList.add("hidden");
-            });
-            sug.appendChild(div);
-        });
-        sug.classList.remove("hidden");
-    } else sug.classList.add("hidden");
-}
-
-function addCityToProfileWithPolygon(item, isMain) {
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(item.display_name)}&limit=1&accept-language=${userProfile.language || 'it'}`)
+function addCityToProfileWithPolygon(item, type) {
+    if (isSpectating) return alert("Non puoi modificare il profilo in modalità spettatore!");
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(item.display_name)}&limit=1`)
         .then(res => res.json())
         .then(data => {
             let geojson = null;
@@ -805,11 +627,14 @@ function addCityToProfileWithPolygon(item, isMain) {
                 geojson: geojson, 
                 boundingbox: boundingbox 
             };
-            if (isMain) {
+            if (type === 'main') {
                 if (!userProfile.mainCities) userProfile.mainCities = [];
                 if (userProfile.mainCities.length >= 2) return alert("Puoi impostare al massimo 2 città principali!");
                 userProfile.mainCities.push(cityObj);
-            } else {
+            } else if (type === 'known') {
+                if (!userProfile.knownPlaces) userProfile.knownPlaces = [];
+                userProfile.knownPlaces.push(cityObj);
+            } else if (type === 'visited') {
                 if (!userProfile.visitedCities) userProfile.visitedCities = [];
                 userProfile.visitedCities.push(cityObj);
             }
@@ -817,40 +642,38 @@ function addCityToProfileWithPolygon(item, isMain) {
             renderProfileCityChips(); 
             updateMacroCityMarkers(); 
             updateBoundariesAndUnexploredLayer();
-        }).catch(() => {
-            const cityObj = { name: item.display_name.split(",")[0], fullName: item.display_name, lat: parseFloat(item.lat), lng: parseFloat(item.lon), geojson: null, boundingbox: item.boundingbox };
-            if (isMain) {
-                if (!userProfile.mainCities) userProfile.mainCities = [];
-                if (userProfile.mainCities.length >= 2) return alert("Puoi impostare al massimo 2 città principali!");
-                userProfile.mainCities.push(cityObj);
-            } else {
-                if (!userProfile.visitedCities) userProfile.visitedCities = [];
-                userProfile.visitedCities.push(cityObj);
-            }
-            saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer();
-        });
+        }).catch(() => {});
 }
 
 function renderProfileCityChips() {
-    const mainList = document.getElementById("mainCitiesList"), visitedList = document.getElementById("visitedCitiesList");
-    if (!mainList || !visitedList) return;
+    const mainList = document.getElementById("mainCitiesList");
+    const knownList = document.getElementById("knownCitiesList");
+    if (!mainList || !knownList) return;
     
     mainList.innerHTML = "";
     (userProfile.mainCities || []).forEach((c, idx) => {
         const chip = document.createElement("div"); chip.className = "city-chip main-chip"; chip.innerHTML = `🏠 ${c.name} <span class="btn-remove-chip">✕</span>`;
-        chip.querySelector(".btn-remove-chip").addEventListener("click", () => { userProfile.mainCities.splice(idx, 1); saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer(); });
+        chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
+            if (isSpectating) return;
+            userProfile.mainCities.splice(idx, 1); saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer(); 
+        });
         mainList.appendChild(chip);
     });
-    
-    visitedList.innerHTML = "";
-    (userProfile.visitedCities || []).forEach((c, idx) => {
-        const chip = document.createElement("div"); chip.className = "city-chip"; chip.innerHTML = `✈️ ${c.name} <span class="btn-remove-chip">✕</span>`;
-        chip.querySelector(".btn-remove-chip").addEventListener("click", () => { userProfile.visitedCities.splice(idx, 1); saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer(); });
-        visitedList.appendChild(chip);
+
+    knownList.innerHTML = "";
+    (userProfile.knownPlaces || []).forEach((c, idx) => {
+        const chip = document.createElement("div"); chip.className = "city-chip known-chip"; chip.innerHTML = `📌 ${c.name} <span class="btn-remove-chip">✕</span>`;
+        chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
+            if (isSpectating) return;
+            userProfile.knownPlaces.splice(idx, 1); saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer(); 
+        });
+        knownList.appendChild(chip);
     });
 }
-setupCityAutocomplete("mainCitySearchInput", "mainCitySuggestions", true);
-setupCityAutocomplete("visitedCitySearchInput", "visitedCitySuggestions", false);
+
+setupCityAutocomplete("mainCitySearchInput", "mainCitySuggestions", 'main');
+setupCityAutocomplete("knownCitySearchInput", "knownCitySuggestions", 'known');
+setupCityAutocomplete("visitedCitySearchInput", "visitedCitySuggestions", 'visited');
 
 function loadStyleUI() {
     const cNat = document.getElementById('colorNature');
@@ -887,26 +710,61 @@ if (applyStyleBtn) {
     });
 }
 
-let places = JSON.parse(localStorage.getItem('My World Map_places')) || { "p1": { name: "Casa Mia", icon: "🏠", category: "Casa", tags: ["casa"], note: "Abitazione principale.", photo: "", lat: 41.9028, lng: 12.4964 } };
+let places = JSON.parse(localStorage.getItem('My World Map_places')) || { "p1": { name: "Casa Mia", icon: "🏠", category: "Casa", tags: ["casa"], note: "Abitazione principale.", photo: "", lat: 41.9028, lng: 12.4964, isPrivate: false } };
 let activeMarkers = [], currentSelectedPlaceId = null, pendingCoords = null, isEditingPlace = false;
 
 function saveState() {
+    if (isSpectating) return; // Non salvare nulla se siamo in modalità spettatore
     localStorage.setItem('My World Map_places', JSON.stringify(places));
     localStorage.setItem('My World Map_user', JSON.stringify(userProfile));
     updateProfileStats();
+}
+
+function getNeonSvgIcon(iconChar, category) {
+    const catLower = (category || '').toLowerCase();
+    const svgMap = {
+        barber: '<svg viewBox="0 0 24 24"><path d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm10-13.5l-3 3-1.41-1.41 3-3L16 2.5z"/></svg>',
+        cocktail: '<svg viewBox="0 0 24 24"><path d="M7.5 7L5.5 5h13l-2 2M11 9h2v6h-2zM12 17c-2.76 0-5 2.24-5 5h10c0-2.76-2.24-5-5-5z M19 3H5l7 8z"/></svg>',
+        gamepad: '<svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>',
+        home: '<svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
+        star: '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>',
+        work: '<svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0-2-.9-2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm10 15H4V8h16v11z"/></svg>',
+        plane: '<svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>',
+        food: '<svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.21 1.79 4 4 4v9h2v-9c2.21 0 4-1.79 4-4V2h-2v7zm12-3v2h-2v3c0 1.1-.9 2-2 2h-1v7h-2v-7h-1c-1.1 0-2-.9-2-2V6h6z"/></svg>',
+        coffee: '<svg viewBox="0 0 24 24"><path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/></svg>',
+        beer: '<svg viewBox="0 0 24 24"><path d="M4 5v14c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-2h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-2V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2zm12 2h2v6h-2V7z"/></svg>',
+        nature: '<svg viewBox="0 0 24 24"><path d="M17 12h2L12 2 5 12h2l-5 7h7v4h2v-4h7l-5-7z"/></svg>',
+        beach: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>',
+        hotel: '<svg viewBox="0 0 24 24"><path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/></svg>',
+        defaultPin: '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
+    };
+    if (catLower.includes('barbiere') || catLower.includes('parrucchiere') || iconChar === '💈') return svgMap.barber;
+    if (catLower.includes('cocktail') || iconChar === '🍸') return svgMap.cocktail;
+    if (catLower.includes('svago') || catLower.includes('cinema') || catLower.includes('teatro') || iconChar === '🎭') return svgMap.gamepad;
+    if (catLower.includes('pub') || catLower.includes('birreria') || iconChar === '🍺') return svgMap.beer;
+    if (catLower.includes('natura') || catLower.includes('parco') || iconChar === '🌲') return svgMap.nature;
+    if (catLower.includes('spiaggia') || catLower.includes('mare') || iconChar === '🏖️') return svgMap.beach;
+    if (catLower.includes('hotel') || catLower.includes('viaggio') || iconChar === '🧳') return svgMap.hotel;
+    if (catLower.includes('casa') || iconChar === '🏠') return svgMap.home;
+    if (catLower.includes('lavoro') || iconChar === '💼') return svgMap.work;
+    if (catLower.includes('aeroporto') || iconChar === '✈️') return svgMap.plane;
+    if (catLower.includes('ristorante') || catLower.includes('cibo') || iconChar === '🍽️') return svgMap.food;
+    if (catLower.includes('caffè') || catLower.includes('bar') || iconChar === '☕') return svgMap.coffee;
+    if (iconChar === '⭐') return svgMap.star;
+    return svgMap.defaultPin;
 }
 
 function createMarkerElement(item) {
     const el = document.createElement('div');
     el.className = 'custom-pin-wrapper';
     el.style.setProperty('--marker-color', userMapStyle.markerColor || '#3b82f6');
-    
     if (userMapStyle.iconStyle === 'neon') {
-        el.innerHTML = `<div class="pin-neon"><span>${item.icon}</span></div>`;
+        const svgCode = getNeonSvgIcon(item.icon, item.category);
+        el.innerHTML = `<div class="pin-neon"><div class="svg-icon">${svgCode}</div></div>`;
     } else if (userMapStyle.iconStyle === 'vintage') {
         el.innerHTML = `<div class="pin-vintage"><span>${item.icon}</span></div>`;
-    } else if (userMapStyle.iconStyle === 'cyberpunk') {
-        el.innerHTML = `<div class="pin-cyberpunk"><span>${item.icon}</span></div>`;
+    } else if (userMapStyle.iconStyle === 'arcade') {
+        el.innerHTML = `<div class="pin-arcade"><span>${item.icon}</span></div>`;
     } else {
         el.innerHTML = `<div class="pin-classico"><span>${item.icon}</span></div>`;
     }
@@ -918,6 +776,7 @@ function renderMarkers() {
     activeMarkers = [];
     Object.keys(places).forEach(id => {
         const item = places[id];
+        if (item.isPrivate && isSpectating) return; // Nascondi pin privati agli spettatori
         
         if (activeFilterCategory !== "ALL") {
             if (activeFilterCategory === "✈️") {
@@ -929,16 +788,19 @@ function renderMarkers() {
 
         const el = createMarkerElement(item);
         el.addEventListener('click', (e) => { e.stopPropagation(); removeTempSearchMarker(); openPlace(id); });
-        activeMarkers.push(new maplibregl.Marker({ element: el }).setLngLat([item.lng, item.lat]).addTo(map));
+        activeMarkers.push(new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([item.lng, item.lat]).addTo(map));
     });
 }
 
 function loadProfileUI() {
     const nameInput = document.getElementById('profileNameInput');
     if (nameInput) nameInput.value = userProfile.name || "";
-    
-    const langSelect = document.getElementById('languageSelect');
-    if (langSelect) langSelect.value = userProfile.language || "it";
+
+    const idDisplay = document.getElementById('myUserIdDisplay');
+    if (idDisplay) idDisplay.textContent = userProfile.userId || uniqueUserId;
+
+    const privacySelect = document.getElementById('mapPrivacySelect');
+    if (privacySelect) privacySelect.value = userProfile.privacy || "all";
 
     const imgEl = document.getElementById("profileAvatarImg");
     const placeholderEl = document.getElementById("avatarPlaceholder");
@@ -951,7 +813,13 @@ function loadProfileUI() {
         placeholderEl.classList.remove("hidden"); 
     }
     renderProfileCityChips(); 
+    renderFriendsList();
     updateProfileStats();
+}
+
+function loadSettingsUI() {
+    const settingsLangSel = document.getElementById('settingsLanguageSelect');
+    if (settingsLangSel) settingsLangSel.value = userProfile.language || "it";
 }
 
 function updateProfileStats() { 
@@ -962,7 +830,7 @@ function updateProfileStats() {
     const countEl = document.getElementById("totalPinsCount");
     if (countEl) countEl.textContent = totalPins;
 
-    const allCities = [...(userProfile.mainCities || []), ...(userProfile.visitedCities || [])];
+    const allCities = [...(userProfile.mainCities || []), ...(userProfile.knownPlaces || []), ...(userProfile.visitedCities || [])];
     const uniqueCitiesCount = allCities.length;
 
     const countriesSet = new Set();
@@ -1000,9 +868,143 @@ function updateProfileStats() {
     }
 }
 
+// Gestione Copia ID Amico
+const copyMyIdBtn = document.getElementById('copyMyIdBtn');
+if (copyMyIdBtn) {
+    copyMyIdBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(userProfile.userId || uniqueUserId);
+        alert("✅ ID Amico copiato negli appunti! Incollalo su WhatsApp o Telegram per farlo usare a un amico.");
+    });
+}
+
+// Gestione Lista Amici & Aggiunta
+function renderFriendsList() {
+    const container = document.getElementById('friendsListContainer');
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!userProfile.friends || userProfile.friends.length === 0) {
+        container.innerHTML = `<span style="font-size: 0.78rem; color: #64748b;">Nessun amico aggiunto. Inserisci un ID sopra per esplorare la sua mappa!</span>`;
+        return;
+    }
+
+    userProfile.friends.forEach((friend, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'friend-chip';
+        chip.innerHTML = `
+            <span>👤 ${friend.name || 'Amico'} (${friend.userId})</span>
+            <div style="display: flex; gap: 6px;">
+                <button class="btn-spectate" style="background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">👁️ Guarda</button>
+                <button class="btn-remove-friend" style="color: #fca5a5;">✕</button>
+            </div>
+        `;
+        chip.querySelector('.btn-spectate').addEventListener('click', () => {
+            document.getElementById('profileModal').classList.remove('open');
+            startSpectating(friend);
+        });
+        chip.querySelector('.btn-remove-friend').addEventListener('click', () => {
+            userProfile.friends.splice(idx, 1);
+            saveState();
+            renderFriendsList();
+        });
+        container.appendChild(chip);
+    });
+}
+
+const addFriendBtn = document.getElementById('addFriendBtn');
+if (addFriendBtn) {
+    addFriendBtn.addEventListener('click', () => {
+        const input = document.getElementById('friendIdInput');
+        const friendId = input ? input.value.trim().toUpperCase() : "";
+        if (!friendId) return alert("Inserisci un ID Amico valido!");
+        if (friendId === (userProfile.userId || uniqueUserId)) return alert("Non puoi aggiungere te stesso!");
+
+        if (!userProfile.friends) userProfile.friends = [];
+        
+        // Simulazione caricamento profilo amico (o recupero dati di test mock se file non presente)
+        // In un contesto reale P2P, l'amico ti passa il suo file backup JSON o stringa dati.
+        // Qui permettiamo di importare il backup dell'amico tramite file o simuliamo un profilo di test.
+        const mockFriendProfile = {
+            userId: friendId,
+            name: "Amico di " + friendId.slice(-4),
+            userProfile: { name: "Amico " + friendId.slice(-4), mainCities: [{ name: "Parigi", lat: 48.8566, lng: 2.3522 }], knownPlaces: [], visitedCities: [], privacy: "all" },
+            places: { "fp1": { name: "Tour Eiffel", icon: "🏛️", category: "Cultura", lat: 48.8584, lng: 2.2945, note: "Bellissima!", isPrivate: false } }
+        };
+
+        userProfile.friends.push(mockFriendProfile);
+        saveState();
+        renderFriendsList();
+        input.value = "";
+        alert("✅ Amico aggiunto con successo! Clicca su 'Guarda' per aprire la sua mappa in modalità spettatore.");
+    });
+}
+
+// Avvia Modalità Spettatore
+function startSpectating(friendData) {
+    if (!isSpectating) {
+        originalMyData = {
+            places: JSON.parse(JSON.stringify(places)),
+            userProfile: JSON.parse(JSON.stringify(userProfile))
+        };
+    }
+    isSpectating = true;
+
+    // Applica dati dell'amico in sola lettura
+    if (friendData.userProfile.privacy === 'private') {
+        return alert("🔒 La mappa di questo utente è impostata come privata!");
+    }
+
+    if (friendData.userProfile.privacy === 'cities') {
+        places = {}; // Nascondi i pin
+        alert("ℹ️ L'utente mostra solo le città e le statistiche (Pin nascosti per privacy).");
+    } else {
+        places = friendData.places || {};
+    }
+
+    userProfile = friendData.userProfile;
+    
+    // Mostra banner superiore spettatore
+    const banner = document.getElementById('spectatorBanner');
+    const bannerText = document.getElementById('spectatorBannerText');
+    if (banner && bannerText) {
+        bannerText.textContent = `👁️ Stai guardando la mappa in sola lettura di: ${friendData.name}`;
+        banner.classList.remove('hidden');
+    }
+
+    // Disabilita tasti modifica nel PlaceSheet
+    const footerBtns = document.getElementById('sheetFooterButtons');
+    if (footerBtns) footerBtns.style.display = 'none';
+
+    renderMarkers();
+    updateMacroCityMarkers();
+    updateBoundariesAndUnexploredLayer();
+}
+
+// Esci da Modalità Spettatore
+const exitSpectatorBtn = document.getElementById('exitSpectatorBtn');
+if (exitSpectatorBtn) {
+    exitSpectatorBtn.addEventListener('click', () => {
+        if (!isSpectating || !originalMyData) return;
+        places = originalMyData.places;
+        userProfile = originalMyData.userProfile;
+        isSpectating = false;
+        originalMyData = null;
+
+        document.getElementById('spectatorBanner').classList.add('hidden');
+        const footerBtns = document.getElementById('sheetFooterButtons');
+        if (footerBtns) footerBtns.style.display = 'flex';
+
+        renderMarkers();
+        updateMacroCityMarkers();
+        updateBoundariesAndUnexploredLayer();
+        alert("🗺️ Sei tornato sulla tua mappa personale.");
+    });
+}
+
 const profileAvatarFileInput = document.getElementById('profileAvatarFileInput');
 if (profileAvatarFileInput) {
     profileAvatarFileInput.addEventListener('change', (e) => {
+        if (isSpectating) return alert("Non puoi modificare il profilo in modalità spettatore!");
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
             if (!file.type.startsWith('image/')) return alert('Seleziona un file immagine.');
@@ -1022,17 +1024,28 @@ if (profileAvatarFileInput) {
 const saveProfileAvatarBtn = document.getElementById("saveProfileAvatar");
 if (saveProfileAvatarBtn) {
     saveProfileAvatarBtn.addEventListener("click", () => {
+        if (isSpectating) return alert("Non puoi salvare il profilo in modalità spettatore!");
         const nameInput = document.getElementById("profileNameInput");
-        const langSelect = document.getElementById("languageSelect");
-        
+        const privacySelect = document.getElementById("mapPrivacySelect");
         userProfile.name = nameInput ? (nameInput.value.trim() || "Utente") : "Utente";
-        if (langSelect) userProfile.language = langSelect.value;
+        if (privacySelect) userProfile.privacy = privacySelect.value;
         
         saveState(); 
         loadProfileUI(); 
-        applyLanguageTranslations();
-        
         document.getElementById("profileModal").classList.remove("open");
+    });
+}
+
+const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener("click", () => {
+        const settingsLangSel = document.getElementById("settingsLanguageSelect");
+        if (settingsLangSel) {
+            userProfile.language = settingsLangSel.value;
+        }
+        saveState();
+        applyLanguageTranslations();
+        document.getElementById("settingsModal").classList.remove("open");
     });
 }
 
@@ -1121,6 +1134,7 @@ if (flyToAirportBtn) {
 const deletePlaceBtn = document.getElementById("deletePlaceBtn");
 if (deletePlaceBtn) {
     deletePlaceBtn.addEventListener("click", () => {
+        if (isSpectating) return alert("Non puoi eliminare pin in modalità spettatore!");
         const lang = userProfile.language || 'it';
         const dict = translations[lang] || translations.it;
         if (currentSelectedPlaceId && confirm(dict.confirmDeletePin || "Eliminare questo pin?")) { 
@@ -1132,9 +1146,23 @@ if (deletePlaceBtn) {
     });
 }
 
+const movePlaceBtn = document.getElementById("movePlaceBtn");
+if (movePlaceBtn) {
+    movePlaceBtn.addEventListener("click", () => {
+        if (isSpectating) return alert("Non puoi spostare pin in modalità spettatore!");
+        if (!currentSelectedPlaceId) return;
+        isMovingExistingPlace = true;
+        if (placeSheet) placeSheet.classList.remove("open");
+        document.getElementById("mapPicker").classList.remove("hidden");
+        const place = places[currentSelectedPlaceId];
+        if (place) { map.flyTo({ center: [place.lng, place.lat], zoom: 16 }); }
+    });
+}
+
 const editPlaceBtn = document.getElementById("editPlaceBtn");
 if (editPlaceBtn) {
     editPlaceBtn.addEventListener("click", () => {
+        if (isSpectating) return alert("Non puoi modificare pin in modalità spettatore!");
         const place = places[currentSelectedPlaceId]; 
         if (!place) return;
         const lang = userProfile.language || 'it';
@@ -1145,6 +1173,8 @@ if (editPlaceBtn) {
         document.getElementById("customEmojiInput").value = place.icon;
         document.getElementById("tagsInput").value = (place.tags || []).join(",");
         document.getElementById("noteInput").value = place.note || "";
+        const privCheck = document.getElementById("privatePinCheck");
+        if (privCheck) privCheck.checked = !!place.isPrivate;
         
         if (place.photo) {
             currentBase64Photo = place.photo; 
@@ -1177,12 +1207,16 @@ if (gpsButton) {
 
 const addOptionButton = document.getElementById("addOptionButton");
 if (addOptionButton) {
-    addOptionButton.addEventListener("click", () => document.getElementById("mapPicker").classList.remove("hidden"));
+    addOptionButton.addEventListener("click", () => {
+        if (isSpectating) return alert("Non puoi aggiungere pin sulla mappa di un amico in modalità spettatore!");
+        document.getElementById("mapPicker").classList.remove("hidden");
+    });
 }
 
 const cancelPick = document.getElementById("cancelPick");
 if (cancelPick) {
     cancelPick.addEventListener("click", () => { 
+        isMovingExistingPlace = false;
         document.getElementById("mapPicker").classList.add("hidden"); 
         removeTempSearchMarker(); 
     });
@@ -1192,15 +1226,61 @@ const confirmPick = document.getElementById("confirmPick");
 if (confirmPick) {
     confirmPick.addEventListener("click", () => {
         const center = map.getCenter(); 
-        pendingCoords = { lat: center.lat, lng: center.lng }; 
+        const lat = center.lat;
+        const lng = center.lng;
+
+        if (isMovingExistingPlace && currentSelectedPlaceId) {
+            if (places[currentSelectedPlaceId]) {
+                places[currentSelectedPlaceId].lat = lat;
+                places[currentSelectedPlaceId].lng = lng;
+                saveState();
+                renderMarkers();
+                playSound('pop');
+                alert("✅ Posizione del pin aggiornata con successo!");
+            }
+            isMovingExistingPlace = false;
+            document.getElementById("mapPicker").classList.add("hidden");
+            openPlace(currentSelectedPlaceId);
+            return;
+        }
+
+        const allAllowedAreas = [
+            ...(userProfile.mainCities || []),
+            ...(userProfile.knownPlaces || []),
+            ...(userProfile.visitedCities || [])
+        ];
+
+        if (allAllowedAreas.length === 0) {
+            alert("⚠️ Prima di aggiungere un pin, devi aggiungere almeno una città principale, un luogo conosciuto o una città visitata nel tuo Profilo!");
+            return;
+        }
+
+        let isInsideAllowedArea = false;
+        allAllowedAreas.forEach(city => {
+            if (city.geojson && isPointInsideGeojson({ lat, lng }, city.geojson)) isInsideAllowedArea = true;
+            if (!isInsideAllowedArea && city.boundingbox && city.boundingbox.length === 4) {
+                const [latMin, latMax, lonMin, lonMax] = city.boundingbox.map(Number);
+                if (lat >= latMin && lat <= latMax && lng >= lonMin && lng <= lonMax) isInsideAllowedArea = true;
+            }
+            if (Math.hypot(lat - city.lat, lng - city.lng) < 0.15) isInsideAllowedArea = true;
+        });
+
+        if (!isInsideAllowedArea) {
+            alert("🚫 BLOCCO DI SICUREZZA: Non puoi posizionare pin in aree inesplorate o fuori dai confini delle tue città e luoghi conosciuti!");
+            return;
+        }
+
+        pendingCoords = { lat: lat, lng: lng }; 
         isEditingPlace = false;
         const lang = userProfile.language || 'it';
-        const dict =translations[lang] || translations.it;
+        const dict = translations[lang] || translations.it;
         document.getElementById("modalTitle").textContent = dict.newPinTitle;
         document.getElementById("placeInput").value = ""; 
         document.getElementById("customEmojiInput").value = "";
         document.getElementById("tagsInput").value = ""; 
         document.getElementById("noteInput").value = ""; 
+        const privCheck = document.getElementById("privatePinCheck");
+        if (privCheck) privCheck.checked = false;
         if(removePhotoBtn) removePhotoBtn.click();
         document.getElementById("mapPicker").classList.add("hidden"); 
         document.getElementById("addModal").classList.add("open");
@@ -1215,6 +1295,7 @@ if (savePlace) {
         const customEmoji = document.getElementById("customEmojiInput").value.trim();
         const [catName, defaultIcon] = document.getElementById("iconCategorySelect").value.split("|");
         const icon = customEmoji || defaultIcon;
+        const isPrivate = document.getElementById("privatePinCheck").checked;
         removeTempSearchMarker();
 
         const lang = userProfile.language || 'it';
@@ -1227,6 +1308,7 @@ if (savePlace) {
             places[currentSelectedPlaceId].tags = document.getElementById("tagsInput").value.split(",");
             places[currentSelectedPlaceId].photo = currentBase64Photo; 
             places[currentSelectedPlaceId].note = document.getElementById("noteInput").value || dict.noNotes;
+            places[currentSelectedPlaceId].isPrivate = isPrivate;
             renderMarkers(); 
             saveState(); 
             document.getElementById("addModal").classList.remove("open"); 
@@ -1241,7 +1323,8 @@ if (savePlace) {
                 photo: currentBase64Photo, 
                 note: document.getElementById("noteInput").value || dict.noNotes, 
                 lat: pendingCoords.lat, 
-                lng: pendingCoords.lng 
+                lng: pendingCoords.lng,
+                isPrivate: isPrivate
             };
             playSound('pop');
             renderMarkers(); 
@@ -1273,10 +1356,51 @@ if (exportJsonBtn) {
     });
 }
 
-const helpButton = document.getElementById("helpButton");
-const closeHelp = document.getElementById("closeHelp");
-if (helpButton) helpButton.addEventListener("click", () => document.getElementById("helpModal").classList.add("open"));
-if (closeHelp) closeHelp.addEventListener("click", () => document.getElementById("helpModal").classList.remove("open"));
+const importJsonBtn = document.getElementById("importJsonBtn");
+const importJsonFileInput = document.getElementById("importJsonFileInput");
+
+if (importJsonBtn && importJsonFileInput) {
+    importJsonBtn.addEventListener("click", () => importJsonFileInput.click());
+    importJsonFileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                if (importedData && importedData.places && importedData.userProfile) {
+                    if (confirm("⚠️ Importando questo backup i dati attuali verranno sovrascritti. Vuoi procedere?")) {
+                        places = importedData.places;
+                        userProfile = importedData.userProfile;
+                        saveState();
+                        renderMarkers();
+                        updateMacroCityMarkers();
+                        updateBoundariesAndUnexploredLayer();
+                        applyLanguageTranslations();
+                        loadProfileUI();
+                        loadSettingsUI();
+                        alert("✅ Dati importati con successo!");
+                        document.getElementById("settingsModal").classList.remove("open");
+                    }
+                } else {
+                    alert("❌ File di backup non valido o incompleto.");
+                }
+            } catch (err) {
+                alert("❌ Errore durante la lettura del file JSON.");
+            }
+            importJsonFileInput.value = "";
+        };
+        reader.readAsText(file);
+    });
+}
+
+const settingsButton = document.getElementById("settingsButton");
+if (settingsButton) {
+    settingsButton.addEventListener("click", () => {
+        loadSettingsUI();
+        document.getElementById("settingsModal").classList.add("open");
+    });
+}
 
 const closeSheet = document.getElementById("closeSheet");
 if (closeSheet) closeSheet.addEventListener("click", () => placeSheet.classList.remove("open"));
@@ -1299,4 +1423,107 @@ if (closeProfile) {
     closeProfile.addEventListener("click", () => {
         document.getElementById("profileModal").classList.remove("open");
     });
+}
+
+// Diario di viaggio
+const openDiaryBtn = document.getElementById("openDiaryBtn");
+const diaryModal = document.getElementById("diaryModal");
+const closeDiaryBtn = document.getElementById("closeDiaryBtn");
+const diaryCitySelect = document.getElementById("diaryCitySelect");
+const diaryPinsContainer = document.getElementById("diaryPinsContainer");
+
+if (openDiaryBtn) {
+    openDiaryBtn.addEventListener("click", () => {
+        diaryCitySelect.innerHTML = `<option value="">-- Seleziona una città visitata --</option>`;
+        (userProfile.visitedCities || []).forEach((c, idx) => {
+            const opt = document.createElement("option");
+            opt.value = idx;
+            opt.textContent = `✈️ ${c.name} (${c.fullName || ''})`;
+            diaryCitySelect.appendChild(opt);
+        });
+        diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Seleziona una città per visualizzare i pin correlati.</p>`;
+        diaryModal.classList.add("open");
+    });
+}
+
+if (closeDiaryBtn) {
+    closeDiaryBtn.addEventListener("click", () => diaryModal.classList.remove("open"));
+}
+
+if (diaryCitySelect) {
+    diaryCitySelect.addEventListener("change", function() {
+        const cityIdx = this.value;
+        if (cityIdx === "") {
+            diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Seleziona una città per visualizzare i pin correlati.</p>`;
+            return;
+        }
+        const city = userProfile.visitedCities[cityIdx];
+        if (!city) return;
+
+        diaryPinsContainer.innerHTML = "";
+        let matchedPins = [];
+        Object.keys(places).forEach(id => {
+            const p = places[id];
+            if (p.isPrivate && isSpectating) return;
+            let isInside = false;
+            if (city.boundingbox && city.boundingbox.length === 4) {
+                const [latMin, latMax, lonMin, lonMax] = city.boundingbox.map(Number);
+                if (p.lat >= latMin && p.lat <= latMax && p.lng >= lonMin && p.lng <= lonMax) isInside = true;
+            }
+            const dist = Math.hypot(p.lat - city.lat, p.lng - city.lng);
+            if (isInside || dist < 0.35) matchedPins.push({ id, ...p });
+        });
+
+        if (matchedPins.length === 0) {
+            diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 20px;">Nessun pin trovato per ${city.name}.</p>`;
+        } else {
+            matchedPins.forEach(pin => {
+                const card = document.createElement("div");
+                card.style.background = "rgba(255,255,255,0.04)";
+                card.style.border = "1px solid rgba(255,255,255,0.08)";
+                card.style.borderRadius = "8px";
+                card.style.padding = "10px";
+                card.style.display = "flex";
+                card.style.alignItems = "center";
+                card.style.justifyContent = "space-between";
+                card.style.gap = "10px";
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.4rem;">${pin.icon}</span>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem; color: #fff;">${pin.name}</div>
+                            <div style="font-size: 0.75rem; color: #94a3b8;">${pin.category}</div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem; flex: unset;">Vai al Pin 📍</button>
+                `;
+                card.querySelector("button").addEventListener("click", () => {
+                    diaryModal.classList.remove("open");
+                    document.getElementById("profileModal").classList.remove("open");
+                    map.flyTo({ center: [pin.lng, pin.lat], zoom: 16, speed: 1.2 });
+                    setTimeout(() => openPlace(pin.id), 1000);
+                });
+                diaryPinsContainer.appendChild(card);
+            });
+        }
+    });
+}
+
+function isPointInsideGeojson(point, geojson) {
+    const x = point.lng, y = point.lat;
+    function rayCast(polygonCoords) {
+        let inside = false;
+        for (let i = 0, j = polygonCoords.length - 1; i < polygonCoords.length; j = i++) {
+            const xi = polygonCoords[i][0], yi = polygonCoords[i][1];
+            const xj = polygonCoords[j][0], yj = polygonCoords[j][1];
+            const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+    if (geojson.type === "Polygon") return rayCast(geojson.coordinates[0]);
+    else if (geojson.type === "MultiPolygon") {
+        for (let poly of geojson.coordinates) { if (rayCast(poly[0])) return true; }
+    }
+    return false;
 }
