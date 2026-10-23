@@ -227,19 +227,59 @@ body, html {
     font-size: 1.1rem;
 }
 
+/* Colori dello stile Vice City */
+:root {
+  --neon-pink: #ff4fd8;
+  --neon-blue: #00eaff;
+  --neon-purple: #9b4dff;
+  --neon-background: #100b24;
+}
+
+/* ==========================================
+   STILE PIN NEON (FORMA A GOCCIA CLASSICA E APPUNTITA)
+   ========================================== */
 .pin-neon {
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(4px);
-    border: 2px solid var(--marker-color, #38bdf8);
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-purple) 100%);
+    /* Crea la goccia classica appuntita in basso a destra */
+    border-radius: 50% 50% 50% 0;
+    /* Ruota di -45 gradi per posizionare la punta esattamente in basso */
+    transform: rotate(-45deg);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px var(--marker-color, #38bdf8);
+    box-shadow: 0 0 14px var(--neon-pink), inset 0 0 8px rgba(255, 255, 255, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.pin-neon span { font-size: 1.1rem; }
+
+/* Raddrizza l'icona interna altrimenti rimarrebbe ruotata */
+.pin-neon .svg-icon {
+    width: 20px;
+    height: 20px;
+    fill: #ffffff;
+    transform: rotate(45deg);
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.8));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pin-neon .svg-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: #ffffff;
+}
+
+.pin-neon:hover {
+    transform: rotate(-45deg) scale(1.15);
+    background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+    box-shadow: 0 0 22px var(--neon-blue), inset 0 0 12px rgba(255, 255, 255, 0.8);
+}  
+
 
 .pin-vintage {
     background: var(--marker-color, #b45309);
@@ -254,18 +294,18 @@ body, html {
 }
 .pin-vintage span { font-size: 1.1rem; }
 
-.pin-cyberpunk {
-    background: var(--marker-color, #831843);
-    border: 2px solid #fb7185;
+.pin-arcade {
+    background: #000000;
+    border: 3px solid var(--marker-color, #22c55e);
     width: 38px;
     height: 38px;
-    clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
+    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px var(--marker-color, #fb7185);
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8), 0 0 8px var(--marker-color, #22c55e);
 }
-.pin-cyberpunk span { font-size: 1rem; }
+.pin-arcade span { font-size: 1.1rem; filter: drop-shadow(1px 1px 0px #fff); }
 
 .temp-search-marker {
     cursor: pointer;
@@ -309,184 +349,12 @@ body, html {
     transform: translate(-50%, -50%);
 }
 .macro-city-marker.main { border-color: #38bdf8; color: #38bdf8; }
+.macro-city-marker.known { border-color: #f59e0b; color: #f59e0b; }
 .macro-city-marker.visited { border-color: #34d399; color: #34d399; }
 
 @keyframes bounce {
     0%, 100% { transform: translate(-50%, -100%) translateY(0); }
     50% { transform: translate(-50%, -100%) translateY(-6px); }
-}
-
-/* ==========================================
-   LAYOUT DI STAMPA & COMPOSER GIS (QGIS STYLE)
-   ========================================== */
-.print-composer-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(2, 6, 23, 0.94);
-    backdrop-filter: blur(8px);
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-}
-
-.composer-toolbar {
-    height: 60px;
-    background: #0f172a;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-}
-
-.composer-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #38bdf8;
-}
-
-.composer-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.composer-workspace-wrapper {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    overflow: auto;
-}
-
-.composer-page {
-    position: relative;
-    background: #ffffff;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-    border: 4px solid #334155;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.composer-page.landscape {
-    width: 960px;
-    height: 540px;
-}
-
-.composer-page.portrait {
-    width: 595px;
-    height: 842px;
-}
-
-.composer-page.square {
-    width: 650px;
-    height: 650px;
-}
-
-.composer-map-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
-
-.composer-map-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Elementi Trascinabili GIS (Draggable Boxes) */
-.composer-element {
-    position: absolute;
-    z-index: 2;
-    cursor: grab;
-    user-select: none;
-    transition: box-shadow 0.2s;
-}
-
-.composer-element:active {
-    cursor: grabbing;
-}
-
-#compTitleBox {
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 14px;
-    border-radius: 8px;
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-#compTitleBox h2 {
-    font-size: 1.1rem;
-    color: #fff;
-    margin: 0;
-}
-
-#compNorthBox {
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 12px;
-    border-radius: 8px;
-    color: #fff;
-    text-align: center;
-    font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.north-arrow-symbol {
-    font-size: 1.1rem;
-    line-height: 1.1;
-    color: #38bdf8;
-}
-
-#compScaleBox {
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 6px 12px;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 0.75rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.scale-line {
-    width: 100px;
-    height: 4px;
-    border: 1px solid #fff;
-    border-top: none;
-    margin-top: 3px;
-}
-
-#compLegendBox {
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 10px;
-    border-radius: 8px;
-    color: #fff;
-    min-width: 140px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.legend-box-content h4 {
-    font-size: 0.8rem;
-    color: #38bdf8;
-    margin-bottom: 6px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 3px;
-}
-.legend-item-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    margin-bottom: 3px;
 }
 
 /* ==========================================
@@ -765,6 +633,7 @@ body, html {
     color: #fff;
 }
 .city-chip.main-chip { border-color: #38bdf8; color: #38bdf8; }
+.city-chip.known-chip { border-color: #f59e0b; color: #f59e0b; }
 .btn-remove-chip { cursor: pointer; opacity: 0.7; font-size: 0.7rem; }
 .btn-remove-chip:hover { opacity: 1; color: #fca5a5; }
 
@@ -779,3 +648,42 @@ body, html {
 .color-picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .color-picker-grid label { font-size: 0.72rem; }
 .color-picker-grid input { width: 100%; height: 28px; border: none; border-radius: 6px; background: transparent; cursor: pointer; }
+
+/* ==========================================
+   MODALITÀ SPETTATORE & AMICI
+   ========================================== */
+.spectator-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(90deg, #0284c7, #3b82f6);
+    color: #fff;
+    padding: 10px 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.friend-chip {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #38bdf8;
+    width: 100%;
+}
+.friend-chip button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
