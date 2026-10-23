@@ -14,6 +14,12 @@
     <!-- Mappa Principale -->
     <div id="map"></div>
 
+    <!-- Banner Modalità Spettatore (Amico) -->
+    <div id="spectatorBanner" class="spectator-banner hidden">
+        <span id="spectatorBannerText">👁️ Stai guardando la mappa di Nome Amico</span>
+        <button id="exitSpectatorBtn" class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem;">Torna alla mia mappa 🗺️</button>
+    </div>
+
     <!-- Gruppo Ricerca & Filtro a Tendina Compact -->
     <div class="search-filters-wrapper">
         <div class="search-container">
@@ -42,11 +48,9 @@
     <!-- Pulsanti di Navigazione Fluttuanti (Destra) -->
     <div class="floating-controls">
         <button id="gpsButton" title="La mia Posizione">🎯</button>
-        <button id="dayNightButton" title="Cambia Modalità Giorno/Notte">🌓</button>
         <button id="styleButton" title="Stile Mappa">🎨</button>
-        <button id="printLayoutBtn" title="Stampa / Esporta Mappa (GIS)">🖨️</button>
         <button id="addOptionButton" title="Aggiungi Pin">📍</button>
-        <button id="helpButton" title="Istruzioni d'Uso">❓</button>
+        <button id="settingsButton" title="Impostazioni">⚙️</button>
         <button id="profileNavBtn" title="Profilo Utente">👤</button>
     </div>
 
@@ -57,78 +61,6 @@
             <span data-i18n="pickerText">Sposta la mappa per posizionare il pin</span>
             <button id="confirmPick" class="btn-primary" data-i18n="confirm">Conferma Posizione</button>
             <button id="cancelPick" class="btn-secondary" data-i18n="cancel">Annulla</button>
-        </div>
-    </div>
-
-    <!-- Modal Configurazione Layout di Stampa (GIS Print Composer) -->
-    <div id="printModal" class="modal">
-        <div class="modal-content print-config-modal">
-            <h2 data-i18n="printModalTitle">🖨️ Esporta / Stampa Mappa (GIS Layout)</h2>
-            
-            <label data-i18n="lblPrintTitle">Titolo Mappa / Map Title</label>
-            <input type="text" id="printTitleInput" value="My World Map Studio">
-
-            <label data-i18n="lblPrintFormat">Formato Pagina / Page Format</label>
-            <select id="printFormatSelect">
-                <option value="landscape">Orizzontale (Landscape 16:9)</option>
-                <option value="portrait">Verticale (Portrait A4)</option>
-                <option value="square">Quadrato (Social Post 1:1)</option>
-            </select>
-
-            <h3 style="margin-top: 12px; font-size: 0.9rem; color: #38bdf8;" data-i18n="lblPrintElements">Elementi Opzionali Layout</h3>
-            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; margin-top: 4px;">
-                <label><input type="checkbox" id="chkNorthArrow" checked> <span data-i18n="chkNorth">Mostra Freccia del Nord 🧭</span></label>
-                <label><input type="checkbox" id="chkScaleBar" checked> <span data-i18n="chkScale">Mostra Scala Grafica 📏</span></label>
-                <label><input type="checkbox" id="chkLegend" checked> <span data-i18n="chkLegend">Mostra Legenda Pin 📋</span></label>
-            </div>
-
-            <div class="modal-actions" style="margin-top: 15px;">
-                <button id="generatePrintPreviewBtn" class="btn-primary" data-i18n="btnOpenComposer">Apri Anteprima di Stampa</button>
-                <button id="closePrintModal" class="btn-secondary" data-i18n="btnClose">Chiudi</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Anteprima di Stampa Interattiva (GIS Composer Canvas Overlay) -->
-    <div id="printComposerOverlay" class="print-composer-overlay hidden">
-        <div class="composer-toolbar">
-            <div class="composer-title" id="composerToolbarTitle">Layout Editor - Trascina gli elementi per posizionarli</div>
-            <div class="composer-actions">
-                <button id="downloadImageBtn" class="btn-primary" data-i18n="btnDownloadImg">💾 Salva Immagine (PNG)</button>
-                <button id="closeComposerBtn" class="btn-secondary" data-i18n="btnClose">✕ Esci</button>
-            </div>
-        </div>
-        
-        <div class="composer-workspace-wrapper">
-            <div id="composerPage" class="composer-page landscape">
-                <!-- Mappa Catturata come Immagine di Sfondo -->
-                <div id="composerMapCanvasContainer" class="composer-map-container">
-                    <img id="composerMapSnapshot" src="" alt="Map Snapshot">
-                </div>
-
-                <!-- Elementi Trascinabili in stile QGIS -->
-                <div id="compTitleBox" class="composer-element draggable-box" style="top: 20px; left: 20px;">
-                    <h2 id="compHeaderTitle">My World Map Studio</h2>
-                </div>
-
-                <div id="compNorthBox" class="composer-element draggable-box" style="top: 20px; right: 20px;">
-                    <div class="north-arrow-symbol">N<br>⬆️</div>
-                </div>
-
-                <div id="compScaleBox" class="composer-element draggable-box" style="bottom: 25px; left: 20px;">
-                    <div class="scale-bar-widget">
-                        <span id="scaleBarText">0 — 5 km</span>
-                        <div class="scale-line"></div>
-                    </div>
-                </div>
-
-                <div id="compLegendBox" class="composer-element draggable-box" style="bottom: 25px; right: 20px;">
-                    <div class="legend-box-content">
-                        <h4 data-i18n="legendHeader">Legenda Pin</h4>
-                        <div id="composerLegendItems"></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -166,6 +98,12 @@
 
             <label data-i18n="lblTags">Tag (separati da virgola)</label>
             <input type="text" id="tagsInput" placeholder="relax, cibo, estate">
+
+            <!-- Checkbox Privacy Pin -->
+            <div style="display: flex; align-items: center; gap: 8px; margin: 4px 0; background: rgba(255,255,255,0.04); padding: 8px; border-radius: 8px;">
+                <input type="checkbox" id="privatePinCheck" style="width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer;">
+                <label for="privatePinCheck" style="cursor: pointer; color: #cbd5e1; font-size: 0.82rem; margin: 0;">🔒 Pin Privato (Nascondi agli amici in modalità spettatore)</label>
+            </div>
 
             <label data-i18n="lblUploadPhoto">Carica Foto</label>
             <div id="imageDropZone" class="drop-zone">
@@ -217,37 +155,61 @@
             <p id="placeNote" data-i18n="noNotes">Nessuna nota presente.</p>
             <div id="placeTags" class="tags-list"></div>
         </div>
-        <div class="sheet-footer">
+        <div class="sheet-footer" id="sheetFooterButtons">
             <button id="editPlaceBtn" class="btn-secondary" data-i18n="btnEdit">✏️ Modifica</button>
+            <button id="movePlaceBtn" class="btn-secondary" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">📍 Sposta</button>
             <button id="deletePlaceBtn" class="btn-danger" data-i18n="btnDelete">🗑️ Elimina</button>
         </div>
     </div>
 
-    <!-- Modal Guida / Istruzioni d'Uso Completa -->
-    <div id="helpModal" class="modal">
+    <!-- Modal Impostazioni -->
+    <div id="settingsModal" class="modal">
         <div class="modal-content help-modal-content">
-            <h2 data-i18n="helpTitle">📖 Guida Completa all'Uso</h2>
-            <div class="help-body">
+            <h2 data-i18n="settingsTitle">⚙️ Impostazioni</h2>
+            
+            <div style="margin: 10px 0; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+                <label data-i18n="lblLanguage" style="display: block; margin-bottom: 6px;">Lingua Applicazione / Language</label>
+                <select id="settingsLanguageSelect" style="width: 100%; padding: 8px; background: #0f172a; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;">
+                    <option value="it">🇮🇹 Italiano</option>
+                    <option value="en">🇬🇧 English</option>
+                </select>
+            </div>
+
+            <!-- Sezione Gestione Backup Dati (Export / Import) -->
+            <div style="margin: 10px 0; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+                <h3 style="color: #38bdf8; font-size: 0.95rem; margin-bottom: 8px;">💾 Gestione Dati Backup</h3>
+                <div style="display: flex; gap: 8px;">
+                    <button id="exportJsonBtn" type="button" class="btn-primary" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #38bdf8, #2563eb);">📥 Esporta (JSON)</button>
+                    <button id="importJsonBtn" type="button" class="btn-secondary" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.1);">📤 Importa (JSON)</button>
+                </div>
+                <input type="file" id="importJsonFileInput" accept=".json" style="display: none !important;">
+            </div>
+
+            <hr class="modal-divider" style="margin: 15px 0;">
+            <h3 data-i18n="helpTitle" style="color: #38bdf8; font-size: 1rem; margin-bottom: 8px;">📖 Guida e Istruzioni d'Uso</h3>
+
+            <div class="help-body" style="max-height: 200px; overflow-y: auto; padding-right: 5px;">
                 <div class="help-section">
                     <h3 data-i18n="helpSec1Title">🔍 Ricerca e Filtri</h3>
-                    <p data-i18n="helpSec1Text">Usa la barra di ricerca per trovare qualsiasi città o indirizzo globale con suggerimenti automatici.</p>
+                    <p data-i18n="helpSec1Text">Usa la barra di ricerca per trovare qualsiasi città o indirizzo globale con suggerimenti automatici. Il pulsante Filtra Categoria consente di mostrare sulla mappa solo i pin appartenenti a una specifica categoria.</p>
                 </div>
-                <div class="help-section">
+                <div class="help-section" style="margin-top: 10px;">
                     <h3 data-i18n="helpSec2Title">📍 Aggiunta e Gestione Pin</h3>
-                    <p data-i18n="helpSec2Text">Premi il tasto per attivare il mirino centrale sulla mappa e salvare luoghi con note, tag e foto.</p>
+                    <p data-i18n="helpSec2Text">Premi il tasto per attivare il mirino centrale sulla mappa. Sposta la mappa fino al punto esatto, conferma e compila la scheda aggiungendo un nome, un'emoji, foto, tag e ricordi personali.</p>
                 </div>
-                <div class="help-section">
-                    <h3 data-i18n="helpSec3Title">🖨️ Stampa ed Esportazione GIS</h3>
-                    <p data-i18n="helpSec3Text">Usa il pulsante di stampa per creare un layout personalizzato con titolo, freccia del nord, scala e legenda trascinabili.</p>
+                <div class="help-section" style="margin-top: 10px;">
+                    <h3 data-i18n="helpSec3Title">✈️ Voli Animati tra Aeroporti</h3>
+                    <p data-i18n="helpSec3Text">Quando selezioni la categoria Aeroporto per un pin, apri la sua scheda per scegliere un altro aeroporto memorizzato e spiccare il volo.</p>
                 </div>
             </div>
-            <div class="modal-actions">
-                <button id="closeHelp" class="btn-primary" data-i18n="btnGotIt">Ho Capito</button>
+
+            <div class="modal-actions" style="margin-top: 15px;">
+                <button id="saveSettingsBtn" type="button" class="btn-primary" data-i18n="btnSaveSettings">Salva e Chiudi</button>
             </div>
         </div>
     </div>
 
-  <!-- Modal Personalizzazione Stile Mappa -->
+    <!-- Modal Personalizzazione Stile Mappa -->
     <div id="styleModal" class="modal">
         <div class="modal-content">
             <h2 data-i18n="styleModalTitle">Personalizza Mappa</h2>
@@ -257,7 +219,7 @@
                 <option value="classico">Classico (Modern Pin 3D)</option>
                 <option value="neon">Neon (Glow & Glass)</option>
                 <option value="vintage">Vintage (Retrò / Pergamena)</option>
-                <option value="cyberpunk">Cyberpunk (Futuristico / Tech)</option>
+                <option value="arcade">🕹️ Arcade Retro (Pixel 8-bit)</option>
             </select>
 
             <label style="margin-top: 10px;" data-i18n="lblMarkerColor">Colore Personalizzato Marker</label>
@@ -279,7 +241,7 @@
         </div>
     </div>
 
-    <!-- Modal Profilo Utente -->
+    <!-- Modal Profilo Utente (Aggiornato con Amici e Privacy) -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <h2 data-i18n="profileTitle">Profilo Utente</h2>
@@ -294,41 +256,72 @@
                 </div>
             </div>
 
-            <!-- Selezione Lingua -->
-            <label style="margin-top: 8px;" data-i18n="lblLanguage">Lingua Applicazione / Language</label>
-            <select id="languageSelect">
-                <option value="it">🇮🇹 Italiano</option>
-                <option value="en">🇬🇧 English</option>
-            </select>
+            <!-- Box ID Utente Anonimo -->
+            <div style="margin-top: 10px; background: rgba(56, 189, 248, 0.08); border: 1px dashed rgba(56, 189, 248, 0.3); padding: 10px; border-radius: 9px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="font-size: 0.72rem; color: #94a3b8;">Il tuo ID Amico Anonimo:</div>
+                    <div id="myUserIdDisplay" style="font-family: monospace; font-weight: bold; color: #38bdf8; font-size: 0.9rem;">MAP-USER-XXXX</div>
+                </div>
+                <button id="copyMyIdBtn" class="btn-secondary" style="padding: 6px 10px; font-size: 0.75rem;">📋 Copia</button>
+            </div>
 
-            <label data-i18n="lblAvatarUpload">Carica Foto Profilo</label>
-            <div id="profileAvatarDropZone" class="drop-zone" style="margin-top: 5px; padding: 10px;">
+            <!-- Impostazioni Privacy Condivisione -->
+            <div style="margin-top: 10px; background: rgba(255,255,255,0.04); padding: 10px; border-radius: 9px;">
+                <label style="display: block; margin-bottom: 4px; font-size: 0.78rem;">🛡️ Privacy Condivisione Mappa con Amici</label>
+                <select id="mapPrivacySelect" style="width: 100%; padding: 6px; background: #0f172a; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 7px; font-size: 0.82rem;">
+                    <option value="all">🌐 Mostra tutto (Pin pubblici e città)</option>
+                    <option value="cities">🏙️ Mostra solo Città e Statistiche (Nascondi Pin)</option>
+                    <option value="private">🔒 Mappa Privata (Nessuno può vederla)</option>
+                </select>
+            </div>
+
+            <label data-i18n="lblAvatarUpload" style="margin-top: 8px;">Carica Foto Profilo</label>
+            <div id="profileAvatarDropZone" class="drop-zone" style="margin-top: 2px; padding: 8px;">
                 <p style="font-size: 0.8rem; margin: 0; pointer-events: none;" data-i18n="avatarUploadText">Clicca qui per caricare l'immagine</p>
                 <input type="file" id="profileAvatarFileInput" accept="image/*" class="file-input-hidden">
             </div>
 
             <hr class="modal-divider">
+
+            <!-- Sezione Amici -->
+            <h3 style="color: #38bdf8; font-size: 0.95rem;">👥 I Miei Amici & Cerca</h3>
+            <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <input type="text" id="friendIdInput" placeholder="Incolla ID Amico (es. MAP-USER-...)" style="font-size: 0.8rem; flex: 1;">
+                <button id="addFriendBtn" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; flex: unset;">Aggiungi ➕</button>
+            </div>
+            <div id="friendsListContainer" class="city-chips-container" style="margin-top: 6px;"></div>
+
+            <hr class="modal-divider">
             <h3 data-i18n="lblKnownPlaces">Luoghi Conosciuti</h3>
             
-            <label data-i18n="lblMainCities">Città Principali (Max 2)</label>
+            <!-- Sezione 1: Città Principali / Casa -->
+            <label data-i18n="lblMainCities">🏠 Città Principali (Max 2)</label>
             <div class="city-search-box">
                 <input type="text" id="mainCitySearchInput" placeholder="Aggiungi città principale..." autocomplete="off">
                 <div id="mainCitySuggestions" class="suggestions-box hidden"></div>
             </div>
             <div id="mainCitiesList" class="city-chips-container"></div>
 
-            <label style="margin-top: 10px;" data-i18n="lblVisitedCities">Città Visitate</label>
+            <!-- Sezione 2: Luoghi Conosciuti -->
+            <label style="margin-top: 10px;" data-i18n="lblKnownSection">📌 Luoghi Conosciuti</label>
+            <div class="city-search-box">
+                <input type="text" id="knownCitySearchInput" placeholder="Aggiungi luogo conosciuto..." autocomplete="off">
+                <div id="knownCitySuggestions" class="suggestions-box hidden"></div>
+            </div>
+            <div id="knownCitiesList" class="city-chips-container"></div>
+
+            <!-- Sezione 3: Città Visitate & Diario -->
+            <label style="margin-top: 10px;" data-i18n="lblVisitedCities">✈️ Città Visitate & Diario</label>
             <div class="city-search-box">
                 <input type="text" id="visitedCitySearchInput" placeholder="Aggiungi città visitata..." autocomplete="off">
                 <div id="visitedCitySuggestions" class="suggestions-box hidden"></div>
             </div>
-            <div id="visitedCitiesList" class="city-chips-container"></div>
 
             <!-- Contenitore Statistiche Avanzate -->
             <div id="advancedStatsContainer"></div>
 
-            <div class="profile-actions" style="margin-top: 15px;">
-                <button id="exportJsonBtn" class="btn-export" style="background: linear-gradient(135deg, #38bdf8, #2563eb);" data-i18n="btnBackup">📥 Backup Dati (JSON)</button>
+            <div class="profile-actions" style="margin-top: 15px; display: flex; gap: 8px;">
+                <button id="openDiaryBtn" class="btn-secondary" style="flex: 1; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">📖 Apri Diario di Viaggio</button>
             </div>
 
             <div class="modal-actions">
@@ -338,8 +331,28 @@
         </div>
     </div>
 
-    <!-- Html2Canvas per la cattura dell'immagine di stampa -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Modale Diario di Viaggio -->
+    <div id="diaryModal" class="modal">
+        <div class="modal-content" style="width: 500px; max-width: 95vw;">
+            <h2>📖 Diario di Viaggio</h2>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px;">Seleziona una città visitata per esplorare tutti i pin e i ricordi georeferenziati associati.</p>
+            
+            <div id="diaryCitySelectorContainer" style="margin-bottom: 15px;">
+                <select id="diaryCitySelect" style="width: 100%; padding: 10px; background: #0f172a; color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 9px;">
+                    <option value="">-- Seleziona una città visitata --</option>
+                </select>
+            </div>
+
+            <div id="diaryPinsContainer" style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Nessuna città selezionata o nessun pin trovato.</p>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 15px;">
+                <button id="closeDiaryBtn" class="btn-secondary">Chiudi Diario</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MapLibre GL JS -->
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <script src="script.js"></script>
