@@ -209,7 +209,7 @@
         </div>
     </div>
 
-    <!-- Modal Personalizzazione Stile Mappa -->
+    <!-- Modal Personalizzazione Stile Mappa (Aggiornato con Parchi e Spiagge) -->
     <div id="styleModal" class="modal">
         <div class="modal-content">
             <h2 data-i18n="styleModalTitle">Personalizza Mappa</h2>
@@ -225,13 +225,15 @@
             <label style="margin-top: 10px;" data-i18n="lblMarkerColor">Colore Personalizzato Marker</label>
             <input type="color" id="markerCustomColor" value="#3b82f6" style="width:100%; height:38px; border:none; border-radius:8px; cursor:pointer; background:transparent;">
 
-            <h3 style="margin-top: 15px;" data-i18n="lblMapColors">Colori Mappa</h3>
+            <h3 style="margin-top: 15px;" data-i18n="lblMapColors">Colori Mappa Dettagliati</h3>
             <div class="color-picker-grid">
-                <div><label data-i18n="colNature">Natura</label><input type="color" id="colorNature" value="#14532d"></div>
-                <div><label data-i18n="colWater">Acqua</label><input type="color" id="colorWater" value="#1e3a8a"></div>
-                <div><label data-i18n="colBuilding">Edifici</label><input type="color" id="colorBuilding" value="#1e293b"></div>
-                <div><label data-i18n="colRoad">Strade</label><input type="color" id="colorRoad" value="#334155"></div>
-                <div><label data-i18n="colRailway">Ferrovie</label><input type="color" id="colorRailway" value="#64748b"></div>
+                <div><label data-i18n="colLand">🌍 Terra / Sfondo</label><input type="color" id="colorLand" value="#0f172a"></div>
+                <div><label data-i18n="colWater">💧 Acqua</label><input type="color" id="colorWater" value="#1e3a8a"></div>
+                <div><label data-i18n="colParks">🌲 Parchi & Boschi</label><input type="color" id="colorParks" value="#14532d"></div>
+                <div><label data-i18n="colBeaches">🏖️ Spiagge & Sabbia</label><input type="color" id="colorBeaches" value="#d97706"></div>
+                <div><label data-i18n="colBuilding">🏢 Edifici</label><input type="color" id="colorBuilding" value="#1e293b"></div>
+                <div><label data-i18n="colRoad">🛣️ Strade</label><input type="color" id="colorRoad" value="#334155"></div>
+                <div><label data-i18n="colRailway">🚆 Ferrovie</label><input type="color" id="colorRailway" value="#64748b"></div>
             </div>
 
             <div class="modal-actions">
@@ -241,7 +243,7 @@
         </div>
     </div>
 
-    <!-- Modal Profilo Utente (Aggiornato con Amici e Privacy) -->
+    <!-- Modal Profilo Utente -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <h2 data-i18n="profileTitle">Profilo Utente</h2>
@@ -316,6 +318,7 @@
                 <input type="text" id="visitedCitySearchInput" placeholder="Aggiungi città visitata..." autocomplete="off">
                 <div id="visitedCitySuggestions" class="suggestions-box hidden"></div>
             </div>
+            <div id="visitedCitiesList" class="city-chips-container"></div>
 
             <!-- Contenitore Statistiche Avanzate -->
             <div id="advancedStatsContainer"></div>
