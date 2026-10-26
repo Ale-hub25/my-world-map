@@ -227,7 +227,6 @@ body, html {
     font-size: 1.1rem;
 }
 
-/* Colori dello stile Vice City */
 :root {
   --neon-pink: #ff4fd8;
   --neon-blue: #00eaff;
@@ -235,16 +234,11 @@ body, html {
   --neon-background: #100b24;
 }
 
-/* ==========================================
-   STILE PIN NEON (FORMA A GOCCIA CLASSICA E APPUNTITA)
-   ========================================== */
 .pin-neon {
     width: 36px;
     height: 36px;
     background: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-purple) 100%);
-    /* Crea la goccia classica appuntita in basso a destra */
     border-radius: 50% 50% 50% 0;
-    /* Ruota di -45 gradi per posizionare la punta esattamente in basso */
     transform: rotate(-45deg);
     display: flex;
     align-items: center;
@@ -256,7 +250,6 @@ body, html {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Raddrizza l'icona interna altrimenti rimarrebbe ruotata */
 .pin-neon .svg-icon {
     width: 20px;
     height: 20px;
@@ -279,7 +272,6 @@ body, html {
     background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
     box-shadow: 0 0 22px var(--neon-blue), inset 0 0 12px rgba(255, 255, 255, 0.8);
 }  
-
 
 .pin-vintage {
     background: var(--marker-color, #b45309);
@@ -357,9 +349,7 @@ body, html {
     50% { transform: translate(-50%, -100%) translateY(-6px); }
 }
 
-/* ==========================================
-   MAP PICKER OVERLAY
-   ========================================== */
+/* MAP PICKER OVERLAY */
 .map-picker-overlay {
     position: absolute;
     top: 0;
@@ -401,9 +391,7 @@ body, html {
     color: #cbd5e1;
 }
 
-/* ==========================================
-   MODALI E PANNELLI
-   ========================================== */
+/* MODALI E PANNELLI */
 .modal {
     position: fixed;
     top: 0;
@@ -531,7 +519,6 @@ body, html {
 }
 .btn-danger:hover { background: rgba(239, 68, 68, 0.3); color: #fff; }
 
-/* Dropzone Immagini */
 .drop-zone {
     border: 2px dashed rgba(255, 255, 255, 0.15);
     border-radius: 9px;
@@ -552,7 +539,6 @@ body, html {
     border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 0.75rem;
 }
 
-/* PlaceSheet (Scheda Dettaglio Luogo) */
 .place-sheet {
     position: fixed;
     bottom: 20px;
@@ -610,7 +596,6 @@ body, html {
 .tags-list span { font-size: 0.75rem; color: #38bdf8; margin-right: 6px; }
 .sheet-footer { display: flex; gap: 8px; margin-top: 2px; }
 
-/* Aeroporto Fly Box e Selettori Profilo */
 .airport-fly-box {
     background: rgba(59, 130, 246, 0.08);
     border: 1px solid rgba(59, 130, 246, 0.2);
@@ -649,9 +634,7 @@ body, html {
 .color-picker-grid label { font-size: 0.72rem; }
 .color-picker-grid input { width: 100%; height: 28px; border: none; border-radius: 6px; background: transparent; cursor: pointer; }
 
-/* ==========================================
-   MODALITÀ SPETTATORE & AMICI
-   ========================================== */
+/* MODALITÀ SPETTATORE & AMICI */
 .spectator-banner {
     position: absolute;
     top: 0;
@@ -686,4 +669,26 @@ body, html {
     border: none;
     cursor: pointer;
     font-size: 0.8rem;
+}
+
+/* ==========================================
+   SCALA DELLA MAPPA PROFESSIONALE (IN BASSO A SINISTRA)
+   ========================================== */
+.maplibregl-ctrl-scale {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    /* Linea principale della scala in evidenza (stile tacca/righello) */
+    border-top: 3px solid #38bdf8 !important; 
+    border-left: 2px solid #38bdf8 !important;
+    border-right: 2px solid #38bdf8 !important;
+    border-radius: 4px !important;
+    color: #f8fafc !important;
+    font-family: inherit !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    padding: 3px 8px !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5) !important;
+    text-align: center;
+    letter-spacing: 0.5px;
 }
