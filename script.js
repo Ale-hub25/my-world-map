@@ -32,8 +32,9 @@ const translations = {
         btnSaveSettings: "Salva e Chiudi", 
 
         styleModalTitle: "Personalizza Mappa", lblIconStyle: "Stile Icona Marker (Fisso)",
-        lblMarkerColor: "Colore Personalizzato Marker", lblMapColors: "Colori Mappa", 
-        colNature: "Natura", colWater: "Acqua", colBuilding: "Edifici", colRoad: "Strade", colRailway: "Ferrovie", 
+        lblMarkerColor: "Colore Personalizzato Marker", lblMapColors: "Colori Mappa Dettagliati", 
+        colLand: "🌍 Terra / Sfondo", colWater: "💧 Acqua", colParks: "🌲 Parchi & Boschi", colBeaches: "🏖️ Spiagge & Sabbia",
+        colBuilding: "🏢 Edifici", colRoad: "🛣️ Strade", colRailway: "🚆 Ferrovie", 
         btnApplyStyle: "Applica Stile",
 
         profileTitle: "Profilo Utente", lblUserName: "Nome Utente", lblLanguage: "Lingua Applicazione / Language",
@@ -75,8 +76,9 @@ const translations = {
         btnSaveSettings: "Save and Close", 
 
         styleModalTitle: "Customize Map", lblIconStyle: "Marker Icon Style (Fixed)",
-        lblMarkerColor: "Custom Marker Color", lblMapColors: "Map Colors", 
-        colNature: "Nature", colWater: "Water", colBuilding: "Buildings", colRoad: "Roads", colRailway: "Railways", 
+        lblMarkerColor: "Custom Marker Color", lblMapColors: "Detailed Map Colors", 
+        colLand: "🌍 Land / Background", colWater: "💧 Water", colParks: "🌲 Parks & Forests", colBeaches: "🏖️ Beaches & Sand",
+        colBuilding: "🏢 Buildings", colRoad: "Roads", colRailway: "Railways", 
         btnApplyStyle: "Apply Style",
 
         profileTitle: "User Profile", lblUserName: "User Name", lblLanguage: "App Language",
@@ -95,15 +97,16 @@ let userMapStyle = JSON.parse(localStorage.getItem('My World Map_mapStyle')) || 
     iconStyle: 'classico', 
     markerColor: '#3b82f6',
     colors: {
-        nature: '#14532d',
+        land: '#0f172a',
         water: '#1e3a8a',
+        parks: '#14532d',
+        beaches: '#d97706',
         building: '#1e293b',
         road: '#334155',
         railway: '#64748b'
     }
 };
 
-// Generatore ID Anonimo Univoco
 let uniqueUserId = localStorage.getItem('My World Map_userId');
 if (!uniqueUserId) {
     uniqueUserId = 'MAP-USER-' + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -115,11 +118,11 @@ let userProfile = JSON.parse(localStorage.getItem('My World Map_user')) || {
     userId: uniqueUserId,
     avatar: "",
     language: "it",
-    privacy: "all", // 'all', 'cities', 'private'
+    privacy: "all",
     mainCities: [],     
     knownPlaces: [],    
     visitedCities: [],
-    friends: [] // Lista amici salvati
+    friends: []
 };
 
 const mapStyleUrl = userMapStyle.isDarkMode ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/liberty';
@@ -134,6 +137,11 @@ const map = new maplibregl.Map({
     preserveDrawingBuffer: true
 });
 
+map.addControl(new maplibregl.ScaleControl({
+    maxWidth: 100,
+    unit: 'metric'
+}), 'bottom-left');
+
 let currentBase64Photo = "";
 let gpsMarker = null;
 let tempSearchMarker = null;
@@ -142,7 +150,6 @@ let macroCityMarkers = [];
 let activeFilterCategory = "ALL";
 let isMovingExistingPlace = false;
 
-// Gestione Modalità Spettatore
 let isSpectating = false;
 let originalMyData = null;
 
@@ -334,12 +341,16 @@ map.on('load', () => {
     applyMapColors();
     enable3DBuildings();
     setupUnexploredAndBoundariesLayer();
+    setupClusteredSourceAndLayers();
     renderMarkers();
     updateMacroCityMarkers();
     updateBoundariesAndUnexploredLayer();
 });
 
-map.on('moveend', updateSoundscapes);
+map.on('moveend', () => {
+    updateSoundscapes();
+    renderMarkers();
+});
 map.on('zoom', updateSoundscapes);
 
 function enable3DBuildings() {
@@ -361,14 +372,14 @@ function enable3DBuildings() {
                         'id': id + '-3d',
                         'source': layer.source,
                         'source-layer': layer['source-layer'],
-                        'minzoom': 3,
+                        'minzoom': 10, // 👈 Abbassato a 10: copre ampiamente lo zoom out a 1km e oltre
                         'type': 'fill-extrusion',
                         'filter': layer.filter,
                         'paint': {
                             'fill-extrusion-color': paint['fill-color'] || userMapStyle.colors.building,
-                            'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 3, 0, 14.5, ['get', 'render_height']],
-                            'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 3, 0, 14.5, ['get', 'render_min_height']],
-                            'fill-extrusion-opacity': 0.95,
+                            'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 10, 1, 14.5, ['get', 'render_height']],
+                            'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 10, 0, 14.5, ['get', 'render_min_height']],
+                            'fill-extrusion-opacity': 0.9,
                             'fill-extrusion-vertical-gradient': true
                         }
                     }, labelLayerId);
@@ -382,21 +393,36 @@ function applyMapColors() {
     const c = userMapStyle.colors;
     try {
         map.getStyle().layers.forEach(layer => {
-            if (layer.type === 'background') map.setPaintProperty(layer.id, 'background-color', c.nature || '#14532d');
-            if (layer.type === 'fill') {
-                if (layer.id.includes('water')) map.setPaintProperty(layer.id, 'fill-color', c.water);
-                else if (layer.id.match(/(park|garden|grass|forest|wood|nature|landcover|landuse)/)) map.setPaintProperty(layer.id, 'fill-color', c.nature || '#14532d');
-                else if (layer.id.includes('building')) map.setPaintProperty(layer.id, 'fill-color', c.building);
+            const id = layer.id.toLowerCase();
+            if (layer.type === 'background') {
+                map.setPaintProperty(layer.id, 'background-color', c.land || '#0f172a');
             }
-            if (map.getLayer(layer.id + '-3d')) map.setPaintProperty(layer.id + '-3d', 'fill-extrusion-color', c.building);
+            if (layer.type === 'fill') {
+                if (id.includes('water')) {
+                    map.setPaintProperty(layer.id, 'fill-color', c.water || '#1e3a8a');
+                } else if (id.includes('beach') || id.includes('sand')) {
+                    map.setPaintProperty(layer.id, 'fill-color', c.beaches || '#d97706');
+                } else if (id.includes('park') || id.includes('wood') || id.includes('forest') || id.includes('garden') || id.includes('grass') || id.includes('nature') || id.includes('landcover')) {
+                    map.setPaintProperty(layer.id, 'fill-color', c.parks || '#14532d');
+                } else if (id.includes('building') || id.includes('structure') || id.includes('urban') || id.includes('residential')) {
+                    // 👈 Applica il colore degli edifici a TUTTI i layer di edifici e zone urbane 2D
+                    map.setPaintProperty(layer.id, 'fill-color', c.building || '#1e293b');
+                }
+            }
+            // Aggiorna anche il layer 3D personalizzato se presente
+            if (map.getLayer(layer.id + '-3d')) {
+                map.setPaintProperty(layer.id + '-3d', 'fill-extrusion-color', c.building || '#1e293b');
+            }
             if (layer.type === 'line') {
-                if (layer.id.match(/(rail|train|transit)/)) map.setPaintProperty(layer.id, 'line-color', c.railway || '#64748b');
-                else if (layer.id.match(/(road|highway|street)/)) map.setPaintProperty(layer.id, 'line-color', c.road);
+                if (id.match(/(rail|train|transit)/)) {
+                    map.setPaintProperty(layer.id, 'line-color', c.railway || '#64748b');
+                } else if (id.match(/(road|highway|street)/)) {
+                    map.setPaintProperty(layer.id, 'line-color', c.road || '#334155');
+                }
             }
         });
     } catch (err) {}
 }
-
 function removeTempSearchMarker() {
     if (tempSearchMarker) { tempSearchMarker.remove(); tempSearchMarker = null; }
 }
@@ -412,11 +438,86 @@ function toSexagesimal(dec, isLongitude) {
 }
 
 function setupUnexploredAndBoundariesLayer() {
-    map.addSource('known-boundaries-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-    map.addLayer({ 'id': 'known-boundaries-layer', 'type': 'line', 'source': 'known-boundaries-src', 'paint': { 'line-color': '#00f0ff', 'line-width': 3, 'line-dasharray': [2, 2] } });
+    if (!map.getSource('known-boundaries-src')) {
+        map.addSource('known-boundaries-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        map.addLayer({ 'id': 'known-boundaries-layer', 'type': 'line', 'source': 'known-boundaries-src', 'paint': { 'line-color': '#00f0ff', 'line-width': 3, 'line-dasharray': [2, 2] } });
+    }
 
-    map.addSource('unexplored-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-    map.addLayer({ 'id': 'unexplored-layer', 'type': 'fill', 'source': 'unexplored-src', 'paint': { 'fill-color': '#020617', 'fill-opacity': 0.55 } });
+    if (!map.getSource('unexplored-src')) {
+        map.addSource('unexplored-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        map.addLayer({ 'id': 'unexplored-layer', 'type': 'fill', 'source': 'unexplored-src', 'paint': { 'fill-color': '#020617', 'fill-opacity': 0.55 } });
+    }
+}
+
+function setupClusteredSourceAndLayers() {
+    if (map.getSource('places-clustered-source')) return;
+
+    map.addSource('places-clustered-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+        cluster: true,
+        clusterMaxZoom: 10,
+        clusterRadius: 80
+    });
+
+    map.addLayer({
+        id: 'clusters-layer',
+        type: 'circle',
+        source: 'places-clustered-source',
+        filter: ['has', 'point_count'],
+        paint: {
+            'circle-color': [
+                'step',
+                ['get', 'point_count'],
+                '#3b82f6',
+                10,
+                '#2563eb',
+                50,
+                '#1d4ed8'
+            ],
+            'circle-radius': [
+                'step',
+                ['get', 'point_count'],
+                20,
+                10,
+                25,
+                50,
+                30
+            ],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff'
+        }
+    });
+
+    map.addLayer({
+        id: 'cluster-count-layer',
+        type: 'symbol',
+        source: 'places-clustered-source',
+        filter: ['has', 'point_count'],
+        layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+            'text-size': 13
+        },
+        paint: {
+            'text-color': '#ffffff'
+        }
+    });
+
+    map.on('click', 'clusters-layer', (e) => {
+        const features = map.queryRenderedFeatures(e.point, { layers: ['clusters-layer'] });
+        const clusterId = features[0].properties.cluster_id;
+        map.getSource('places-clustered-source').getClusterExpansionZoom(clusterId, (err, zoom) => {
+            if (err) return;
+            map.easeTo({
+                center: features[0].geometry.coordinates,
+                zoom: zoom
+            });
+        });
+    });
+
+    map.on('mouseenter', 'clusters-layer', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'clusters-layer', () => { map.getCanvas().style.cursor = ''; });
 }
 
 function updateBoundariesAndUnexploredLayer() {
@@ -441,7 +542,8 @@ function updateBoundariesAndUnexploredLayer() {
             });
             map.getSource('unexplored-src').setData({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Polygon', coordinates: worldPolygon } }] });
         } else {
-            map.getSource('unexplored-src').setData({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]] } }] });
+            // ✅ RISOLTO: Nessun blocco blu all'avvio se non ci sono città registrate
+            map.getSource('unexplored-src').setData({ type: 'FeatureCollection', features: [] });
         }
     }
 }
@@ -449,7 +551,7 @@ function updateBoundariesAndUnexploredLayer() {
 function updateMacroCityMarkers() {
     macroCityMarkers.forEach(m => m.remove());
     macroCityMarkers = [];
-    if (map.getZoom() < 11) {
+    if (map.getZoom() < 10) {
         (userProfile.mainCities || []).forEach(c => {
             const el = document.createElement('div'); el.className = 'macro-city-marker main'; el.innerHTML = `🏠 ${c.name}`;
             macroCityMarkers.push(new maplibregl.Marker({ element: el }).setLngLat([c.lng, c.lat]).addTo(map));
@@ -648,27 +750,44 @@ function addCityToProfileWithPolygon(item, type) {
 function renderProfileCityChips() {
     const mainList = document.getElementById("mainCitiesList");
     const knownList = document.getElementById("knownCitiesList");
-    if (!mainList || !knownList) return;
-    
-    mainList.innerHTML = "";
-    (userProfile.mainCities || []).forEach((c, idx) => {
-        const chip = document.createElement("div"); chip.className = "city-chip main-chip"; chip.innerHTML = `🏠 ${c.name} <span class="btn-remove-chip">✕</span>`;
-        chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
-            if (isSpectating) return;
-            userProfile.mainCities.splice(idx, 1); saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer(); 
-        });
-        mainList.appendChild(chip);
-    });
 
-    knownList.innerHTML = "";
-    (userProfile.knownPlaces || []).forEach((c, idx) => {
-        const chip = document.createElement("div"); chip.className = "city-chip known-chip"; chip.innerHTML = `📌 ${c.name} <span class="btn-remove-chip">✕</span>`;
-        chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
-            if (isSpectating) return;
-            userProfile.knownPlaces.splice(idx, 1); saveState(); renderProfileCityChips(); updateMacroCityMarkers(); updateBoundariesAndUnexploredLayer(); 
+    // Renderizza solo i chip delle Città Principali
+    if (mainList) {
+        mainList.innerHTML = "";
+        (userProfile.mainCities || []).forEach((c, idx) => {
+            const chip = document.createElement("div"); 
+            chip.className = "city-chip main-chip"; 
+            chip.innerHTML = `🏠 ${c.name} <span class="btn-remove-chip">✕</span>`;
+            chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
+                if (isSpectating) return;
+                userProfile.mainCities.splice(idx, 1); 
+                saveState(); 
+                renderProfileCityChips(); 
+                updateMacroCityMarkers(); 
+                updateBoundariesAndUnexploredLayer(); 
+            });
+            mainList.appendChild(chip);
         });
-        knownList.appendChild(chip);
-    });
+    }
+
+    // Renderizza solo i chip dei Luoghi Conosciuti
+    if (knownList) {
+        knownList.innerHTML = "";
+        (userProfile.knownPlaces || []).forEach((c, idx) => {
+            const chip = document.createElement("div"); 
+            chip.className = "city-chip known-chip"; 
+            chip.innerHTML = `📌 ${c.name} <span class="btn-remove-chip">✕</span>`;
+            chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
+                if (isSpectating) return;
+                userProfile.knownPlaces.splice(idx, 1); 
+                saveState(); 
+                renderProfileCityChips(); 
+                updateMacroCityMarkers(); 
+                updateBoundariesAndUnexploredLayer(); 
+            });
+            knownList.appendChild(chip);
+        });
+    }
 }
 
 setupCityAutocomplete("mainCitySearchInput", "mainCitySuggestions", 'main');
@@ -676,18 +795,22 @@ setupCityAutocomplete("knownCitySearchInput", "knownCitySuggestions", 'known');
 setupCityAutocomplete("visitedCitySearchInput", "visitedCitySuggestions", 'visited');
 
 function loadStyleUI() {
-    const cNat = document.getElementById('colorNature');
+    const cLnd = document.getElementById('colorLand');
     const cWat = document.getElementById('colorWater');
+    const cPrk = document.getElementById('colorParks');
+    const cBch = document.getElementById('colorBeaches');
     const cBui = document.getElementById('colorBuilding');
     const cRoa = document.getElementById('colorRoad');
     const cRai = document.getElementById('colorRailway');
     const iSel = document.getElementById('iconStyleSelect');
     const mCol = document.getElementById('markerCustomColor');
 
-    if (cNat) cNat.value = userMapStyle.colors.nature || '#14532d';
-    if (cWat) cWat.value = userMapStyle.colors.water;
-    if (cBui) cBui.value = userMapStyle.colors.building;
-    if (cRoa) cRoa.value = userMapStyle.colors.road;
+    if (cLnd) cLnd.value = userMapStyle.colors.land || '#0f172a';
+    if (cWat) cWat.value = userMapStyle.colors.water || '#1e3a8a';
+    if (cPrk) cPrk.value = userMapStyle.colors.parks || '#14532d';
+    if (cBch) cBch.value = userMapStyle.colors.beaches || '#d97706';
+    if (cBui) cBui.value = userMapStyle.colors.building || '#1e293b';
+    if (cRoa) cRoa.value = userMapStyle.colors.road || '#334155';
     if (cRai) cRai.value = userMapStyle.colors.railway || '#64748b';
     if (iSel) iSel.value = userMapStyle.iconStyle;
     if (mCol) mCol.value = userMapStyle.markerColor || '#3b82f6';
@@ -696,13 +819,16 @@ function loadStyleUI() {
 const applyStyleBtn = document.getElementById('applyStyle');
 if (applyStyleBtn) {
     applyStyleBtn.addEventListener('click', () => {
-        userMapStyle.colors.nature = document.getElementById('colorNature').value;
+        userMapStyle.colors.land = document.getElementById('colorLand').value;
         userMapStyle.colors.water = document.getElementById('colorWater').value;
+        userMapStyle.colors.parks = document.getElementById('colorParks').value;
+        userMapStyle.colors.beaches = document.getElementById('colorBeaches').value;
         userMapStyle.colors.building = document.getElementById('colorBuilding').value;
         userMapStyle.colors.road = document.getElementById('colorRoad').value;
         userMapStyle.colors.railway = document.getElementById('colorRailway').value;
         userMapStyle.iconStyle = document.getElementById('iconStyleSelect').value;
         userMapStyle.markerColor = document.getElementById('markerCustomColor').value;
+        
         localStorage.setItem('My World Map_mapStyle', JSON.stringify(userMapStyle));
         applyMapColors(); 
         renderMarkers(); 
@@ -714,7 +840,7 @@ let places = JSON.parse(localStorage.getItem('My World Map_places')) || { "p1": 
 let activeMarkers = [], currentSelectedPlaceId = null, pendingCoords = null, isEditingPlace = false;
 
 function saveState() {
-    if (isSpectating) return; // Non salvare nulla se siamo in modalità spettatore
+    if (isSpectating) return;
     localStorage.setItem('My World Map_places', JSON.stringify(places));
     localStorage.setItem('My World Map_user', JSON.stringify(userProfile));
     updateProfileStats();
@@ -725,7 +851,7 @@ function getNeonSvgIcon(iconChar, category) {
     const svgMap = {
         barber: '<svg viewBox="0 0 24 24"><path d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm10-13.5l-3 3-1.41-1.41 3-3L16 2.5z"/></svg>',
         cocktail: '<svg viewBox="0 0 24 24"><path d="M7.5 7L5.5 5h13l-2 2M11 9h2v6h-2zM12 17c-2.76 0-5 2.24-5 5h10c0-2.76-2.24-5-5-5z M19 3H5l7 8z"/></svg>',
-        gamepad: '<svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>',
+        gamepad: '<svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5-1.5zm3-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>',
         home: '<svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
         star: '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>',
         work: '<svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0-2-.9-2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm10 15H4V8h16v11z"/></svg>',
@@ -733,24 +859,35 @@ function getNeonSvgIcon(iconChar, category) {
         food: '<svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.21 1.79 4 4 4v9h2v-9c2.21 0 4-1.79 4-4V2h-2v7zm12-3v2h-2v3c0 1.1-.9 2-2 2h-1v7h-2v-7h-1c-1.1 0-2-.9-2-2V6h6z"/></svg>',
         coffee: '<svg viewBox="0 0 24 24"><path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/></svg>',
         beer: '<svg viewBox="0 0 24 24"><path d="M4 5v14c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-2h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-2V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2zm12 2h2v6h-2V7z"/></svg>',
+        gym: '<svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 4.86 4.86 6.29 6.29 4.86 7.71 2 10.57l1.43 1.43L4.86 13.43 7 11.29 15.57 20 12 23.57 13.43 25l1.43-1.43 1.43 1.43 2.86-2.86-1.43-1.43 1.43-1.43z"/></svg>',
         nature: '<svg viewBox="0 0 24 24"><path d="M17 12h2L12 2 5 12h2l-5 7h7v4h2v-4h7l-5-7z"/></svg>',
-        beach: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>',
+        // 🏖️ Spiaggia & Mare (Ombrellone da spiaggia)
+        beach: '<svg viewBox="0 0 24 24"><path d="M12 2a9 9 0 0 0-9 9c0 .7.1 1.3.2 2h17.6c.1-.7.2-1.3.2-2a9 9 0 0 0-9-9zm-1 11.5V21h2v-7.5h-2zM4.9 9h14.2c-.7-2.9-3.3-5-6.6-5s-5.9 2.1-6.6 5z"/></svg>',
+        // 🏛️ Cultura & Monumenti (Tempio / Landmark)
+        culture: '<svg viewBox="0 0 24 24"><path d="M12 2L2 7h20L12 2zm-7 7h2v9H5V9zm5 0h2v9h-2V9zm5 0h2v9h-2V9zm5 0h2v9h-2V9zM2 20h20v2H2v-2z"/></svg>',
+        // 🛍️ Shopping & Negozio (Borsa Shopping)
+        shopping: '<svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6zm0 2h12l1.5 2h-15L6 4zm-1 4h14v12H5V8zm4 2a3 3 0 0 0 6 0h2a5 5 0 0 1-10 0h2z"/></svg>',
         hotel: '<svg viewBox="0 0 24 24"><path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/></svg>',
         defaultPin: '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
     };
+
     if (catLower.includes('barbiere') || catLower.includes('parrucchiere') || iconChar === '💈') return svgMap.barber;
     if (catLower.includes('cocktail') || iconChar === '🍸') return svgMap.cocktail;
     if (catLower.includes('svago') || catLower.includes('cinema') || catLower.includes('teatro') || iconChar === '🎭') return svgMap.gamepad;
     if (catLower.includes('pub') || catLower.includes('birreria') || iconChar === '🍺') return svgMap.beer;
     if (catLower.includes('natura') || catLower.includes('parco') || iconChar === '🌲') return svgMap.nature;
     if (catLower.includes('spiaggia') || catLower.includes('mare') || iconChar === '🏖️') return svgMap.beach;
+    if (catLower.includes('cultura') || catLower.includes('monument') || iconChar === '🏛️') return svgMap.culture;
+    if (catLower.includes('shopping') || catLower.includes('negozi') || iconChar === '🛍️') return svgMap.shopping;
     if (catLower.includes('hotel') || catLower.includes('viaggio') || iconChar === '🧳') return svgMap.hotel;
     if (catLower.includes('casa') || iconChar === '🏠') return svgMap.home;
     if (catLower.includes('lavoro') || iconChar === '💼') return svgMap.work;
     if (catLower.includes('aeroporto') || iconChar === '✈️') return svgMap.plane;
     if (catLower.includes('ristorante') || catLower.includes('cibo') || iconChar === '🍽️') return svgMap.food;
     if (catLower.includes('caffè') || catLower.includes('bar') || iconChar === '☕') return svgMap.coffee;
+    if (catLower.includes('sport') || catLower.includes('palestra') || iconChar === '🏋️') return svgMap.gym;
     if (iconChar === '⭐') return svgMap.star;
+    
     return svgMap.defaultPin;
 }
 
@@ -774,9 +911,12 @@ function createMarkerElement(item) {
 function renderMarkers() {
     activeMarkers.forEach(m => m.remove()); 
     activeMarkers = [];
+
+    const geojsonFeatures = [];
+
     Object.keys(places).forEach(id => {
         const item = places[id];
-        if (item.isPrivate && isSpectating) return; // Nascondi pin privati agli spettatori
+        if (item.isPrivate && isSpectating) return;
         
         if (activeFilterCategory !== "ALL") {
             if (activeFilterCategory === "✈️") {
@@ -786,10 +926,39 @@ function renderMarkers() {
             }
         }
 
-        const el = createMarkerElement(item);
-        el.addEventListener('click', (e) => { e.stopPropagation(); removeTempSearchMarker(); openPlace(id); });
-        activeMarkers.push(new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([item.lng, item.lat]).addTo(map));
+        geojsonFeatures.push({
+            type: 'Feature',
+            properties: { id: id, ...item },
+            geometry: {
+                type: 'Point',
+                coordinates: [item.lng, item.lat]
+            }
+        });
     });
+
+    const source = map.getSource('places-clustered-source');
+    if (source) {
+        source.setData({
+            type: 'FeatureCollection',
+            features: geojsonFeatures
+        });
+
+        const unclusteredFeatures = map.querySourceFeatures('places-clustered-source', {
+            filter: ['!', ['has', 'point_count']]
+        });
+
+        const seenIds = new Set();
+        unclusteredFeatures.forEach(feature => {
+            const item = feature.properties;
+            const id = item.id;
+            if (!seenIds.has(id) && places[id]) {
+                seenIds.add(id);
+                const el = createMarkerElement(places[id]);
+                el.addEventListener('click', (e) => { e.stopPropagation(); removeTempSearchMarker(); openPlace(id); });
+                activeMarkers.push(new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([places[id].lng, places[id].lat]).addTo(map));
+            }
+        });
+    }
 }
 
 function loadProfileUI() {
@@ -868,23 +1037,21 @@ function updateProfileStats() {
     }
 }
 
-// Gestione Copia ID Amico
 const copyMyIdBtn = document.getElementById('copyMyIdBtn');
 if (copyMyIdBtn) {
     copyMyIdBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(userProfile.userId || uniqueUserId);
-        alert("✅ ID Amico copiato negli appunti! Incollalo su WhatsApp o Telegram per farlo usare a un amico.");
+        alert("✅ ID Amico copiato negli appunti!");
     });
 }
 
-// Gestione Lista Amici & Aggiunta
 function renderFriendsList() {
     const container = document.getElementById('friendsListContainer');
     if (!container) return;
     container.innerHTML = "";
 
     if (!userProfile.friends || userProfile.friends.length === 0) {
-        container.innerHTML = `<span style="font-size: 0.78rem; color: #64748b;">Nessun amico aggiunto. Inserisci un ID sopra per esplorare la sua mappa!</span>`;
+        container.innerHTML = `<span style="font-size: 0.78rem; color: #64748b;">Nessun amico aggiunto.</span>`;
         return;
     }
 
@@ -921,9 +1088,6 @@ if (addFriendBtn) {
 
         if (!userProfile.friends) userProfile.friends = [];
         
-        // Simulazione caricamento profilo amico (o recupero dati di test mock se file non presente)
-        // In un contesto reale P2P, l'amico ti passa il suo file backup JSON o stringa dati.
-        // Qui permettiamo di importare il backup dell'amico tramite file o simuliamo un profilo di test.
         const mockFriendProfile = {
             userId: friendId,
             name: "Amico di " + friendId.slice(-4),
@@ -935,11 +1099,10 @@ if (addFriendBtn) {
         saveState();
         renderFriendsList();
         input.value = "";
-        alert("✅ Amico aggiunto con successo! Clicca su 'Guarda' per aprire la sua mappa in modalità spettatore.");
+        alert("✅ Amico aggiunto! Clicca 'Guarda' per esplorare la sua mappa.");
     });
 }
 
-// Avvia Modalità Spettatore
 function startSpectating(friendData) {
     if (!isSpectating) {
         originalMyData = {
@@ -949,21 +1112,19 @@ function startSpectating(friendData) {
     }
     isSpectating = true;
 
-    // Applica dati dell'amico in sola lettura
     if (friendData.userProfile.privacy === 'private') {
-        return alert("🔒 La mappa di questo utente è impostata come privata!");
+        return alert("🔒 La mappa di questo utente è privata!");
     }
 
     if (friendData.userProfile.privacy === 'cities') {
-        places = {}; // Nascondi i pin
-        alert("ℹ️ L'utente mostra solo le città e le statistiche (Pin nascosti per privacy).");
+        places = {};
+        alert("ℹ️ L'utente mostra solo le città e le statistiche.");
     } else {
         places = friendData.places || {};
     }
 
     userProfile = friendData.userProfile;
     
-    // Mostra banner superiore spettatore
     const banner = document.getElementById('spectatorBanner');
     const bannerText = document.getElementById('spectatorBannerText');
     if (banner && bannerText) {
@@ -971,7 +1132,6 @@ function startSpectating(friendData) {
         banner.classList.remove('hidden');
     }
 
-    // Disabilita tasti modifica nel PlaceSheet
     const footerBtns = document.getElementById('sheetFooterButtons');
     if (footerBtns) footerBtns.style.display = 'none';
 
@@ -980,7 +1140,6 @@ function startSpectating(friendData) {
     updateBoundariesAndUnexploredLayer();
 }
 
-// Esci da Modalità Spettatore
 const exitSpectatorBtn = document.getElementById('exitSpectatorBtn');
 if (exitSpectatorBtn) {
     exitSpectatorBtn.addEventListener('click', () => {
@@ -1425,90 +1584,151 @@ if (closeProfile) {
     });
 }
 
-// Diario di viaggio
+// ==========================================
+// DIARIO DI VIAGGIO (GESTIONE COMPLETA E CHIUSURA)
+// ==========================================
 const openDiaryBtn = document.getElementById("openDiaryBtn");
 const diaryModal = document.getElementById("diaryModal");
 const closeDiaryBtn = document.getElementById("closeDiaryBtn");
-const diaryCitySelect = document.getElementById("diaryCitySelect");
 const diaryPinsContainer = document.getElementById("diaryPinsContainer");
 
-if (openDiaryBtn) {
+// Apertura Diario
+if (openDiaryBtn && diaryModal) {
     openDiaryBtn.addEventListener("click", () => {
-        diaryCitySelect.innerHTML = `<option value="">-- Seleziona una città visitata --</option>`;
-        (userProfile.visitedCities || []).forEach((c, idx) => {
-            const opt = document.createElement("option");
-            opt.value = idx;
-            opt.textContent = `✈️ ${c.name} (${c.fullName || ''})`;
-            diaryCitySelect.appendChild(opt);
-        });
-        diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Seleziona una città per visualizzare i pin correlati.</p>`;
+        renderDiaryCityOptions();
+        if (diaryPinsContainer) {
+            diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Seleziona una città per visualizzare i pin correlati.</p>`;
+        }
         diaryModal.classList.add("open");
     });
 }
 
-if (closeDiaryBtn) {
-    closeDiaryBtn.addEventListener("click", () => diaryModal.classList.remove("open"));
+// Chiusura Diario (Garantita)
+if (closeDiaryBtn && diaryModal) {
+    closeDiaryBtn.addEventListener("click", () => {
+        diaryModal.classList.remove("open");
+    });
 }
 
-if (diaryCitySelect) {
-    diaryCitySelect.addEventListener("change", function() {
-        const cityIdx = this.value;
-        if (cityIdx === "") {
-            diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Seleziona una città per visualizzare i pin correlati.</p>`;
-            return;
-        }
-        const city = userProfile.visitedCities[cityIdx];
-        if (!city) return;
-
-        diaryPinsContainer.innerHTML = "";
-        let matchedPins = [];
-        Object.keys(places).forEach(id => {
-            const p = places[id];
-            if (p.isPrivate && isSpectating) return;
-            let isInside = false;
-            if (city.boundingbox && city.boundingbox.length === 4) {
-                const [latMin, latMax, lonMin, lonMax] = city.boundingbox.map(Number);
-                if (p.lat >= latMin && p.lat <= latMax && p.lng >= lonMin && p.lng <= lonMax) isInside = true;
-            }
-            const dist = Math.hypot(p.lat - city.lat, p.lng - city.lng);
-            if (isInside || dist < 0.35) matchedPins.push({ id, ...p });
-        });
-
-        if (matchedPins.length === 0) {
-            diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 20px;">Nessun pin trovato per ${city.name}.</p>`;
-        } else {
-            matchedPins.forEach(pin => {
-                const card = document.createElement("div");
-                card.style.background = "rgba(255,255,255,0.04)";
-                card.style.border = "1px solid rgba(255,255,255,0.08)";
-                card.style.borderRadius = "8px";
-                card.style.padding = "10px";
-                card.style.display = "flex";
-                card.style.alignItems = "center";
-                card.style.justifyContent = "space-between";
-                card.style.gap = "10px";
-                card.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 1.4rem;">${pin.icon}</span>
-                        <div>
-                            <div style="font-weight: 600; font-size: 0.9rem; color: #fff;">${pin.name}</div>
-                            <div style="font-size: 0.75rem; color: #94a3b8;">${pin.category}</div>
-                        </div>
-                    </div>
-                    <button class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem; flex: unset;">Vai al Pin 📍</button>
-                `;
-                card.querySelector("button").addEventListener("click", () => {
-                    diaryModal.classList.remove("open");
-                    document.getElementById("profileModal").classList.remove("open");
-                    map.flyTo({ center: [pin.lng, pin.lat], zoom: 16, speed: 1.2 });
-                    setTimeout(() => openPlace(pin.id), 1000);
-                });
-                diaryPinsContainer.appendChild(card);
-            });
+// Chiudi cliccando fuori dal contenuto della modale
+if (diaryModal) {
+    diaryModal.addEventListener("click", (e) => {
+        if (e.target === diaryModal) {
+            diaryModal.classList.remove("open");
         }
     });
 }
 
+// Rendering lista città e gestione eliminazione dentro il Diario
+function renderDiaryCityOptions() {
+    const diaryHeaderBox = document.getElementById("diaryCitySelectorContainer");
+    if (!diaryHeaderBox) return;
+
+    diaryHeaderBox.innerHTML = `
+        <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px;">Città registrate nel diario:</label>
+        <div id="diaryCitiesManageList" style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;"></div>
+    `;
+    
+    const manageList = document.getElementById("diaryCitiesManageList");
+    const visited = userProfile.visitedCities || [];
+
+    if (visited.length === 0) {
+        manageList.innerHTML = `<span style="font-size: 0.8rem; color: #64748b;">Nessuna città visitata aggiunta.</span>`;
+        return;
+    }
+
+    visited.forEach((c, idx) => {
+        const item = document.createElement("div");
+        item.style.display = "flex";
+        item.style.justifyContent = "space-between";
+        item.style.alignItems = "center";
+        item.style.padding = "6px 10px";
+        item.style.background = "rgba(255, 255, 255, 0.05)";
+        item.style.borderRadius = "6px";
+        item.style.fontSize = "0.85rem";
+        
+        item.innerHTML = `
+            <span style="color: #38bdf8; cursor: pointer; font-weight: 500;">✈️ ${c.name}</span>
+            <button class="btn-remove-visited-city" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; cursor: pointer;">🗑️ Rimuovi</button>
+        `;
+
+        // Seleziona la città e mostra i suoi pin
+        item.querySelector("span").addEventListener("click", () => {
+            loadDiaryPinsForCity(c);
+        });
+
+        // Rimuovi la città
+        item.querySelector(".btn-remove-visited-city").addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (isSpectating) return alert("Non puoi rimuovere città in modalità spettatore!");
+            if (confirm(`Rimuovere "${c.name}" dal Diario e dal profilo?`)) {
+                userProfile.visitedCities.splice(idx, 1);
+                saveState();
+                updateMacroCityMarkers();
+                updateBoundariesAndUnexploredLayer();
+                renderDiaryCityOptions();
+                if (diaryPinsContainer) {
+                    diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Città rimossa. Seleziona un'altra città.</p>`;
+                }
+            }
+        });
+
+        manageList.appendChild(item);
+    });
+}
+
+// Carica i pin della città selezionata nel Diario
+function loadDiaryPinsForCity(city) {
+    if (!city || !diaryPinsContainer) return;
+    diaryPinsContainer.innerHTML = "";
+    let matchedPins = [];
+
+    Object.keys(places).forEach(id => {
+        const p = places[id];
+        if (p.isPrivate && isSpectating) return;
+        let isInside = false;
+        if (city.boundingbox && city.boundingbox.length === 4) {
+            const [latMin, latMax, lonMin, lonMax] = city.boundingbox.map(Number);
+            if (p.lat >= latMin && p.lat <= latMax && p.lng >= lonMin && p.lng <= lonMax) isInside = true;
+        }
+        const dist = Math.hypot(p.lat - city.lat, p.lng - city.lng);
+        if (isInside || dist < 0.35) matchedPins.push({ id, ...p });
+    });
+
+    if (matchedPins.length === 0) {
+        diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 20px;">Nessun pin trovato per ${city.name}.</p>`;
+    } else {
+        matchedPins.forEach(pin => {
+            const card = document.createElement("div");
+            card.style.background = "rgba(255,255,255,0.04)";
+            card.style.border = "1px solid rgba(255,255,255,0.08)";
+            card.style.borderRadius = "8px";
+            card.style.padding = "10px";
+            card.style.display = "flex";
+            card.style.alignItems = "center";
+            card.style.justifyContent = "space-between";
+            card.style.gap = "10px";
+            card.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.4rem;">${pin.icon}</span>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.9rem; color: #fff;">${pin.name}</div>
+                        <div style="font-size: 0.75rem; color: #94a3b8;">${pin.category}</div>
+                    </div>
+                </div>
+                <button class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem; flex: unset;">Vai al Pin 📍</button>
+            `;
+            card.querySelector("button").addEventListener("click", () => {
+                diaryModal.classList.remove("open");
+                const profModal = document.getElementById("profileModal");
+                if (profModal) profModal.classList.remove("open");
+                map.flyTo({ center: [pin.lng, pin.lat], zoom: 16, speed: 1.2 });
+                setTimeout(() => openPlace(pin.id), 1000);
+            });
+            diaryPinsContainer.appendChild(card);
+        });
+    }
+}
 function isPointInsideGeojson(point, geojson) {
     const x = point.lng, y = point.lat;
     function rayCast(polygonCoords) {
