@@ -570,43 +570,39 @@ function enable3DBuildings() {
         console.error('Errore edifici 3D:', err);
     }
 }
-function applyMapColors() {
-    if (!map.isStyleLoaded()) return;
+ function applyMapColors() {
+    if (!map || !map.getStyle()) return;
 
     const c = userMapStyle.colors;
 
     const landcoverExpression = [
         'case',
-
         // Spiagge
         ['==', ['get', 'subclass'], 'beach'],
         c.beaches,
-
         // Parchi, giardini e aree naturali
         ['in', ['get', 'subclass'],
             ['literal', ['park', 'garden', 'forest', 'grassland', 'wood']]
         ],
         c.parks,
-
         // Classi generiche del terreno
         ['==', ['get', 'class'], 'sand'],
         c.beaches,
-
         ['in', ['get', 'class'],
             ['literal', ['wood', 'grass']]
         ],
         c.parks,
-
         // Tutto il resto mantiene il colore terra
         c.land
     ];
 
     function setPaintIfChanged(layerId, property, value) {
-        const current = map.getPaintProperty(layerId, property);
-
-        if (JSON.stringify(current) !== JSON.stringify(value)) {
-            map.setPaintProperty(layerId, property, value);
-        }
+        try {
+            const current = map.getPaintProperty(layerId, property);
+            if (JSON.stringify(current) !== JSON.stringify(value)) {
+                map.setPaintProperty(layerId, property, value);
+            }
+        } catch (e) {}
     }
 
     map.getStyle().layers.forEach(layer => {
@@ -615,75 +611,40 @@ function applyMapColors() {
 
         try {
             if (layer.type === 'background') {
-                setPaintIfChanged(
-                    layer.id,
-                    'background-color',
-                    c.land
-                );
+                setPaintIfChanged(layer.id, 'background-color', c.land);
             }
 
             if (layer.type === 'fill') {
-
-                // Classificazione precisa del terreno
+                // Classificazione precisa del terreno (Landcover)
                 if (sourceLayer === 'landcover') {
-                    setPaintIfChanged(
-                        layer.id,
-                        'fill-color',
-                        landcoverExpression
-                    );
+                    setPaintIfChanged(layer.id, 'fill-color', landcoverExpression);
                 }
-
-                // Layer specifici non appartenenti a landcover
+                // 💧 AGGIUNTO: Gestione esplicita dell'acqua
+                else if (/water/.test(id)) {
+                    setPaintIfChanged(layer.id, 'fill-color', c.water);
+                }
                 else if (/beach|sand/.test(id)) {
-                    setPaintIfChanged(
-                        layer.id,
-                        'fill-color',
-                        c.beaches
-                    );
+                    setPaintIfChanged(layer.id, 'fill-color', c.beaches);
                 }
-
                 else if (/park|wood|forest|garden|grass/.test(id)) {
-                    setPaintIfChanged(
-                        layer.id,
-                        'fill-color',
-                        c.parks
-                    );
+                    setPaintIfChanged(layer.id, 'fill-color', c.parks);
                 }
-
                 else if (/building/.test(id)) {
-                    setPaintIfChanged(
-                        layer.id,
-                        'fill-color',
-                        c.building
-                    );
+                    setPaintIfChanged(layer.id, 'fill-color', c.building);
                 }
             }
 
             // Edifici 3D
             if (layer.type === 'fill-extrusion') {
-                setPaintIfChanged(
-                    layer.id,
-                    'fill-extrusion-color',
-                    c.building
-                );
+                setPaintIfChanged(layer.id, 'fill-extrusion-color', c.building);
             }
 
             // Ferrovie e strade
             if (layer.type === 'line') {
                 if (/(rail|train|transit)/.test(id)) {
-                    setPaintIfChanged(
-                        layer.id,
-                        'line-color',
-                        c.railway
-                    );
-                }
-
-                else if (/(road|highway|street)/.test(id)) {
-                    setPaintIfChanged(
-                        layer.id,
-                        'line-color',
-                        c.road
-                    );
+                    setPaintIfChanged(layer.id, 'line-color', c.railway);
+                } else if (/(road|highway|street)/.test(id)) {
+                    setPaintIfChanged(layer.id, 'line-color', c.road);
                 }
             }
 
