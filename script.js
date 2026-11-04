@@ -1,6 +1,3 @@
-// ==========================================
-// DIZIONARIO TRADUZIONI TOTALI (IT / EN)
-// ==========================================
 const translations = {
     it: {
         searchPlaceholder: "🔍 Cerca città o luogo...",
@@ -19,7 +16,7 @@ const translations = {
         
         lblFlyAirport: "✈️ Vola verso un altro Aeroporto conosciuto:",
         selectDestination: "Seleziona destinazione...", btnFly: "Vola ✈️", 
-        noNotes: "Nessuna nota presente.", btnEdit: "✏️ Modifica", btnDelete: "🗑️ Elimina", 
+        noNotes: "Nessuna nota presente.", btnEdit: "✏️ Modifica", btnMove: "📍 Sposta", btnDelete: "🗑️ Elimina", 
         
         settingsTitle: "⚙️ Impostazioni",
         helpTitle: "📖 Guida e Istruzioni d'Uso",
@@ -39,12 +36,56 @@ const translations = {
 
         profileTitle: "Profilo Utente", lblUserName: "Nome Utente", lblLanguage: "Lingua Applicazione / Language",
         lblAvatarUpload: "Carica Foto Profilo", avatarUploadText: "Clicca qui per caricare l'immagine", 
-        lblKnownPlaces: "Luoghi Conosciuti", lblMainCities: "Città Principali (Max 2)", 
-        lblVisitedCities: "Città Visitate", btnSaveProfile: "Salva Profilo",
+        lblKnownPlaces: "Luoghi Conosciuti", lblMainCities: "🏠 Città Principali (Max 2)", lblKnownSection: "📌 Luoghi Conosciuti",
+        lblVisitedCities: "✈️ Città Visitate & Diario", btnSaveProfile: "Salva Profilo", openDiary: "📖 Apri Diario di Viaggio",
 
         statsExploredCities: "🏙️ Città esplorate:", statsExploredCountries: "🌍 Paesi esplorati:",
         statsMarkedPlaces: "📍 Luoghi segnati:", statsMainCities: "🏠 Città principali:",
-        statsAirportsUsed: "✈️ Aeroporti usati:", statsTerritory: "🗺️ Territorio:"
+        statsAirportsUsed: "✈️ Aeroporti usati:", statsTerritory: "🗺️ Territorio:",
+
+        diaryTitle: "📖 Diario di Viaggio",
+        diarySubtitle: "Seleziona una città visitata per esplorare tutti i pin e i ricordi georeferenziati associati.",
+        diarySelectCityLabel: "Città registrate nel diario:",
+        diaryDefaultSelect: "-- Seleziona una città visitata --",
+        diaryNoCities: "Nessuna città visitata aggiunta.",
+        diaryNoPins: "Seleziona una città per visualizzare i pin correlati.",
+        diaryBtnGoToPin: "Vai al Pin 📍",
+        diaryBtnRemove: "🗑️ Rimuovi",
+        backupSectionTitle: "💾 Gestione Dati e Backup",
+        btnExportJson: "📥 Esporta (JSON)",
+        btnImportJson: "📤 Importa (JSON)",
+        closeDiary: "Chiudi Diario",
+        
+        phMainCity: "Aggiungi città principale...",
+        phKnownCity: "Aggiungi luogo conosciuto...",
+        phVisitedCity: "Aggiungi città visitata...",
+        phProfileName: "Il tuo nome",
+
+        // Placeholders & Form Pin
+        phPlaceInput: "Es. Bar Preferito",
+        phCustomEmoji: "Es. 🍕 o 🚀",
+        phTagsInput: "relax, cibo, estate",
+        phNoteInput: "Scrivi un bel ricordo di questo posto...",
+        dropZoneInnerHtml: 'Trascina qui un\'immagine o <span class="highlight">sfoglia</span>',
+
+        // Categorie Pin della tendina
+        optFav: "⭐ Preferito",
+        optHome: "🏠 Casa",
+        optWork: "💼 Lavoro / Ufficio",
+        optAirport: "✈️ Aeroporto",
+        optRestaurant: "🍽️ Ristorante / Cibo",
+        optCoffeeBar: "☕ Bar / Caffè",
+        optCocktail: "🍸 Cocktail Bar / Pub",
+        optBarber: "💈 Barbiere / Parrucchiere",
+        optBeer: "🍺 Pub / Birreria",
+        optNature: "🌲 Natura / Parco",
+        optBeach: "🏖️ Spiaggia / Mare",
+        optMountain: "⛰️ Montagna / Trekking",
+        optHotel: "🧳 Viaggio / Hotel",
+        optCulture: "🏛️ Cultura / Monumento",
+        optShopping: "🛍️ Shopping / Negozio",
+        optSport: "🏋️ Sport / Palestra",
+        optRelax: "🎭 Svago / Cinema / Teatro"
     },
     en: {
         searchPlaceholder: "🔍 Search city or location...",
@@ -63,7 +104,7 @@ const translations = {
         
         lblFlyAirport: "✈️ Fly to another known Airport:",
         selectDestination: "Select destination...", btnFly: "Fly ✈️", 
-        noNotes: "No notes available.", btnEdit: "✏️ Edit", btnDelete: "🗑️ Delete", 
+        noNotes: "No notes available.", btnEdit: "✏️ Edit", btnMove: "📍 Move", btnDelete: "🗑️ Delete", 
         
         settingsTitle: "⚙️ Settings",
         helpTitle: "📖 User Guide",
@@ -83,12 +124,56 @@ const translations = {
 
         profileTitle: "User Profile", lblUserName: "User Name", lblLanguage: "App Language",
         lblAvatarUpload: "Upload Profile Picture", avatarUploadText: "Click here to upload image", 
-        lblKnownPlaces: "Known Places", lblMainCities: "Main Cities (Max 2)", 
-        lblVisitedCities: "Visited Cities", btnSaveProfile: "Save Profile",
+        lblKnownPlaces: "Known Places", lblMainCities: "🏠 Main Cities (Max 2)", lblKnownSection: "📌 Known Places",
+        lblVisitedCities: "✈️ Visited Cities & Diary", btnSaveProfile: "Save Profile", openDiary: "📖 Open Travel Diary",
 
         statsExploredCities: "🏙️ Explored cities:", statsExploredCountries: "🌍 Explored countries:",
         statsMarkedPlaces: "📍 Marked places:", statsMainCities: "🏠 Main cities:",
-        statsAirportsUsed: "✈️ Airports used:", statsTerritory: "🗺️ Territory:"
+        statsAirportsUsed: "✈️ Airports used:", statsTerritory: "🗺️ Territory:",
+
+        diaryTitle: "📖 Travel Diary",
+        diarySubtitle: "Select a visited city to explore all associated pins and geo-referenced memories.",
+        diarySelectCityLabel: "Cities registered in diary:",
+        diaryDefaultSelect: "-- Select a visited city --",
+        diaryNoCities: "No visited cities added yet.",
+        diaryNoPins: "Select a city to view related pins.",
+        diaryBtnGoToPin: "Go to Pin 📍",
+        diaryBtnRemove: "🗑️ Remove",
+        backupSectionTitle: "💾 Data Management & Backup",
+        btnExportJson: "📥 Export (JSON)",
+        btnImportJson: "📤 Import (JSON)",
+        closeDiary: "Close Diary",
+        
+        phMainCity: "Add main city...",
+        phKnownCity: "Add known place...",
+        phVisitedCity: "Add visited city...",
+        phProfileName: "Your name",
+
+        // Placeholders & Form Pin
+        phPlaceInput: "E.g. Favorite Bar",
+        phCustomEmoji: "E.g. 🍕 or 🚀",
+        phTagsInput: "relax, food, summer",
+        phNoteInput: "Write a nice memory of this place...",
+        dropZoneInnerHtml: 'Drag an image here or <span class="highlight">browse</span>',
+
+        // Pin categories dropdown
+        optFav: "⭐ Favorite",
+        optHome: "🏠 Home",
+        optWork: "💼 Work / Office",
+        optAirport: "✈️ Airport",
+        optRestaurant: "🍽️ Restaurant / Food",
+        optCoffeeBar: "☕ Bar / Coffee",
+        optCocktail: "🍸 Cocktail Bar / Pub",
+        optBarber: "💈 Barber / Hairdresser",
+        optBeer: "🍺 Pub / Brewery",
+        optNature: "🌲 Nature / Park",
+        optBeach: "🏖️ Beach / Sea",
+        optMountain: "⛰️ Mountain / Trekking",
+        optHotel: "🧳 Travel / Hotel",
+        optCulture: "🏛️ Culture / Monument",
+        optShopping: "🛍️ Shopping / Store",
+        optSport: "🏋️ Sport / Gym",
+        optRelax: "🎭 Leisure / Cinema / Theater"
     }
 };
 
@@ -162,8 +247,48 @@ function applyLanguageTranslations() {
         if (dict[key]) el.innerHTML = dict[key];
     });
 
+    // Traduzione delle opzioni della select categorie pin
+    const categorySelect = document.getElementById('iconCategorySelect');
+    if (categorySelect) {
+        const options = categorySelect.options;
+        const keys = ['optFav', 'optHome', 'optWork', 'optAirport', 'optRestaurant', 'optCoffeeBar', 'optCocktail', 'optBarber', 'optBeer', 'optNature', 'optBeach', 'optMountain', 'optHotel', 'optCulture', 'optShopping', 'optSport', 'optRelax'];
+        for (let i = 0; i < options.length; i++) {
+            if (keys[i] && dict[keys[i]]) {
+                options[i].text = dict[keys[i]];
+            }
+        }
+    }
+
+    // Placeholder input
     const searchInp = document.getElementById('searchInput');
     if (searchInp) searchInp.placeholder = dict.searchPlaceholder;
+
+    const mainCityInp = document.getElementById('mainCitySearchInput');
+    if (mainCityInp) mainCityInp.placeholder = dict.phMainCity;
+
+    const knownCityInp = document.getElementById('knownCitySearchInput');
+    if (knownCityInp) knownCityInp.placeholder = dict.phKnownCity;
+
+    const visitedCityInp = document.getElementById('visitedCitySearchInput');
+    if (visitedCityInp) visitedCityInp.placeholder = dict.phVisitedCity;
+
+    const placeInp = document.getElementById('placeInput');
+    if (placeInp) placeInp.placeholder = dict.phPlaceInput;
+
+    const emojiInp = document.getElementById('customEmojiInput');
+    if (emojiInp) emojiInp.placeholder = dict.phCustomEmoji;
+
+    const tagsInp = document.getElementById('tagsInput');
+    if (tagsInp) tagsInp.placeholder = dict.phTagsInput;
+
+    const noteInp = document.getElementById('noteInput');
+    if (noteInp) noteInp.placeholder = dict.phNoteInput;
+
+    const profNameInp = document.getElementById('profileNameInput');
+    if (profNameInp) profNameInp.placeholder = dict.phProfileName;
+
+    const dropZoneText = document.getElementById('dropZoneText');
+    if (dropZoneText) dropZoneText.innerHTML = dict.dropZoneInnerHtml;
 
     const filterBtn = document.getElementById('filterDropdownBtn');
     if (filterBtn && activeFilterCategory === "ALL") {
@@ -338,13 +463,20 @@ function playSound(type) {
 
 map.on('load', () => {
     applyLanguageTranslations();
-    applyMapColors();
+
     enable3DBuildings();
+    applyMapColors();
+
     setupUnexploredAndBoundariesLayer();
     setupClusteredSourceAndLayers();
+
     renderMarkers();
     updateMacroCityMarkers();
     updateBoundariesAndUnexploredLayer();
+});
+
+map.on('styledata', () => {
+    applyMapColors();
 });
 
 map.on('moveend', () => {
@@ -355,74 +487,212 @@ map.on('zoom', updateSoundscapes);
 
 function enable3DBuildings() {
     try {
-        const layers = map.getStyle().layers;
-        let labelLayerId;
-        for (let i = 0; i < layers.length; i++) {
-            if (layers[i].type === 'symbol' && layers[i].layout && layers[i].layout['text-field']) {
-                labelLayerId = layers[i].id;
-                break;
-            }
-        }
-        layers.forEach(layer => {
-            if (layer.id.includes('building') && layer.type === 'fill') {
-                const id = layer.id;
-                const paint = layer.paint || {};
-                if (!map.getLayer(id + '-3d')) {
-                    map.addLayer({
-                        'id': id + '-3d',
-                        'source': layer.source,
-                        'source-layer': layer['source-layer'],
-                        'minzoom': 10, // 👈 Abbassato a 10: copre ampiamente lo zoom out a 1km e oltre
-                        'type': 'fill-extrusion',
-                        'filter': layer.filter,
-                        'paint': {
-                            'fill-extrusion-color': paint['fill-color'] || userMapStyle.colors.building,
-                            'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 10, 1, 14.5, ['get', 'render_height']],
-                            'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 10, 0, 14.5, ['get', 'render_min_height']],
-                            'fill-extrusion-opacity': 0.9,
-                            'fill-extrusion-vertical-gradient': true
-                        }
-                    }, labelLayerId);
-                }
-            }
-        });
-    } catch (e) {}
-}
+        const layers = [...map.getStyle().layers];
 
-function applyMapColors() {
-    const c = userMapStyle.colors;
-    try {
-        map.getStyle().layers.forEach(layer => {
-            const id = layer.id.toLowerCase();
-            if (layer.type === 'background') {
-                map.setPaintProperty(layer.id, 'background-color', c.land || '#0f172a');
-            }
-            if (layer.type === 'fill') {
-                if (id.includes('water')) {
-                    map.setPaintProperty(layer.id, 'fill-color', c.water || '#1e3a8a');
-                } else if (id.includes('beach') || id.includes('sand')) {
-                    map.setPaintProperty(layer.id, 'fill-color', c.beaches || '#d97706');
-                } else if (id.includes('park') || id.includes('wood') || id.includes('forest') || id.includes('garden') || id.includes('grass') || id.includes('nature') || id.includes('landcover')) {
-                    map.setPaintProperty(layer.id, 'fill-color', c.parks || '#14532d');
-                } else if (id.includes('building') || id.includes('structure') || id.includes('urban') || id.includes('residential')) {
-                    // 👈 Applica il colore degli edifici a TUTTI i layer di edifici e zone urbane 2D
-                    map.setPaintProperty(layer.id, 'fill-color', c.building || '#1e293b');
-                }
-            }
-            // Aggiorna anche il layer 3D personalizzato se presente
-            if (map.getLayer(layer.id + '-3d')) {
-                map.setPaintProperty(layer.id + '-3d', 'fill-extrusion-color', c.building || '#1e293b');
-            }
-            if (layer.type === 'line') {
-                if (id.match(/(rail|train|transit)/)) {
-                    map.setPaintProperty(layer.id, 'line-color', c.railway || '#64748b');
-                } else if (id.match(/(road|highway|street)/)) {
-                    map.setPaintProperty(layer.id, 'line-color', c.road || '#334155');
-                }
+        const buildingLayers = layers.filter(layer =>
+            layer.type === 'fill' &&
+            layer.id.toLowerCase().includes('building') &&
+            layer.source &&
+            layer['source-layer']
+        );
+
+        const firstSymbolLayer = layers.find(layer =>
+            layer.type === 'symbol' &&
+            layer.layout &&
+            layer.layout['text-field']
+        );
+
+        const labelLayerId = firstSymbolLayer
+            ? firstSymbolLayer.id
+            : undefined;
+
+        buildingLayers.forEach(layer => {
+
+            // Edifici 2D: mantienili visibili anche
+            // alle scale intermedie.
+            map.setLayerZoomRange(layer.id, 10, 24);
+
+            const extrusionId = layer.id + '-3d';
+
+            if (!map.getLayer(extrusionId)) {
+
+                const extrusionLayer = {
+                    id: extrusionId,
+                    type: 'fill-extrusion',
+                    source: layer.source,
+                    'source-layer': layer['source-layer'],
+                    minzoom: 14.5,
+                    maxzoom: 24,
+
+                    ...(layer.filter
+                        ? { filter: layer.filter }
+                        : {}),
+
+                    paint: {
+                        'fill-extrusion-color':
+                            userMapStyle.colors.building,
+
+                        'fill-extrusion-height': [
+                            'max',
+                            3,
+                            [
+                                'coalesce',
+                                ['to-number', ['get', 'render_height']],
+                                ['to-number', ['get', 'height']],
+                                8
+                            ]
+                        ],
+
+                        'fill-extrusion-base': [
+                            'coalesce',
+                            ['to-number', ['get', 'render_min_height']],
+                            ['to-number', ['get', 'min_height']],
+                            0
+                        ],
+
+                        'fill-extrusion-opacity': 0.95,
+                        'fill-extrusion-vertical-gradient': true
+                    }
+                };
+
+                map.addLayer(extrusionLayer, labelLayerId);
+
+            } else {
+                map.setLayerZoomRange(
+                    extrusionId,
+                    14.5,
+                    24
+                );
             }
         });
-    } catch (err) {}
+
+    } catch (err) {
+        console.error('Errore edifici 3D:', err);
+    }
 }
+function applyMapColors() {
+    if (!map.isStyleLoaded()) return;
+
+    const c = userMapStyle.colors;
+
+    const landcoverExpression = [
+        'case',
+
+        // Spiagge
+        ['==', ['get', 'subclass'], 'beach'],
+        c.beaches,
+
+        // Parchi, giardini e aree naturali
+        ['in', ['get', 'subclass'],
+            ['literal', ['park', 'garden', 'forest', 'grassland', 'wood']]
+        ],
+        c.parks,
+
+        // Classi generiche del terreno
+        ['==', ['get', 'class'], 'sand'],
+        c.beaches,
+
+        ['in', ['get', 'class'],
+            ['literal', ['wood', 'grass']]
+        ],
+        c.parks,
+
+        // Tutto il resto mantiene il colore terra
+        c.land
+    ];
+
+    function setPaintIfChanged(layerId, property, value) {
+        const current = map.getPaintProperty(layerId, property);
+
+        if (JSON.stringify(current) !== JSON.stringify(value)) {
+            map.setPaintProperty(layerId, property, value);
+        }
+    }
+
+    map.getStyle().layers.forEach(layer => {
+        const id = layer.id.toLowerCase();
+        const sourceLayer = (layer['source-layer'] || '').toLowerCase();
+
+        try {
+            if (layer.type === 'background') {
+                setPaintIfChanged(
+                    layer.id,
+                    'background-color',
+                    c.land
+                );
+            }
+
+            if (layer.type === 'fill') {
+
+                // Classificazione precisa del terreno
+                if (sourceLayer === 'landcover') {
+                    setPaintIfChanged(
+                        layer.id,
+                        'fill-color',
+                        landcoverExpression
+                    );
+                }
+
+                // Layer specifici non appartenenti a landcover
+                else if (/beach|sand/.test(id)) {
+                    setPaintIfChanged(
+                        layer.id,
+                        'fill-color',
+                        c.beaches
+                    );
+                }
+
+                else if (/park|wood|forest|garden|grass/.test(id)) {
+                    setPaintIfChanged(
+                        layer.id,
+                        'fill-color',
+                        c.parks
+                    );
+                }
+
+                else if (/building/.test(id)) {
+                    setPaintIfChanged(
+                        layer.id,
+                        'fill-color',
+                        c.building
+                    );
+                }
+            }
+
+            // Edifici 3D
+            if (layer.type === 'fill-extrusion') {
+                setPaintIfChanged(
+                    layer.id,
+                    'fill-extrusion-color',
+                    c.building
+                );
+            }
+
+            // Ferrovie e strade
+            if (layer.type === 'line') {
+                if (/(rail|train|transit)/.test(id)) {
+                    setPaintIfChanged(
+                        layer.id,
+                        'line-color',
+                        c.railway
+                    );
+                }
+
+                else if (/(road|highway|street)/.test(id)) {
+                    setPaintIfChanged(
+                        layer.id,
+                        'line-color',
+                        c.road
+                    );
+                }
+            }
+
+        } catch (err) {
+            console.warn('Errore colore layer:', layer.id, err);
+        }
+    });
+}
+ 
 function removeTempSearchMarker() {
     if (tempSearchMarker) { tempSearchMarker.remove(); tempSearchMarker = null; }
 }
@@ -443,10 +713,33 @@ function setupUnexploredAndBoundariesLayer() {
         map.addLayer({ 'id': 'known-boundaries-layer', 'type': 'line', 'source': 'known-boundaries-src', 'paint': { 'line-color': '#00f0ff', 'line-width': 3, 'line-dasharray': [2, 2] } });
     }
 
-    if (!map.getSource('unexplored-src')) {
-        map.addSource('unexplored-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-        map.addLayer({ 'id': 'unexplored-layer', 'type': 'fill', 'source': 'unexplored-src', 'paint': { 'fill-color': '#020617', 'fill-opacity': 0.55 } });
-    }
+  if (!map.getSource('unexplored-src')) {
+
+    map.addSource('unexplored-src', {
+        type: 'geojson',
+        data: {
+            type: 'FeatureCollection',
+            features: []
+        }
+    });
+
+    // Trova il primo layer di riempimento della cartografia.
+    const firstFillLayer = map.getStyle().layers.find(
+        layer => layer.type === 'fill'
+    );
+
+    // Inserisci il livello delle zone inesplorate
+    // sotto tutti i dettagli cartografici.
+    map.addLayer({
+        id: 'unexplored-layer',
+        type: 'fill',
+        source: 'unexplored-src',
+        paint: {
+            'fill-color': '#020617',
+            'fill-opacity': 0.55
+        }
+    }, firstFillLayer ? firstFillLayer.id : undefined);
+}
 }
 
 function setupClusteredSourceAndLayers() {
@@ -542,7 +835,6 @@ function updateBoundariesAndUnexploredLayer() {
             });
             map.getSource('unexplored-src').setData({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Polygon', coordinates: worldPolygon } }] });
         } else {
-            // ✅ RISOLTO: Nessun blocco blu all'avvio se non ci sono città registrate
             map.getSource('unexplored-src').setData({ type: 'FeatureCollection', features: [] });
         }
     }
@@ -750,8 +1042,8 @@ function addCityToProfileWithPolygon(item, type) {
 function renderProfileCityChips() {
     const mainList = document.getElementById("mainCitiesList");
     const knownList = document.getElementById("knownCitiesList");
+    const visitedList = document.getElementById("visitedCitiesList");
 
-    // Renderizza solo i chip delle Città Principali
     if (mainList) {
         mainList.innerHTML = "";
         (userProfile.mainCities || []).forEach((c, idx) => {
@@ -770,7 +1062,6 @@ function renderProfileCityChips() {
         });
     }
 
-    // Renderizza solo i chip dei Luoghi Conosciuti
     if (knownList) {
         knownList.innerHTML = "";
         (userProfile.knownPlaces || []).forEach((c, idx) => {
@@ -786,6 +1077,24 @@ function renderProfileCityChips() {
                 updateBoundariesAndUnexploredLayer(); 
             });
             knownList.appendChild(chip);
+        });
+    }
+
+    if (visitedList) {
+        visitedList.innerHTML = "";
+        (userProfile.visitedCities || []).forEach((c, idx) => {
+            const chip = document.createElement("div"); 
+            chip.className = "city-chip visited-chip"; 
+            chip.innerHTML = `✈️ ${c.name} <span class="btn-remove-chip">✕</span>`;
+            chip.querySelector(".btn-remove-chip").addEventListener("click", () => {
+                if (isSpectating) return;
+                userProfile.visitedCities.splice(idx, 1); 
+                saveState(); 
+                renderProfileCityChips(); 
+                updateMacroCityMarkers(); 
+                updateBoundariesAndUnexploredLayer(); 
+            });
+            visitedList.appendChild(chip);
         });
     }
 }
@@ -861,11 +1170,8 @@ function getNeonSvgIcon(iconChar, category) {
         beer: '<svg viewBox="0 0 24 24"><path d="M4 5v14c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-2h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-2V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2zm12 2h2v6h-2V7z"/></svg>',
         gym: '<svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 4.86 4.86 6.29 6.29 4.86 7.71 2 10.57l1.43 1.43L4.86 13.43 7 11.29 15.57 20 12 23.57 13.43 25l1.43-1.43 1.43 1.43 2.86-2.86-1.43-1.43 1.43-1.43z"/></svg>',
         nature: '<svg viewBox="0 0 24 24"><path d="M17 12h2L12 2 5 12h2l-5 7h7v4h2v-4h7l-5-7z"/></svg>',
-        // 🏖️ Spiaggia & Mare (Ombrellone da spiaggia)
         beach: '<svg viewBox="0 0 24 24"><path d="M12 2a9 9 0 0 0-9 9c0 .7.1 1.3.2 2h17.6c.1-.7.2-1.3.2-2a9 9 0 0 0-9-9zm-1 11.5V21h2v-7.5h-2zM4.9 9h14.2c-.7-2.9-3.3-5-6.6-5s-5.9 2.1-6.6 5z"/></svg>',
-        // 🏛️ Cultura & Monumenti (Tempio / Landmark)
         culture: '<svg viewBox="0 0 24 24"><path d="M12 2L2 7h20L12 2zm-7 7h2v9H5V9zm5 0h2v9h-2V9zm5 0h2v9h-2V9zm5 0h2v9h-2V9zM2 20h20v2H2v-2z"/></svg>',
-        // 🛍️ Shopping & Negozio (Borsa Shopping)
         shopping: '<svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6zm0 2h12l1.5 2h-15L6 4zm-1 4h14v12H5V8zm4 2a3 3 0 0 0 6 0h2a5 5 0 0 1-10 0h2z"/></svg>',
         hotel: '<svg viewBox="0 0 24 24"><path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/></svg>',
         defaultPin: '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
@@ -916,7 +1222,6 @@ function renderMarkers() {
 
     Object.keys(places).forEach(id => {
         const item = places[id];
-        if (item.isPrivate && isSpectating) return;
         
         if (activeFilterCategory !== "ALL") {
             if (activeFilterCategory === "✈️") {
@@ -965,12 +1270,6 @@ function loadProfileUI() {
     const nameInput = document.getElementById('profileNameInput');
     if (nameInput) nameInput.value = userProfile.name || "";
 
-    const idDisplay = document.getElementById('myUserIdDisplay');
-    if (idDisplay) idDisplay.textContent = userProfile.userId || uniqueUserId;
-
-    const privacySelect = document.getElementById('mapPrivacySelect');
-    if (privacySelect) privacySelect.value = userProfile.privacy || "all";
-
     const imgEl = document.getElementById("profileAvatarImg");
     const placeholderEl = document.getElementById("avatarPlaceholder");
     if (userProfile.avatar && imgEl && placeholderEl) { 
@@ -982,7 +1281,6 @@ function loadProfileUI() {
         placeholderEl.classList.remove("hidden"); 
     }
     renderProfileCityChips(); 
-    renderFriendsList();
     updateProfileStats();
 }
 
@@ -996,8 +1294,6 @@ function updateProfileStats() {
     const dict = translations[lang] || translations.it;
 
     const totalPins = Object.keys(places).length;
-    const countEl = document.getElementById("totalPinsCount");
-    if (countEl) countEl.textContent = totalPins;
 
     const allCities = [...(userProfile.mainCities || []), ...(userProfile.knownPlaces || []), ...(userProfile.visitedCities || [])];
     const uniqueCitiesCount = allCities.length;
@@ -1037,133 +1333,9 @@ function updateProfileStats() {
     }
 }
 
-const copyMyIdBtn = document.getElementById('copyMyIdBtn');
-if (copyMyIdBtn) {
-    copyMyIdBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(userProfile.userId || uniqueUserId);
-        alert("✅ ID Amico copiato negli appunti!");
-    });
-}
-
-function renderFriendsList() {
-    const container = document.getElementById('friendsListContainer');
-    if (!container) return;
-    container.innerHTML = "";
-
-    if (!userProfile.friends || userProfile.friends.length === 0) {
-        container.innerHTML = `<span style="font-size: 0.78rem; color: #64748b;">Nessun amico aggiunto.</span>`;
-        return;
-    }
-
-    userProfile.friends.forEach((friend, idx) => {
-        const chip = document.createElement('div');
-        chip.className = 'friend-chip';
-        chip.innerHTML = `
-            <span>👤 ${friend.name || 'Amico'} (${friend.userId})</span>
-            <div style="display: flex; gap: 6px;">
-                <button class="btn-spectate" style="background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">👁️ Guarda</button>
-                <button class="btn-remove-friend" style="color: #fca5a5;">✕</button>
-            </div>
-        `;
-        chip.querySelector('.btn-spectate').addEventListener('click', () => {
-            document.getElementById('profileModal').classList.remove('open');
-            startSpectating(friend);
-        });
-        chip.querySelector('.btn-remove-friend').addEventListener('click', () => {
-            userProfile.friends.splice(idx, 1);
-            saveState();
-            renderFriendsList();
-        });
-        container.appendChild(chip);
-    });
-}
-
-const addFriendBtn = document.getElementById('addFriendBtn');
-if (addFriendBtn) {
-    addFriendBtn.addEventListener('click', () => {
-        const input = document.getElementById('friendIdInput');
-        const friendId = input ? input.value.trim().toUpperCase() : "";
-        if (!friendId) return alert("Inserisci un ID Amico valido!");
-        if (friendId === (userProfile.userId || uniqueUserId)) return alert("Non puoi aggiungere te stesso!");
-
-        if (!userProfile.friends) userProfile.friends = [];
-        
-        const mockFriendProfile = {
-            userId: friendId,
-            name: "Amico di " + friendId.slice(-4),
-            userProfile: { name: "Amico " + friendId.slice(-4), mainCities: [{ name: "Parigi", lat: 48.8566, lng: 2.3522 }], knownPlaces: [], visitedCities: [], privacy: "all" },
-            places: { "fp1": { name: "Tour Eiffel", icon: "🏛️", category: "Cultura", lat: 48.8584, lng: 2.2945, note: "Bellissima!", isPrivate: false } }
-        };
-
-        userProfile.friends.push(mockFriendProfile);
-        saveState();
-        renderFriendsList();
-        input.value = "";
-        alert("✅ Amico aggiunto! Clicca 'Guarda' per esplorare la sua mappa.");
-    });
-}
-
-function startSpectating(friendData) {
-    if (!isSpectating) {
-        originalMyData = {
-            places: JSON.parse(JSON.stringify(places)),
-            userProfile: JSON.parse(JSON.stringify(userProfile))
-        };
-    }
-    isSpectating = true;
-
-    if (friendData.userProfile.privacy === 'private') {
-        return alert("🔒 La mappa di questo utente è privata!");
-    }
-
-    if (friendData.userProfile.privacy === 'cities') {
-        places = {};
-        alert("ℹ️ L'utente mostra solo le città e le statistiche.");
-    } else {
-        places = friendData.places || {};
-    }
-
-    userProfile = friendData.userProfile;
-    
-    const banner = document.getElementById('spectatorBanner');
-    const bannerText = document.getElementById('spectatorBannerText');
-    if (banner && bannerText) {
-        bannerText.textContent = `👁️ Stai guardando la mappa in sola lettura di: ${friendData.name}`;
-        banner.classList.remove('hidden');
-    }
-
-    const footerBtns = document.getElementById('sheetFooterButtons');
-    if (footerBtns) footerBtns.style.display = 'none';
-
-    renderMarkers();
-    updateMacroCityMarkers();
-    updateBoundariesAndUnexploredLayer();
-}
-
-const exitSpectatorBtn = document.getElementById('exitSpectatorBtn');
-if (exitSpectatorBtn) {
-    exitSpectatorBtn.addEventListener('click', () => {
-        if (!isSpectating || !originalMyData) return;
-        places = originalMyData.places;
-        userProfile = originalMyData.userProfile;
-        isSpectating = false;
-        originalMyData = null;
-
-        document.getElementById('spectatorBanner').classList.add('hidden');
-        const footerBtns = document.getElementById('sheetFooterButtons');
-        if (footerBtns) footerBtns.style.display = 'flex';
-
-        renderMarkers();
-        updateMacroCityMarkers();
-        updateBoundariesAndUnexploredLayer();
-        alert("🗺️ Sei tornato sulla tua mappa personale.");
-    });
-}
-
 const profileAvatarFileInput = document.getElementById('profileAvatarFileInput');
 if (profileAvatarFileInput) {
     profileAvatarFileInput.addEventListener('change', (e) => {
-        if (isSpectating) return alert("Non puoi modificare il profilo in modalità spettatore!");
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
             if (!file.type.startsWith('image/')) return alert('Seleziona un file immagine.');
@@ -1183,11 +1355,8 @@ if (profileAvatarFileInput) {
 const saveProfileAvatarBtn = document.getElementById("saveProfileAvatar");
 if (saveProfileAvatarBtn) {
     saveProfileAvatarBtn.addEventListener("click", () => {
-        if (isSpectating) return alert("Non puoi salvare il profilo in modalità spettatore!");
         const nameInput = document.getElementById("profileNameInput");
-        const privacySelect = document.getElementById("mapPrivacySelect");
         userProfile.name = nameInput ? (nameInput.value.trim() || "Utente") : "Utente";
-        if (privacySelect) userProfile.privacy = privacySelect.value;
         
         saveState(); 
         loadProfileUI(); 
@@ -1293,10 +1462,9 @@ if (flyToAirportBtn) {
 const deletePlaceBtn = document.getElementById("deletePlaceBtn");
 if (deletePlaceBtn) {
     deletePlaceBtn.addEventListener("click", () => {
-        if (isSpectating) return alert("Non puoi eliminare pin in modalità spettatore!");
         const lang = userProfile.language || 'it';
         const dict = translations[lang] || translations.it;
-        if (currentSelectedPlaceId && confirm(dict.confirmDeletePin || "Eliminare questo pin?")) { 
+        if (currentSelectedPlaceId && confirm("Eliminare questo pin?")) { 
             delete places[currentSelectedPlaceId]; 
             saveState(); 
             if (placeSheet) placeSheet.classList.remove("open"); 
@@ -1308,7 +1476,6 @@ if (deletePlaceBtn) {
 const movePlaceBtn = document.getElementById("movePlaceBtn");
 if (movePlaceBtn) {
     movePlaceBtn.addEventListener("click", () => {
-        if (isSpectating) return alert("Non puoi spostare pin in modalità spettatore!");
         if (!currentSelectedPlaceId) return;
         isMovingExistingPlace = true;
         if (placeSheet) placeSheet.classList.remove("open");
@@ -1321,7 +1488,6 @@ if (movePlaceBtn) {
 const editPlaceBtn = document.getElementById("editPlaceBtn");
 if (editPlaceBtn) {
     editPlaceBtn.addEventListener("click", () => {
-        if (isSpectating) return alert("Non puoi modificare pin in modalità spettatore!");
         const place = places[currentSelectedPlaceId]; 
         if (!place) return;
         const lang = userProfile.language || 'it';
@@ -1332,8 +1498,6 @@ if (editPlaceBtn) {
         document.getElementById("customEmojiInput").value = place.icon;
         document.getElementById("tagsInput").value = (place.tags || []).join(",");
         document.getElementById("noteInput").value = place.note || "";
-        const privCheck = document.getElementById("privatePinCheck");
-        if (privCheck) privCheck.checked = !!place.isPrivate;
         
         if (place.photo) {
             currentBase64Photo = place.photo; 
@@ -1367,7 +1531,6 @@ if (gpsButton) {
 const addOptionButton = document.getElementById("addOptionButton");
 if (addOptionButton) {
     addOptionButton.addEventListener("click", () => {
-        if (isSpectating) return alert("Non puoi aggiungere pin sulla mappa di un amico in modalità spettatore!");
         document.getElementById("mapPicker").classList.remove("hidden");
     });
 }
@@ -1438,8 +1601,6 @@ if (confirmPick) {
         document.getElementById("customEmojiInput").value = "";
         document.getElementById("tagsInput").value = ""; 
         document.getElementById("noteInput").value = ""; 
-        const privCheck = document.getElementById("privatePinCheck");
-        if (privCheck) privCheck.checked = false;
         if(removePhotoBtn) removePhotoBtn.click();
         document.getElementById("mapPicker").classList.add("hidden"); 
         document.getElementById("addModal").classList.add("open");
@@ -1454,7 +1615,6 @@ if (savePlace) {
         const customEmoji = document.getElementById("customEmojiInput").value.trim();
         const [catName, defaultIcon] = document.getElementById("iconCategorySelect").value.split("|");
         const icon = customEmoji || defaultIcon;
-        const isPrivate = document.getElementById("privatePinCheck").checked;
         removeTempSearchMarker();
 
         const lang = userProfile.language || 'it';
@@ -1467,7 +1627,6 @@ if (savePlace) {
             places[currentSelectedPlaceId].tags = document.getElementById("tagsInput").value.split(",");
             places[currentSelectedPlaceId].photo = currentBase64Photo; 
             places[currentSelectedPlaceId].note = document.getElementById("noteInput").value || dict.noNotes;
-            places[currentSelectedPlaceId].isPrivate = isPrivate;
             renderMarkers(); 
             saveState(); 
             document.getElementById("addModal").classList.remove("open"); 
@@ -1482,8 +1641,7 @@ if (savePlace) {
                 photo: currentBase64Photo, 
                 note: document.getElementById("noteInput").value || dict.noNotes, 
                 lat: pendingCoords.lat, 
-                lng: pendingCoords.lng,
-                isPrivate: isPrivate
+                lng: pendingCoords.lng
             };
             playSound('pop');
             renderMarkers(); 
@@ -1585,32 +1743,31 @@ if (closeProfile) {
 }
 
 // ==========================================
-// DIARIO DI VIAGGIO (GESTIONE COMPLETA E CHIUSURA)
+// DIARIO DI VIAGGIO (GESTIONE COMPLETA)
 // ==========================================
 const openDiaryBtn = document.getElementById("openDiaryBtn");
 const diaryModal = document.getElementById("diaryModal");
 const closeDiaryBtn = document.getElementById("closeDiaryBtn");
 const diaryPinsContainer = document.getElementById("diaryPinsContainer");
 
-// Apertura Diario
 if (openDiaryBtn && diaryModal) {
     openDiaryBtn.addEventListener("click", () => {
         renderDiaryCityOptions();
+        const lang = userProfile.language || 'it';
+        const dict = translations[lang] || translations.it;
         if (diaryPinsContainer) {
-            diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Seleziona una città per visualizzare i pin correlati.</p>`;
+            diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">${dict.diaryNoPins}</p>`;
         }
         diaryModal.classList.add("open");
     });
 }
 
-// Chiusura Diario (Garantita)
 if (closeDiaryBtn && diaryModal) {
     closeDiaryBtn.addEventListener("click", () => {
         diaryModal.classList.remove("open");
     });
 }
 
-// Chiudi cliccando fuori dal contenuto della modale
 if (diaryModal) {
     diaryModal.addEventListener("click", (e) => {
         if (e.target === diaryModal) {
@@ -1619,13 +1776,15 @@ if (diaryModal) {
     });
 }
 
-// Rendering lista città e gestione eliminazione dentro il Diario
 function renderDiaryCityOptions() {
     const diaryHeaderBox = document.getElementById("diaryCitySelectorContainer");
     if (!diaryHeaderBox) return;
 
+    const lang = userProfile.language || 'it';
+    const dict = translations[lang] || translations.it;
+
     diaryHeaderBox.innerHTML = `
-        <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px;">Città registrate nel diario:</label>
+        <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px;">${dict.diarySelectCityLabel}</label>
         <div id="diaryCitiesManageList" style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;"></div>
     `;
     
@@ -1633,7 +1792,7 @@ function renderDiaryCityOptions() {
     const visited = userProfile.visitedCities || [];
 
     if (visited.length === 0) {
-        manageList.innerHTML = `<span style="font-size: 0.8rem; color: #64748b;">Nessuna città visitata aggiunta.</span>`;
+        manageList.innerHTML = `<span style="font-size: 0.8rem; color: #64748b;">${dict.diaryNoCities}</span>`;
         return;
     }
 
@@ -1649,26 +1808,23 @@ function renderDiaryCityOptions() {
         
         item.innerHTML = `
             <span style="color: #38bdf8; cursor: pointer; font-weight: 500;">✈️ ${c.name}</span>
-            <button class="btn-remove-visited-city" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; cursor: pointer;">🗑️ Rimuovi</button>
+            <button class="btn-remove-visited-city" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; cursor: pointer;">${dict.diaryBtnRemove}</button>
         `;
 
-        // Seleziona la città e mostra i suoi pin
         item.querySelector("span").addEventListener("click", () => {
             loadDiaryPinsForCity(c);
         });
 
-        // Rimuovi la città
         item.querySelector(".btn-remove-visited-city").addEventListener("click", (e) => {
             e.stopPropagation();
-            if (isSpectating) return alert("Non puoi rimuovere città in modalità spettatore!");
-            if (confirm(`Rimuovere "${c.name}" dal Diario e dal profilo?`)) {
+            if (confirm(`Rimuovere "${c.name}"?`)) {
                 userProfile.visitedCities.splice(idx, 1);
                 saveState();
                 updateMacroCityMarkers();
                 updateBoundariesAndUnexploredLayer();
                 renderDiaryCityOptions();
                 if (diaryPinsContainer) {
-                    diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Città rimossa. Seleziona un'altra città.</p>`;
+                    diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">${dict.diaryNoPins}</p>`;
                 }
             }
         });
@@ -1677,15 +1833,15 @@ function renderDiaryCityOptions() {
     });
 }
 
-// Carica i pin della città selezionata nel Diario
 function loadDiaryPinsForCity(city) {
     if (!city || !diaryPinsContainer) return;
     diaryPinsContainer.innerHTML = "";
     let matchedPins = [];
+    const lang = userProfile.language || 'it';
+    const dict = translations[lang] || translations.it;
 
     Object.keys(places).forEach(id => {
         const p = places[id];
-        if (p.isPrivate && isSpectating) return;
         let isInside = false;
         if (city.boundingbox && city.boundingbox.length === 4) {
             const [latMin, latMax, lonMin, lonMax] = city.boundingbox.map(Number);
@@ -1696,7 +1852,7 @@ function loadDiaryPinsForCity(city) {
     });
 
     if (matchedPins.length === 0) {
-        diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 20px;">Nessun pin trovato per ${city.name}.</p>`;
+        diaryPinsContainer.innerHTML = `<p style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 20px;">${dict.diaryNoPins}</p>`;
     } else {
         matchedPins.forEach(pin => {
             const card = document.createElement("div");
@@ -1716,7 +1872,7 @@ function loadDiaryPinsForCity(city) {
                         <div style="font-size: 0.75rem; color: #94a3b8;">${pin.category}</div>
                     </div>
                 </div>
-                <button class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem; flex: unset;">Vai al Pin 📍</button>
+                <button class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem; flex: unset;">${dict.diaryBtnGoToPin}</button>
             `;
             card.querySelector("button").addEventListener("click", () => {
                 diaryModal.classList.remove("open");
@@ -1729,6 +1885,7 @@ function loadDiaryPinsForCity(city) {
         });
     }
 }
+
 function isPointInsideGeojson(point, geojson) {
     const x = point.lng, y = point.lat;
     function rayCast(polygonCoords) {
