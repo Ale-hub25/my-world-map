@@ -14,12 +14,6 @@
     <!-- Mappa Principale -->
     <div id="map"></div>
 
-    <!-- Banner Modalità Spettatore (Amico) -->
-    <div id="spectatorBanner" class="spectator-banner hidden">
-        <span id="spectatorBannerText">👁️ Stai guardando la mappa di Nome Amico</span>
-        <button id="exitSpectatorBtn" class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem;">Torna alla mia mappa 🗺️</button>
-    </div>
-
     <!-- Gruppo Ricerca & Filtro a Tendina Compact -->
     <div class="search-filters-wrapper">
         <div class="search-container">
@@ -99,16 +93,10 @@
             <label data-i18n="lblTags">Tag (separati da virgola)</label>
             <input type="text" id="tagsInput" placeholder="relax, cibo, estate">
 
-            <!-- Checkbox Privacy Pin -->
-            <div style="display: flex; align-items: center; gap: 8px; margin: 4px 0; background: rgba(255,255,255,0.04); padding: 8px; border-radius: 8px;">
-                <input type="checkbox" id="privatePinCheck" style="width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer;">
-                <label for="privatePinCheck" style="cursor: pointer; color: #cbd5e1; font-size: 0.82rem; margin: 0;">🔒 Pin Privato (Nascondi agli amici in modalità spettatore)</label>
-            </div>
-
             <label data-i18n="lblUploadPhoto">Carica Foto</label>
             <div id="imageDropZone" class="drop-zone">
                 <div id="dropZoneContent">
-                    <p>Trascina qui un'immagine o <span class="highlight">sfoglia</span></p>
+                    <p id="dropZoneText">Trascina qui un'immagine o <span class="highlight">sfoglia</span></p>
                     <input type="file" id="photoFileInput" accept="image/*" class="file-input-hidden">
                 </div>
                 <div id="imagePreviewWrapper" class="image-preview-wrapper hidden">
@@ -142,7 +130,7 @@
             <label data-i18n="lblFlyAirport">✈️ Vola verso un altro Aeroporto conosciuto:</label>
             <div class="airport-fly-controls">
                 <select id="airportDestinationSelect">
-                    <option value="">Seleziona destinazione...</option>
+                    <option value="" data-i18n="selectDestination">Seleziona destinazione...</option>
                 </select>
                 <button id="flyToAirportBtn" class="btn-primary" data-i18n="btnFly">Vola ✈️</button>
             </div>
@@ -157,7 +145,7 @@
         </div>
         <div class="sheet-footer" id="sheetFooterButtons">
             <button id="editPlaceBtn" class="btn-secondary" data-i18n="btnEdit">✏️ Modifica</button>
-            <button id="movePlaceBtn" class="btn-secondary" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">📍 Sposta</button>
+            <button id="movePlaceBtn" class="btn-secondary" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);" data-i18n="btnMove">📍 Sposta</button>
             <button id="deletePlaceBtn" class="btn-danger" data-i18n="btnDelete">🗑️ Elimina</button>
         </div>
     </div>
@@ -177,10 +165,10 @@
 
             <!-- Sezione Gestione Backup Dati (Export / Import) -->
             <div style="margin: 10px 0; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
-                <h3 style="color: #38bdf8; font-size: 0.95rem; margin-bottom: 8px;">💾 Gestione Dati Backup</h3>
+                <h3 data-i18n="backupSectionTitle" style="color: #38bdf8; font-size: 0.95rem; margin-bottom: 8px;">💾 Gestione Dati Backup</h3>
                 <div style="display: flex; gap: 8px;">
-                    <button id="exportJsonBtn" type="button" class="btn-primary" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #38bdf8, #2563eb);">📥 Esporta (JSON)</button>
-                    <button id="importJsonBtn" type="button" class="btn-secondary" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.1);">📤 Importa (JSON)</button>
+                    <button id="exportJsonBtn" data-i18n="btnExportJson" type="button" class="btn-primary" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #38bdf8, #2563eb);">📥 Esporta (JSON)</button>
+                    <button id="importJsonBtn" data-i18n="btnImportJson" type="button" class="btn-secondary" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.1);">📤 Importa (JSON)</button>
                 </div>
                 <input type="file" id="importJsonFileInput" accept=".json" style="display: none !important;">
             </div>
@@ -209,7 +197,7 @@
         </div>
     </div>
 
-    <!-- Modal Personalizzazione Stile Mappa (Aggiornato con Parchi e Spiagge) -->
+    <!-- Modal Personalizzazione Stile Mappa -->
     <div id="styleModal" class="modal">
         <div class="modal-content">
             <h2 data-i18n="styleModalTitle">Personalizza Mappa</h2>
@@ -258,40 +246,11 @@
                 </div>
             </div>
 
-            <!-- Box ID Utente Anonimo -->
-            <div style="margin-top: 10px; background: rgba(56, 189, 248, 0.08); border: 1px dashed rgba(56, 189, 248, 0.3); padding: 10px; border-radius: 9px; display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div style="font-size: 0.72rem; color: #94a3b8;">Il tuo ID Amico Anonimo:</div>
-                    <div id="myUserIdDisplay" style="font-family: monospace; font-weight: bold; color: #38bdf8; font-size: 0.9rem;">MAP-USER-XXXX</div>
-                </div>
-                <button id="copyMyIdBtn" class="btn-secondary" style="padding: 6px 10px; font-size: 0.75rem;">📋 Copia</button>
-            </div>
-
-            <!-- Impostazioni Privacy Condivisione -->
-            <div style="margin-top: 10px; background: rgba(255,255,255,0.04); padding: 10px; border-radius: 9px;">
-                <label style="display: block; margin-bottom: 4px; font-size: 0.78rem;">🛡️ Privacy Condivisione Mappa con Amici</label>
-                <select id="mapPrivacySelect" style="width: 100%; padding: 6px; background: #0f172a; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 7px; font-size: 0.82rem;">
-                    <option value="all">🌐 Mostra tutto (Pin pubblici e città)</option>
-                    <option value="cities">🏙️ Mostra solo Città e Statistiche (Nascondi Pin)</option>
-                    <option value="private">🔒 Mappa Privata (Nessuno può vederla)</option>
-                </select>
-            </div>
-
             <label data-i18n="lblAvatarUpload" style="margin-top: 8px;">Carica Foto Profilo</label>
             <div id="profileAvatarDropZone" class="drop-zone" style="margin-top: 2px; padding: 8px;">
                 <p style="font-size: 0.8rem; margin: 0; pointer-events: none;" data-i18n="avatarUploadText">Clicca qui per caricare l'immagine</p>
                 <input type="file" id="profileAvatarFileInput" accept="image/*" class="file-input-hidden">
             </div>
-
-            <hr class="modal-divider">
-
-            <!-- Sezione Amici -->
-            <h3 style="color: #38bdf8; font-size: 0.95rem;">👥 I Miei Amici & Cerca</h3>
-            <div style="display: flex; gap: 6px; margin-top: 6px;">
-                <input type="text" id="friendIdInput" placeholder="Incolla ID Amico (es. MAP-USER-...)" style="font-size: 0.8rem; flex: 1;">
-                <button id="addFriendBtn" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; flex: unset;">Aggiungi ➕</button>
-            </div>
-            <div id="friendsListContainer" class="city-chips-container" style="margin-top: 6px;"></div>
 
             <hr class="modal-divider">
             <h3 data-i18n="lblKnownPlaces">Luoghi Conosciuti</h3>
@@ -324,7 +283,7 @@
             <div id="advancedStatsContainer"></div>
 
             <div class="profile-actions" style="margin-top: 15px; display: flex; gap: 8px;">
-                <button id="openDiaryBtn" class="btn-secondary" style="flex: 1; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">📖 Apri Diario di Viaggio</button>
+                <button id="openDiaryBtn" class="btn-secondary" style="flex: 1; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);" data-i18n="openDiary">📖 Apri Diario di Viaggio</button>
             </div>
 
             <div class="modal-actions">
@@ -337,21 +296,22 @@
     <!-- Modale Diario di Viaggio -->
     <div id="diaryModal" class="modal">
         <div class="modal-content" style="width: 500px; max-width: 95vw;">
-            <h2>📖 Diario di Viaggio</h2>
-            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px;">Seleziona una città visitata per esplorare tutti i pin e i ricordi georeferenziati associati.</p>
+            <h2 data-i18n="diaryTitle">📖 Diario di Viaggio</h2>
+            <p data-i18n="diarySubtitle" style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px;">Seleziona una città visitata per esplorare tutti i pin e i ricordi georeferenziati associati.</p>
             
             <div id="diaryCitySelectorContainer" style="margin-bottom: 15px;">
+                <label data-i18n="diarySelectCityLabel" style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px;">Città registrate nel diario:</label>
                 <select id="diaryCitySelect" style="width: 100%; padding: 10px; background: #0f172a; color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 9px;">
-                    <option value="">-- Seleziona una città visitata --</option>
+                    <option value="" data-i18n="diaryDefaultSelect">-- Seleziona una città visitata --</option>
                 </select>
             </div>
 
             <div id="diaryPinsContainer" style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-                <p style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Nessuna città selezionata o nessun pin trovato.</p>
+                <p data-i18n="diaryNoPins" style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 20px;">Nessuna città selezionata o nessun pin trovato.</p>
             </div>
 
             <div class="modal-actions" style="margin-top: 15px;">
-                <button id="closeDiaryBtn" class="btn-secondary">Chiudi Diario</button>
+                <button id="closeDiaryBtn" class="btn-secondary" data-i18n="closeDiary">Chiudi Diario</button>
             </div>
         </div>
     </div>
