@@ -1654,20 +1654,24 @@ if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", () => {
         const dataStr = JSON.stringify({ places, userProfile }, null, 2);
         
-        // Verifica se siamo in ambiente Capacitor / Android nativo
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-            // Se usi Capacitor, puoi salvare tramite il Filesystem nativo o usare il plugin Share
-            if (navigator.share) {
+        // Se siamo su smartphone/dispositivo mobile, usiamo la condivisione nativa
+        if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
+            const file = new File([dataStr], "my_world_map_backup.json", { type: "application/json" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 navigator.share({
                     title: 'Backup My World Map',
                     text: 'Ecco il file di backup JSON della mia mappa.',
-                    url: 'data:text/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                    files: [file]
                 }).catch(err => console.log('Condivisione annullata', err));
             } else {
-                alert("Esportazione nativa non supportata su questo dispositivo.");
+                // Fallback se il file non è direttamente condivisibile
+                navigator.share({
+                    title: 'Backup My World Map',
+                    text: dataStr
+                }).catch(err => console.log('Condivisione annullata', err));
             }
         } else {
-            // Metodo standard Web browser
+            // Metodo standard per PC / Browser desktop
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
