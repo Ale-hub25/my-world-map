@@ -671,7 +671,15 @@ function toSexagesimal(dec, isLongitude) {
 function setupUnexploredAndBoundariesLayer() {
     if (!map.getSource('known-boundaries-src')) {
         map.addSource('known-boundaries-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-        map.addLayer({ 'id': 'known-boundaries-layer', 'type': 'line', 'source': 'known-boundaries-src', 'paint': { 'line-color': '#00f0ff', 'line-width': 3, 'line-dasharray': [2, 2] } });
+        map.addLayer({ 
+            'id': 'known-boundaries-layer', 
+            'type': 'line', 
+            'source': 'known-boundaries-src', 
+            'paint': { 
+                'line-color': '#00f0ff', 
+                'line-width': 2.5,
+            } 
+        });
     }
 
   if (!map.getSource('unexplored-src')) {
@@ -911,15 +919,36 @@ function selectSearchResult(item) {
     const lat = parseFloat(item.lat), lon = parseFloat(item.lon);
     searchSuggestions.classList.add("hidden");
     searchInput.value = item.display_name.split(",")[0];
-    removeTempSearchMarker();
+    
+    // Pulisci il vecchio marker se esiste
+    if (tempSearchMarker) {
+        tempSearchMarker.remove();
+        tempSearchMarker = null;
+    }
+    
+    // Vola sul posto
     map.flyTo({ center: [lon, lat], zoom: 17, pitch: 0 });
 
-    const el = document.createElement('div'); el.className = 'temp-search-marker';
-    const inner = document.createElement('div'); inner.className = 'temp-pin-inner'; inner.innerHTML = '📍';
-    el.appendChild(inner);
-    tempSearchMarker = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([lon, lat]).addTo(map);
-}
+    // Creiamo un elemento HTML pulito e robusto per il pin di ricerca
+    const el = document.createElement('div');
+    el.style.width = '40px';
+    el.style.height = '40px';
+    el.style.backgroundColor = '#ef4444';
+    el.style.border = '3px solid #ffffff';
+    el.style.borderRadius = '50%';
+    el.style.boxShadow = '0 6px 16px rgba(0,0,0,0.6)';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+    el.style.fontSize = '20px';
+    el.style.zIndex = '999999'; // Forziamo che stia sopra qualsiasi cosa
+    el.innerHTML = '🎯';
 
+    // Lo aggiungiamo alla mappa specificando un offset per centrarlo perfettamente
+    tempSearchMarker = new maplibregl.Marker({ element: el })
+        .setLngLat([lon, lat])
+        .addTo(map);
+}
 document.addEventListener("click", (e) => {
     if (!e.target.closest(".search-container")) searchSuggestions.classList.add("hidden");
     if (!e.target.closest(".city-search-box")) {
@@ -1091,11 +1120,10 @@ if (applyStyleBtn) {
     applyStyleBtn.addEventListener('click', () => {
         userMapStyle.colors.land = document.getElementById('colorLand').value;
         userMapStyle.colors.water = document.getElementById('colorWater').value;
-        userMapStyle.colors.parks = document.getElementById('colorParks').value;
-        userMapStyle.colors.beaches = document.getElementById('colorBeaches').value;
         userMapStyle.colors.building = document.getElementById('colorBuilding').value;
         userMapStyle.colors.road = document.getElementById('colorRoad').value;
         userMapStyle.colors.railway = document.getElementById('colorRailway').value;
+        
         userMapStyle.iconStyle = document.getElementById('iconStyleSelect').value;
         userMapStyle.markerColor = document.getElementById('markerCustomColor').value;
         
@@ -1624,13 +1652,32 @@ if (closeModal) {
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ places, userProfile }));
-        const a = document.createElement('a'); 
-        a.setAttribute("href", dataStr); 
-        a.setAttribute("download", "my_world_map_backup.json");
-        document.body.appendChild(a); 
-        a.click(); 
-        a.remove();
+        const dataStr = JSON.stringify({ places, userProfile }, null, 2);
+        
+        // Verifica se siamo in ambiente Capacitor / Android nativo
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+            // Se usi Capacitor, puoi salvare tramite il Filesystem nativo o usare il plugin Share
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Backup My World Map',
+                    text: 'Ecco il file di backup JSON della mia mappa.',
+                    url: 'data:text/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                }).catch(err => console.log('Condivisione annullata', err));
+            } else {
+                alert("Esportazione nativa non supportata su questo dispositivo.");
+            }
+        } else {
+            // Metodo standard Web browser
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "my_world_map_backup.json";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
     });
 }
 
