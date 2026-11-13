@@ -1654,20 +1654,32 @@ if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", () => {
         const dataStr = JSON.stringify({ places, userProfile }, null, 2);
         
-        // 1. Proviamo prima con la condivisione nativa (funziona benissimo su iOS e su molti Android moderni)
-        if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
-            const file = new File([dataStr], "my_world_map_backup.json", { type: "application/json" });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                navigator.share({
-                    title: 'Backup My World Map',
-                    text: 'Ecco il file di backup JSON della mia mappa.',
-                    files: [file]
-                }).catch(err => console.log('Condivisione file annullata', err));
-                return;
+        // 1. Se siamo su smartphone (Android o iOS), usiamo la condivisione nativa oppure apriamo direttamente il modale di copia
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // Tentiamo prima la condivisione nativa del file (funziona benissimo su iPhone/Safari e molti Android)
+            if (navigator.share && navigator.canShare) {
+                const file = new File([dataStr], "my_world_map_backup.json", { type: "application/json" });
+                if (navigator.canShare({ files: [file] })) {
+                    navigator.share({
+                        title: 'Backup My World Map',
+                        text: 'Ecco il file di backup JSON della mia mappa.',
+                        files: [file]
+                    }).catch(() => {
+                        // Se l'utente annulla la condivisione o fallisce, apriamo il modale di emergenza per sicurezza
+                        showJsonExportModal(dataStr);
+                    });
+                    return;
+                }
             }
+            
+            // Se la condivisione nativa non è supportata, apriamo direttamente il modale con il testo copiabile
+            showJsonExportModal(dataStr);
+            return;
         }
 
-        // 2. Tentativo di download diretto (standard PC / alcuni browser)
+        // 2. Metodo standard per PC / Browser desktop (download diretto via file blob)
         try {
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1678,22 +1690,14 @@ if (exportJsonBtn) {
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
-            
-            // Se siamo su PC o funziona, ci fermiamo qui. Su mobile rigido potrebbe fallire in silenzio, 
-            // perciò se non sei su desktop, offriamo comunque il fallback di sicurezza.
-            if (!/Mobi|Android|iPhone/i.test(navigator.userAgent)) return;
         } catch (e) {
-            console.log("Download diretto non supportato, apro il pannello di emergenza.");
+            showJsonExportModal(dataStr);
         }
-
-        // 3. PIANO B (Fallback universale per smartphone): Modale con testo JSON copiabile
-        showJsonExportModal(dataStr);
     });
 }
 
-// Funzione di supporto per mostrare il modale di emergenza con il testo copiabile
+// Funzione del modale per la copia rapida del testo JSON
 function showJsonExportModal(jsonData) {
-    // Rimuoviamo eventuali modali di backup precedenti per evitare doppioni
     const oldModal = document.getElementById('jsonExportModal');
     if (oldModal) oldModal.remove();
 
@@ -1713,8 +1717,8 @@ function showJsonExportModal(jsonData) {
 
     modal.innerHTML = `
         <div style="background: #1e293b; color: #f8fafc; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 12px;">
-            <h3 style="margin: 0; font-size: 18px; color: #38bdf8;">Esportazione Backup (Copia & Incolla)</h3>
-            <p style="margin: 0; font-size: 13px; color: #94a3b8;">Il tuo browser mobile ha bloccato il download diretto. Copia il codice qui sotto e incollalo in un file di testo o inviatelo dove preferisci.</p>
+            <h3 style="margin: 0; font-size: 18px; color: #38bdf8;">Esportazione Backup</h3>
+            <p style="margin: 0; font-size: 13px; color: #94a3b8;">I browser mobili non permettono il download diretto dei file. Copia il codice qui sotto per salvare il tuo backup:</p>
             <textarea id="jsonTextarea" readonly style="width: 100%; height: 150px; background: #0f172a; color: #38bdf8; border: 1px solid #334155; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 12px; resize: none;">${jsonData}</textarea>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button id="copyJsonBtn" style="background: #0284c7; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Copia negli Appunti</button>
@@ -1729,9 +1733,9 @@ function showJsonExportModal(jsonData) {
         const textarea = document.getElementById('jsonTextarea');
         textarea.select();
         navigator.clipboard.writeText(textarea.value).then(() => {
-            alert("Backup copiato negli appunti con successo! Ora puoi incollarlo dove vuoi.");
+            alert("Backup copiato negli appunti con successo!");
         }).catch(() => {
-            alert("Copia non riuscita automaticamente, seleziona e copia manualmente.");
+            alert("Seleziona e copia il testo manualmente.");
         });
     });
 
@@ -1739,6 +1743,7 @@ function showJsonExportModal(jsonData) {
         modal.remove();
     });
 }
+
 const importJsonBtn = document.getElementById("importJsonBtn");
 const importJsonFileInput = document.getElementById("importJsonFileInput");
 
