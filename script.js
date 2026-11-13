@@ -1654,7 +1654,7 @@ if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", () => {
         const dataStr = JSON.stringify({ places, userProfile }, null, 2);
         
-        // Se siamo su smartphone/dispositivo mobile, usiamo la condivisione nativa
+        // 1. Proviamo prima con la condivisione nativa (funziona benissimo su iOS e su molti Android moderni)
         if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
             const file = new File([dataStr], "my_world_map_backup.json", { type: "application/json" });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1662,16 +1662,13 @@ if (exportJsonBtn) {
                     title: 'Backup My World Map',
                     text: 'Ecco il file di backup JSON della mia mappa.',
                     files: [file]
-                }).catch(err => console.log('Condivisione annullata', err));
-            } else {
-                // Fallback se il file non è direttamente condivisibile
-                navigator.share({
-                    title: 'Backup My World Map',
-                    text: dataStr
-                }).catch(err => console.log('Condivisione annullata', err));
+                }).catch(err => console.log('Condivisione file annullata', err));
+                return;
             }
-        } else {
-            // Metodo standard per PC / Browser desktop
+        }
+
+        // 2. Tentativo di download diretto (standard PC / alcuni browser)
+        try {
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1681,10 +1678,67 @@ if (exportJsonBtn) {
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
+            
+            // Se siamo su PC o funziona, ci fermiamo qui. Su mobile rigido potrebbe fallire in silenzio, 
+            // perciò se non sei su desktop, offriamo comunque il fallback di sicurezza.
+            if (!/Mobi|Android|iPhone/i.test(navigator.userAgent)) return;
+        } catch (e) {
+            console.log("Download diretto non supportato, apro il pannello di emergenza.");
         }
+
+        // 3. PIANO B (Fallback universale per smartphone): Modale con testo JSON copiabile
+        showJsonExportModal(dataStr);
     });
 }
 
+// Funzione di supporto per mostrare il modale di emergenza con il testo copiabile
+function showJsonExportModal(jsonData) {
+    // Rimuoviamo eventuali modali di backup precedenti per evitare doppioni
+    const oldModal = document.getElementById('jsonExportModal');
+    if (oldModal) oldModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'jsonExportModal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    modal.style.zIndex = '1000000';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.padding = '20px';
+
+    modal.innerHTML = `
+        <div style="background: #1e293b; color: #f8fafc; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 18px; color: #38bdf8;">Esportazione Backup (Copia & Incolla)</h3>
+            <p style="margin: 0; font-size: 13px; color: #94a3b8;">Il tuo browser mobile ha bloccato il download diretto. Copia il codice qui sotto e incollalo in un file di testo o inviatelo dove preferisci.</p>
+            <textarea id="jsonTextarea" readonly style="width: 100%; height: 150px; background: #0f172a; color: #38bdf8; border: 1px solid #334155; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 12px; resize: none;">${jsonData}</textarea>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="copyJsonBtn" style="background: #0284c7; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Copia negli Appunti</button>
+                <button id="closeJsonModalBtn" style="background: #475569; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">Chiudi</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('copyJsonBtn').addEventListener('click', () => {
+        const textarea = document.getElementById('jsonTextarea');
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value).then(() => {
+            alert("Backup copiato negli appunti con successo! Ora puoi incollarlo dove vuoi.");
+        }).catch(() => {
+            alert("Copia non riuscita automaticamente, seleziona e copia manualmente.");
+        });
+    });
+
+    document.getElementById('closeJsonModalBtn').addEventListener('click', () => {
+        modal.remove();
+    });
+}
 const importJsonBtn = document.getElementById("importJsonBtn");
 const importJsonFileInput = document.getElementById("importJsonFileInput");
 
