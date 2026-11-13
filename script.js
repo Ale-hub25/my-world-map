@@ -1537,25 +1537,22 @@ if (closeModal) {
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", async () => {
-        // 1. Creiamo una copia dei pin SENZA le foto (per mantenere il file leggerissimo e inviolabile)
+        // 1. Pulizia dei dati (rimozione foto per mantenere il file leggero)
         const exportPlaces = JSON.parse(JSON.stringify(places));
         Object.keys(exportPlaces).forEach(id => {
-            exportPlaces[id].photo = ""; // Azzera la foto nel file di esportazione
+            exportPlaces[id].photo = ""; 
         });
 
-        // 2. Copia pulita del profilo utente (città e luoghi conosciuti)
         const exportProfile = JSON.parse(JSON.stringify(userProfile));
-
-        // 3. Generiamo la stringa JSON finale
         const dataStr = JSON.stringify({ places: exportPlaces, userProfile: exportProfile });
         const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
         const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-        // 4. Su Mobile tentiamo la condivisione nativa del file (ora che pesa pochi KB funzionerà sempre!)
-        if (isMobile) {
+        // 2. Tentativo con la Condivisione Nativa (Ottimizzata per Mobile)
+        if (isMobile && navigator.share && navigator.canShare) {
             try {
                 const file = new File([dataStr], fileName, { type: "application/json" });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                if (navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         title: 'Backup My World Map',
                         files: [file]
@@ -1563,26 +1560,29 @@ if (exportJsonBtn) {
                     return;
                 }
             } catch (err) {
-                if (err && err.name === 'AbortError') return; // L'utente ha chiuso il menu
+                if (err && err.name === 'AbortError') return; // L'utente ha annullato il menu di condivisione
+                // Se la share API fallisce (comune in Android WebView), passiamo al download diretto via Data URI
             }
-
-            // Se per qualsiasi motivo la condivisione file è schermata, usiamo la modale di testo
-            showJsonExportModal(dataStr);
-            return;
         }
 
-        // 5. Su PC: Download diretto immediato
+        // 3. Soluzione universale per Android e Desktop: Data URI anziché Blob
         try {
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
+            // I Data URI bypassano le restrizioni dei Blob URL sulle WebView di Android
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
             const a = document.createElement('a');
-            a.href = url;
+            a.href = dataUri;
             a.download = fileName;
+            a.style.display = 'none';
             document.body.appendChild(a);
+            
             a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
+            
+            setTimeout(() => {
+                a.remove();
+            }, 1000);
         } catch (e) {
+            // Fallback estremo solo in caso di browser estremamente blindati
             showJsonExportModal(dataStr);
         }
     });
