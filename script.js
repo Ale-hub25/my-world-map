@@ -866,18 +866,48 @@ if (imageDropZone && photoFileInput) {
     photoFileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleImageFile(e.target.files[0]); });
 }
 
-function handleImageFile(file) {
-    if (!file.type.startsWith('image/')) return alert('Seleziona un file immagine valido.');
+function compressImageToBase64(file, maxSize, quality, callback) {
     const reader = new FileReader();
     reader.onload = (e) => {
-        currentBase64Photo = e.target.result;
-        modalPhotoPreview.src = currentBase64Photo;
-        dropZoneContent.classList.add('hidden');
-        imagePreviewWrapper.classList.remove('hidden');
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > maxSize) {
+                    height *= maxSize / width;
+                    width = maxSize;
+                }
+            } else {
+                if (height > maxSize) {
+                    width *= maxSize / height;
+                    height = maxSize;
+                }
+            }
+
+            canvas.width = Math.round(width);
+            canvas.height = Math.round(height);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            callback(canvas.toDataURL('image/jpeg', quality));
+        };
     };
     reader.readAsDataURL(file);
 }
 
+function handleImageFile(file) {
+    if (!file.type.startsWith('image/')) return alert('Seleziona un file immagine valido.');
+    compressImageToBase64(file, 600, 0.65, (compressedBase64) => {
+        currentBase64Photo = compressedBase64;
+        modalPhotoPreview.src = currentBase64Photo;
+        dropZoneContent.classList.add('hidden');
+        imagePreviewWrapper.classList.remove('hidden');
+    });
+}
 if (removePhotoBtn) {
     removePhotoBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1328,15 +1358,13 @@ if (profileAvatarFileInput) {
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
             if (!file.type.startsWith('image/')) return alert('Seleziona un file immagine.');
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                userProfile.avatar = evt.target.result;
+            compressImageToBase64(file, 300, 0.7, (compressedAvatar) => {
+                userProfile.avatar = compressedAvatar;
                 const img = document.getElementById("profileAvatarImg");
                 const place = document.getElementById("avatarPlaceholder");
-                if(img) { img.src = userProfile.avatar; img.classList.remove("hidden"); }
-                if(place) place.classList.add("hidden");
-            };
-            reader.readAsDataURL(file);
+                if (img) { img.src = userProfile.avatar; img.classList.remove("hidden"); }
+                if (place) place.classList.add("hidden");
+            });
         }
     });
 }
@@ -1651,41 +1679,39 @@ if (closeModal) {
 
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 if (exportJsonBtn) {
-    exportJsonBtn.addEventListener("click", () => {
-        const dataStr = JSON.stringify({ places, userProfile }, null, 2);
-        
-        // 1. Se siamo su smartphone (Android o iOS), usiamo la condivisione nativa oppure apriamo direttamente il modale di copia
+    exportJsonBtn.addEventListener("click", async () => {
+        // JSON compatto (senza spazi inutili) per ridurre al minimo il peso
+        const dataStr = JSON.stringify({ places, userProfile });
+        const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
         const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
         if (isMobile) {
-            // Tentiamo prima la condivisione nativa del file (funziona benissimo su iPhone/Safari e molti Android)
-            if (navigator.share && navigator.canShare) {
-                const file = new File([dataStr], "my_world_map_backup.json", { type: "application/json" });
-                if (navigator.canShare({ files: [file] })) {
-                    navigator.share({
+            // Tentativo 1: Condivisione nativa come file (funziona su Android Chrome/WebView moderni e iOS)
+            try {
+                const file = new File([dataStr], fileName, { type: "application/json" });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
                         title: 'Backup My World Map',
-                        text: 'Ecco il file di backup JSON della mia mappa.',
                         files: [file]
-                    }).catch(() => {
-                        // Se l'utente annulla la condivisione o fallisce, apriamo il modale di emergenza per sicurezza
-                        showJsonExportModal(dataStr);
                     });
                     return;
                 }
+            } catch (err) {
+                console.log("Condivisione file non riuscita o annullata, passo al modale:", err);
             }
-            
-            // Se la condivisione nativa non è supportata, apriamo direttamente il modale con il testo copiabile
+
+            // Tentativo 2: Modale universale per Android/WebView (Copia + Condivisione testo)
             showJsonExportModal(dataStr);
             return;
         }
 
-        // 2. Metodo standard per PC / Browser desktop (download diretto via file blob)
+        // Desktop / PC: Download diretto
         try {
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "my_world_map_backup.json";
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -1696,90 +1722,166 @@ if (exportJsonBtn) {
     });
 }
 
-// Funzione del modale per la copia rapida del testo JSON
 function showJsonExportModal(jsonData) {
     const oldModal = document.getElementById('jsonExportModal');
     if (oldModal) oldModal.remove();
 
+    const sizeKb = (new Blob([jsonData]).size / 1024).toFixed(1);
+
     const modal = document.createElement('div');
     modal.id = 'jsonExportModal';
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    modal.style.zIndex = '1000000';
-    modal.style.display = 'flex';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
-    modal.style.padding = '20px';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000000;display:flex;align-items:center;justify-content:center;padding:16px;';
 
     modal.innerHTML = `
-        <div style="background: #1e293b; color: #f8fafc; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 12px;">
-            <h3 style="margin: 0; font-size: 18px; color: #38bdf8;">Esportazione Backup</h3>
-            <p style="margin: 0; font-size: 13px; color: #94a3b8;">I browser mobili non permettono il download diretto dei file. Copia il codice qui sotto per salvare il tuo backup:</p>
-            <textarea id="jsonTextarea" readonly style="width: 100%; height: 150px; background: #0f172a; color: #38bdf8; border: 1px solid #334155; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 12px; resize: none;">${jsonData}</textarea>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button id="copyJsonBtn" style="background: #0284c7; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Copia negli Appunti</button>
-                <button id="closeJsonModalBtn" style="background: #475569; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">Chiudi</button>
+        <div style="background:#1e293b;color:#f8fafc;padding:20px;border-radius:14px;width:100%;max-width:480px;box-shadow:0 10px 30px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:12px;border:1px solid #334155;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="margin:0;font-size:17px;color:#38bdf8;">💾 Esporta Backup (${sizeKb} KB)</h3>
+                <button id="closeJsonModalX" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <p style="margin:0;font-size:13px;color:#cbd5e1;line-height:1.4;">
+                Copia il codice qui sotto e salvalo nelle Note, oppure invialo a te stesso su WhatsApp/Email.
+            </p>
+            <textarea id="jsonTextarea" readonly style="width:100%;height:130px;background:#0f172a;color:#38bdf8;border:1px solid #334155;border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none;box-sizing:border-box;">${jsonData}</textarea>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;">
+                ${navigator.share ? `<button id="shareTextJsonBtn" style="background:#10b981;color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;flex:1;">📤 Condividi Testo</button>` : ''}
+                <button id="copyJsonBtn" style="background:#0284c7;color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;flex:1;">📋 Copia Codice</button>
             </div>
         </div>
     `;
 
     document.body.appendChild(modal);
 
+    const textarea = document.getElementById('jsonTextarea');
+    textarea.addEventListener('click', () => textarea.select());
+
     document.getElementById('copyJsonBtn').addEventListener('click', () => {
-        const textarea = document.getElementById('jsonTextarea');
+        textarea.focus();
         textarea.select();
-        navigator.clipboard.writeText(textarea.value).then(() => {
-            alert("Backup copiato negli appunti con successo!");
-        }).catch(() => {
-            alert("Seleziona e copia il testo manualmente.");
-        });
+        textarea.setSelectionRange(0, textarea.value.length);
+
+        let copied = false;
+        try {
+            // Fallback compatibile anche con WebView Android restrittive
+            copied = document.execCommand('copy');
+        } catch (err) {}
+
+        if (copied) {
+            alert("✅ Backup copiato negli appunti! Ora puoi incollarlo dove vuoi.");
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(textarea.value)
+                .then(() => alert("✅ Backup copiato negli appunti!"))
+                .catch(() => alert("⚠️ Copia automatica bloccata: tieni premuto sul testo azzurro e seleziona 'Copia'."));
+        } else {
+            alert("⚠️ Tieni premuto sul testo azzurro e seleziona 'Copia'.");
+        }
     });
 
-    document.getElementById('closeJsonModalBtn').addEventListener('click', () => {
-        modal.remove();
-    });
+    const shareTextBtn = document.getElementById('shareTextJsonBtn');
+    if (shareTextBtn) {
+        shareTextBtn.addEventListener('click', () => {
+            navigator.share({
+                title: 'Backup My World Map',
+                text: jsonData
+            }).catch(() => {});
+        });
+    }
+
+    document.getElementById('closeJsonModalX').addEventListener('click', () => modal.remove());
+}
+
+// ==========================================
+// IMPORTAZIONE DOPPIA (DA FILE O DA TESTO INCOLLATO)
+// ==========================================
+function processImportedJsonString(rawString) {
+    try {
+        const importedData = JSON.parse(rawString.trim());
+        if (importedData && importedData.places && importedData.userProfile) {
+            if (confirm("⚠️ Importando questo backup i dati attuali verranno sovrascritti. Vuoi procedere?")) {
+                places = importedData.places;
+                userProfile = importedData.userProfile;
+                saveState();
+                renderMarkers();
+                updateMacroCityMarkers();
+                updateBoundariesAndUnexploredLayer();
+                applyLanguageTranslations();
+                loadProfileUI();
+                loadSettingsUI();
+                alert("✅ Dati importati con successo!");
+                document.getElementById("settingsModal").classList.remove("open");
+                return true;
+            }
+        } else {
+            alert("❌ Dati di backup non validi o incompleti.");
+        }
+    } catch (err) {
+        alert("❌ Formato JSON non valido. Assicurati di aver copiato l'intero codice.");
+    }
+    return false;
 }
 
 const importJsonBtn = document.getElementById("importJsonBtn");
 const importJsonFileInput = document.getElementById("importJsonFileInput");
 
 if (importJsonBtn && importJsonFileInput) {
-    importJsonBtn.addEventListener("click", () => importJsonFileInput.click());
+    importJsonBtn.addEventListener("click", () => {
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isMobile) {
+            importJsonFileInput.click();
+            return;
+        }
+        // Su mobile offriamo sia la scelta del file che l'incolla testo
+        showJsonImportModal();
+    });
+
     importJsonFileInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
-            try {
-                const importedData = JSON.parse(event.target.result);
-                if (importedData && importedData.places && importedData.userProfile) {
-                    if (confirm("⚠️ Importando questo backup i dati attuali verranno sovrascritti. Vuoi procedere?")) {
-                        places = importedData.places;
-                        userProfile = importedData.userProfile;
-                        saveState();
-                        renderMarkers();
-                        updateMacroCityMarkers();
-                        updateBoundariesAndUnexploredLayer();
-                        applyLanguageTranslations();
-                        loadProfileUI();
-                        loadSettingsUI();
-                        alert("✅ Dati importati con successo!");
-                        document.getElementById("settingsModal").classList.remove("open");
-                    }
-                } else {
-                    alert("❌ File di backup non valido o incompleto.");
-                }
-            } catch (err) {
-                alert("❌ Errore durante la lettura del file JSON.");
-            }
+            processImportedJsonString(event.target.result);
             importJsonFileInput.value = "";
         };
         reader.readAsText(file);
     });
+}
+
+function showJsonImportModal() {
+    const oldModal = document.getElementById('jsonImportModal');
+    if (oldModal) oldModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'jsonImportModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000000;display:flex;align-items:center;justify-content:center;padding:16px;';
+
+    modal.innerHTML = `
+        <div style="background:#1e293b;color:#f8fafc;padding:20px;border-radius:14px;width:100%;max-width:480px;box-shadow:0 10px 30px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:12px;border:1px solid #334155;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="margin:0;font-size:17px;color:#38bdf8;">📤 Importa Backup</h3>
+                <button id="closeImportModalX" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <button id="chooseFileImportBtn" style="background:#334155;color:white;border:1px solid #475569;padding:10px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">📁 Scegli file .json dal telefono</button>
+            <div style="text-align:center;font-size:12px;color:#94a3b8;">— OPPURE INCOLLA IL CODICE QUI SOTTO —</div>
+            <textarea id="pasteJsonTextarea" placeholder='Incolla qui il codice che inizia con {"places":...' style="width:100%;height:120px;background:#0f172a;color:#f8fafc;border:1px solid #334155;border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none;box-sizing:border-box;"></textarea>
+            <button id="confirmPasteImportBtn" style="background:#0284c7;color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">✅ Ripristina da Codice Incollato</button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('chooseFileImportBtn').addEventListener('click', () => {
+        modal.remove();
+        importJsonFileInput.click();
+    });
+
+    document.getElementById('confirmPasteImportBtn').addEventListener('click', () => {
+        const pasted = document.getElementById('pasteJsonTextarea').value;
+        if (!pasted.trim()) return alert("Incolla prima il codice JSON!");
+        if (processImportedJsonString(pasted)) {
+            modal.remove();
+        }
+    });
+
+    document.getElementById('closeImportModalX').addEventListener('click', () => modal.remove());
 }
 
 const settingsButton = document.getElementById("settingsButton");
