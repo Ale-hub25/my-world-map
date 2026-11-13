@@ -61,14 +61,12 @@ const translations = {
         phVisitedCity: "Aggiungi città visitata...",
         phProfileName: "Il tuo nome",
 
-        // Placeholders & Form Pin
         phPlaceInput: "Es. Bar Preferito",
         phCustomEmoji: "Es. 🍕 o 🚀",
         phTagsInput: "relax, cibo, estate",
         phNoteInput: "Scrivi un bel ricordo di questo posto...",
         dropZoneInnerHtml: 'Trascina qui un\'immagine o <span class="highlight">sfoglia</span>',
 
-        // Categorie Pin della tendina
         optFav: "⭐ Preferito",
         optHome: "🏠 Casa",
         optWork: "💼 Lavoro / Ufficio",
@@ -149,14 +147,12 @@ const translations = {
         phVisitedCity: "Add visited city...",
         phProfileName: "Your name",
 
-        // Placeholders & Form Pin
         phPlaceInput: "E.g. Favorite Bar",
         phCustomEmoji: "E.g. 🍕 or 🚀",
         phTagsInput: "relax, food, summer",
         phNoteInput: "Write a nice memory of this place...",
         dropZoneInnerHtml: 'Drag an image here or <span class="highlight">browse</span>',
 
-        // Pin categories dropdown
         optFav: "⭐ Favorite",
         optHome: "🏠 Home",
         optWork: "💼 Work / Office",
@@ -247,7 +243,6 @@ function applyLanguageTranslations() {
         if (dict[key]) el.innerHTML = dict[key];
     });
 
-    // Traduzione delle opzioni della select categorie pin
     const categorySelect = document.getElementById('iconCategorySelect');
     if (categorySelect) {
         const options = categorySelect.options;
@@ -259,7 +254,6 @@ function applyLanguageTranslations() {
         }
     }
 
-    // Placeholder input
     const searchInp = document.getElementById('searchInput');
     if (searchInp) searchInp.placeholder = dict.searchPlaceholder;
 
@@ -310,9 +304,6 @@ function applyLanguageTranslations() {
     updateProfileStats();
 }
 
-// ==========================================
-// 🎵 SOUNDSCAPE & AUDIO (Web Audio API)
-// ==========================================
 let audioCtx = null;
 let windGain = null;
 let waveGain = null;
@@ -463,13 +454,10 @@ function playSound(type) {
 
 map.on('load', () => {
     applyLanguageTranslations();
-
     enable3DBuildings();
     applyMapColors();
-
     setupUnexploredAndBoundariesLayer();
     setupClusteredSourceAndLayers();
-
     renderMarkers();
     updateMacroCityMarkers();
     updateBoundariesAndUnexploredLayer();
@@ -488,7 +476,6 @@ map.on('zoom', updateSoundscapes);
 function enable3DBuildings() {
     try {
         const layers = [...map.getStyle().layers];
-
         const buildingLayers = layers.filter(layer =>
             layer.type === 'fill' &&
             layer.id.toLowerCase().includes('building') &&
@@ -502,20 +489,13 @@ function enable3DBuildings() {
             layer.layout['text-field']
         );
 
-        const labelLayerId = firstSymbolLayer
-            ? firstSymbolLayer.id
-            : undefined;
+        const labelLayerId = firstSymbolLayer ? firstSymbolLayer.id : undefined;
 
         buildingLayers.forEach(layer => {
-
-            // Edifici 2D: mantienili visibili anche
-            // alle scale intermedie.
             map.setLayerZoomRange(layer.id, 10, 24);
-
             const extrusionId = layer.id + '-3d';
 
             if (!map.getLayer(extrusionId)) {
-
                 const extrusionLayer = {
                     id: extrusionId,
                     type: 'fill-extrusion',
@@ -523,76 +503,40 @@ function enable3DBuildings() {
                     'source-layer': layer['source-layer'],
                     minzoom: 14.5,
                     maxzoom: 24,
-
-                    ...(layer.filter
-                        ? { filter: layer.filter }
-                        : {}),
-
+                    ...(layer.filter ? { filter: layer.filter } : {}),
                     paint: {
-                        'fill-extrusion-color':
-                            userMapStyle.colors.building,
-
+                        'fill-extrusion-color': userMapStyle.colors.building,
                         'fill-extrusion-height': [
-                            'max',
-                            3,
-                            [
-                                'coalesce',
-                                ['to-number', ['get', 'render_height']],
-                                ['to-number', ['get', 'height']],
-                                8
-                            ]
+                            'max', 3,
+                            ['coalesce', ['to-number', ['get', 'render_height']], ['to-number', ['get', 'height']], 8]
                         ],
-
                         'fill-extrusion-base': [
-                            'coalesce',
-                            ['to-number', ['get', 'render_min_height']],
-                            ['to-number', ['get', 'min_height']],
-                            0
+                            'coalesce', ['to-number', ['get', 'render_min_height']], ['to-number', ['get', 'min_height']], 0
                         ],
-
                         'fill-extrusion-opacity': 0.95,
                         'fill-extrusion-vertical-gradient': true
                     }
                 };
-
                 map.addLayer(extrusionLayer, labelLayerId);
-
             } else {
-                map.setLayerZoomRange(
-                    extrusionId,
-                    14.5,
-                    24
-                );
+                map.setLayerZoomRange(extrusionId, 14.5, 24);
             }
         });
-
     } catch (err) {
         console.error('Errore edifici 3D:', err);
     }
 }
- function applyMapColors() {
-    if (!map || !map.getStyle()) return;
 
+function applyMapColors() {
+    if (!map || !map.getStyle()) return;
     const c = userMapStyle.colors;
 
     const landcoverExpression = [
         'case',
-        // Spiagge
-        ['==', ['get', 'subclass'], 'beach'],
-        c.beaches,
-        // Parchi, giardini e aree naturali
-        ['in', ['get', 'subclass'],
-            ['literal', ['park', 'garden', 'forest', 'grassland', 'wood']]
-        ],
-        c.parks,
-        // Classi generiche del terreno
-        ['==', ['get', 'class'], 'sand'],
-        c.beaches,
-        ['in', ['get', 'class'],
-            ['literal', ['wood', 'grass']]
-        ],
-        c.parks,
-        // Tutto il resto mantiene il colore terra
+        ['==', ['get', 'subclass'], 'beach'], c.beaches,
+        ['in', ['get', 'subclass'], ['literal', ['park', 'garden', 'forest', 'grassland', 'wood']]], c.parks,
+        ['==', ['get', 'class'], 'sand'], c.beaches,
+        ['in', ['get', 'class'], ['literal', ['wood', 'grass']]], c.parks,
         c.land
     ];
 
@@ -613,33 +557,22 @@ function enable3DBuildings() {
             if (layer.type === 'background') {
                 setPaintIfChanged(layer.id, 'background-color', c.land);
             }
-
             if (layer.type === 'fill') {
-                // Classificazione precisa del terreno (Landcover)
                 if (sourceLayer === 'landcover') {
                     setPaintIfChanged(layer.id, 'fill-color', landcoverExpression);
-                }
-                // 💧 AGGIUNTO: Gestione esplicita dell'acqua
-                else if (/water/.test(id)) {
+                } else if (/water/.test(id)) {
                     setPaintIfChanged(layer.id, 'fill-color', c.water);
-                }
-                else if (/beach|sand/.test(id)) {
+                } else if (/beach|sand/.test(id)) {
                     setPaintIfChanged(layer.id, 'fill-color', c.beaches);
-                }
-                else if (/park|wood|forest|garden|grass/.test(id)) {
+                } else if (/park|wood|forest|garden|grass/.test(id)) {
                     setPaintIfChanged(layer.id, 'fill-color', c.parks);
-                }
-                else if (/building/.test(id)) {
+                } else if (/building/.test(id)) {
                     setPaintIfChanged(layer.id, 'fill-color', c.building);
                 }
             }
-
-            // Edifici 3D
             if (layer.type === 'fill-extrusion') {
                 setPaintIfChanged(layer.id, 'fill-extrusion-color', c.building);
             }
-
-            // Ferrovie e strade
             if (layer.type === 'line') {
                 if (/(rail|train|transit)/.test(id)) {
                     setPaintIfChanged(layer.id, 'line-color', c.railway);
@@ -647,7 +580,6 @@ function enable3DBuildings() {
                     setPaintIfChanged(layer.id, 'line-color', c.road);
                 }
             }
-
         } catch (err) {
             console.warn('Errore colore layer:', layer.id, err);
         }
@@ -675,40 +607,20 @@ function setupUnexploredAndBoundariesLayer() {
             'id': 'known-boundaries-layer', 
             'type': 'line', 
             'source': 'known-boundaries-src', 
-            'paint': { 
-                'line-color': '#00f0ff', 
-                'line-width': 2.5,
-            } 
+            'paint': { 'line-color': '#00f0ff', 'line-width': 2.5 } 
         });
     }
 
-  if (!map.getSource('unexplored-src')) {
-
-    map.addSource('unexplored-src', {
-        type: 'geojson',
-        data: {
-            type: 'FeatureCollection',
-            features: []
-        }
-    });
-
-    // Trova il primo layer di riempimento della cartografia.
-    const firstFillLayer = map.getStyle().layers.find(
-        layer => layer.type === 'fill'
-    );
-
-    // Inserisci il livello delle zone inesplorate
-    // sotto tutti i dettagli cartografici.
-    map.addLayer({
-        id: 'unexplored-layer',
-        type: 'fill',
-        source: 'unexplored-src',
-        paint: {
-            'fill-color': '#020617',
-            'fill-opacity': 0.55
-        }
-    }, firstFillLayer ? firstFillLayer.id : undefined);
-}
+    if (!map.getSource('unexplored-src')) {
+        map.addSource('unexplored-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        const firstFillLayer = map.getStyle().layers.find(layer => layer.type === 'fill');
+        map.addLayer({
+            id: 'unexplored-layer',
+            type: 'fill',
+            source: 'unexplored-src',
+            paint: { 'fill-color': '#020617', 'fill-opacity': 0.55 }
+        }, firstFillLayer ? firstFillLayer.id : undefined);
+    }
 }
 
 function setupClusteredSourceAndLayers() {
@@ -728,24 +640,8 @@ function setupClusteredSourceAndLayers() {
         source: 'places-clustered-source',
         filter: ['has', 'point_count'],
         paint: {
-            'circle-color': [
-                'step',
-                ['get', 'point_count'],
-                '#3b82f6',
-                10,
-                '#2563eb',
-                50,
-                '#1d4ed8'
-            ],
-            'circle-radius': [
-                'step',
-                ['get', 'point_count'],
-                20,
-                10,
-                25,
-                50,
-                30
-            ],
+            'circle-color': ['step', ['get', 'point_count'], '#3b82f6', 10, '#2563eb', 50, '#1d4ed8'],
+            'circle-radius': ['step', ['get', 'point_count'], 20, 10, 25, 50, 30],
             'circle-stroke-width': 2,
             'circle-stroke-color': '#ffffff'
         }
@@ -761,9 +657,7 @@ function setupClusteredSourceAndLayers() {
             'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
             'text-size': 13
         },
-        paint: {
-            'text-color': '#ffffff'
-        }
+        paint: { 'text-color': '#ffffff' }
     });
 
     map.on('click', 'clusters-layer', (e) => {
@@ -771,10 +665,7 @@ function setupClusteredSourceAndLayers() {
         const clusterId = features[0].properties.cluster_id;
         map.getSource('places-clustered-source').getClusterExpansionZoom(clusterId, (err, zoom) => {
             if (err) return;
-            map.easeTo({
-                center: features[0].geometry.coordinates,
-                zoom: zoom
-            });
+            map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
         });
     });
 
@@ -875,24 +766,15 @@ function compressImageToBase64(file, maxSize, quality, callback) {
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-
             if (width > height) {
-                if (width > maxSize) {
-                    height *= maxSize / width;
-                    width = maxSize;
-                }
+                if (width > maxSize) { height *= maxSize / width; width = maxSize; }
             } else {
-                if (height > maxSize) {
-                    width *= maxSize / height;
-                    height = maxSize;
-                }
+                if (height > maxSize) { width *= maxSize / height; height = maxSize; }
             }
-
             canvas.width = Math.round(width);
             canvas.height = Math.round(height);
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
             callback(canvas.toDataURL('image/jpeg', quality));
         };
     };
@@ -950,16 +832,9 @@ function selectSearchResult(item) {
     searchSuggestions.classList.add("hidden");
     searchInput.value = item.display_name.split(",")[0];
     
-    // Pulisci il vecchio marker se esiste
-    if (tempSearchMarker) {
-        tempSearchMarker.remove();
-        tempSearchMarker = null;
-    }
-    
-    // Vola sul posto
+    if (tempSearchMarker) { tempSearchMarker.remove(); tempSearchMarker = null; }
     map.flyTo({ center: [lon, lat], zoom: 17, pitch: 0 });
 
-    // Creiamo un elemento HTML pulito e robusto per il pin di ricerca
     const el = document.createElement('div');
     el.style.width = '40px';
     el.style.height = '40px';
@@ -971,14 +846,14 @@ function selectSearchResult(item) {
     el.style.alignItems = 'center';
     el.style.justifyContent = 'center';
     el.style.fontSize = '20px';
-    el.style.zIndex = '999999'; // Forziamo che stia sopra qualsiasi cosa
+    el.style.zIndex = '999999';
     el.innerHTML = '🎯';
 
-    // Lo aggiungiamo alla mappa specificando un offset per centrarlo perfettamente
     tempSearchMarker = new maplibregl.Marker({ element: el })
         .setLngLat([lon, lat])
         .addTo(map);
 }
+
 document.addEventListener("click", (e) => {
     if (!e.target.closest(".search-container")) searchSuggestions.classList.add("hidden");
     if (!e.target.closest(".city-search-box")) {
@@ -1153,7 +1028,6 @@ if (applyStyleBtn) {
         userMapStyle.colors.building = document.getElementById('colorBuilding').value;
         userMapStyle.colors.road = document.getElementById('colorRoad').value;
         userMapStyle.colors.railway = document.getElementById('colorRailway').value;
-        
         userMapStyle.iconStyle = document.getElementById('iconStyleSelect').value;
         userMapStyle.markerColor = document.getElementById('markerCustomColor').value;
         
@@ -1236,12 +1110,10 @@ function createMarkerElement(item) {
 function renderMarkers() {
     activeMarkers.forEach(m => m.remove()); 
     activeMarkers = [];
-
     const geojsonFeatures = [];
 
     Object.keys(places).forEach(id => {
         const item = places[id];
-        
         if (activeFilterCategory !== "ALL") {
             if (activeFilterCategory === "✈️") {
                 if (item.icon !== "✈️" && !item.category.toLowerCase().includes("aeroporto") && !item.category.toLowerCase().includes("viaggio")) return;
@@ -1249,28 +1121,17 @@ function renderMarkers() {
                 return;
             }
         }
-
         geojsonFeatures.push({
             type: 'Feature',
             properties: { id: id, ...item },
-            geometry: {
-                type: 'Point',
-                coordinates: [item.lng, item.lat]
-            }
+            geometry: { type: 'Point', coordinates: [item.lng, item.lat] }
         });
     });
 
     const source = map.getSource('places-clustered-source');
     if (source) {
-        source.setData({
-            type: 'FeatureCollection',
-            features: geojsonFeatures
-        });
-
-        const unclusteredFeatures = map.querySourceFeatures('places-clustered-source', {
-            filter: ['!', ['has', 'point_count']]
-        });
-
+        source.setData({ type: 'FeatureCollection', features: geojsonFeatures });
+        const unclusteredFeatures = map.querySourceFeatures('places-clustered-source', { filter: ['!', ['has', 'point_count']] });
         const seenIds = new Set();
         unclusteredFeatures.forEach(feature => {
             const item = feature.properties;
@@ -1313,7 +1174,6 @@ function updateProfileStats() {
     const dict = translations[lang] || translations.it;
 
     const totalPins = Object.keys(places).length;
-
     const allCities = [...(userProfile.mainCities || []), ...(userProfile.knownPlaces || []), ...(userProfile.visitedCities || [])];
     const uniqueCitiesCount = allCities.length;
 
@@ -1374,7 +1234,6 @@ if (saveProfileAvatarBtn) {
     saveProfileAvatarBtn.addEventListener("click", () => {
         const nameInput = document.getElementById("profileNameInput");
         userProfile.name = nameInput ? (nameInput.value.trim() || "Utente") : "Utente";
-        
         saveState(); 
         loadProfileUI(); 
         document.getElementById("profileModal").classList.remove("open");
@@ -1479,8 +1338,6 @@ if (flyToAirportBtn) {
 const deletePlaceBtn = document.getElementById("deletePlaceBtn");
 if (deletePlaceBtn) {
     deletePlaceBtn.addEventListener("click", () => {
-        const lang = userProfile.language || 'it';
-        const dict = translations[lang] || translations.it;
         if (currentSelectedPlaceId && confirm("Eliminare questo pin?")) { 
             delete places[currentSelectedPlaceId]; 
             saveState(); 
@@ -1685,55 +1542,39 @@ if (exportJsonBtn) {
         const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
         if (isMobile) {
-            // 1. Tentativo primario: Condivisione nativa del file .json (apre il menu Android/iOS per salvare su Drive, File, Telegram, ecc.)
             try {
                 const file = new File([dataStr], fileName, { type: "application/json" });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        title: 'Backup My World Map',
-                        files: [file]
-                    });
-                    return;
-                }
-            } catch (err) {
-                if (err && err.name === 'AbortError') return; // L'utente ha chiuso volontariamente il menu
-                console.log("Condivisione file .json non supportata da questa WebView, provo come .txt:", err);
-            }
-
-            // 2. Tentativo secondario: Alcune WebView Android bloccano il MIME type application/json ma accettano text/plain
-            try {
-                const txtFile = new File([dataStr], fileName.replace('.json', '.txt'), { type: "text/plain" });
-                if (navigator.canShare && navigator.canShare({ files: [txtFile] })) {
-                    await navigator.share({
-                        title: 'Backup My World Map',
-                        files: [txtFile]
-                    });
+                    await navigator.share({ title: 'Backup My World Map', files: [file] });
                     return;
                 }
             } catch (err) {
                 if (err && err.name === 'AbortError') return;
-                console.log("Condivisione file .txt non riuscita:", err);
             }
 
-            // 3. Tentativo terziario: Condivisione diretta come testo nativo (invia il backup a WhatsApp, Telegram, Gmail, Drive senza passare dal copia-incolla)
+            try {
+                const txtFile = new File([dataStr], fileName.replace('.json', '.txt'), { type: "text/plain" });
+                if (navigator.canShare && navigator.canShare({ files: [txtFile] })) {
+                    await navigator.share({ title: 'Backup My World Map', files: [txtFile] });
+                    return;
+                }
+            } catch (err) {
+                if (err && err.name === 'AbortError') return;
+            }
+
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: 'Backup My World Map',
-                        text: dataStr
-                    });
+                    await navigator.share({ title: 'Backup My World Map', text: dataStr });
                     return;
                 } catch (err) {
                     if (err && err.name === 'AbortError') return;
                 }
             }
 
-            // 4. Ultima spiaggia: Modale di emergenza
             showJsonExportModal(dataStr);
             return;
         }
 
-        // Desktop / PC: Download diretto
         try {
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1755,7 +1596,6 @@ function showJsonExportModal(jsonData) {
     if (oldModal) oldModal.remove();
 
     const sizeKb = (new Blob([jsonData]).size / 1024).toFixed(1);
-
     const modal = document.createElement('div');
     modal.id = 'jsonExportModal';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000000;display:flex;align-items:center;justify-content:center;padding:16px;';
@@ -1786,12 +1626,8 @@ function showJsonExportModal(jsonData) {
         textarea.focus();
         textarea.select();
         textarea.setSelectionRange(0, textarea.value.length);
-
         let copied = false;
-        try {
-            // Fallback compatibile anche con WebView Android restrittive
-            copied = document.execCommand('copy');
-        } catch (err) {}
+        try { copied = document.execCommand('copy'); } catch (err) {}
 
         if (copied) {
             alert("✅ Backup copiato negli appunti! Ora puoi incollarlo dove vuoi.");
@@ -1807,19 +1643,13 @@ function showJsonExportModal(jsonData) {
     const shareTextBtn = document.getElementById('shareTextJsonBtn');
     if (shareTextBtn) {
         shareTextBtn.addEventListener('click', () => {
-            navigator.share({
-                title: 'Backup My World Map',
-                text: jsonData
-            }).catch(() => {});
+            navigator.share({ title: 'Backup My World Map', text: jsonData }).catch(() => {});
         });
     }
 
     document.getElementById('closeJsonModalX').addEventListener('click', () => modal.remove());
 }
 
-// ==========================================
-// IMPORTAZIONE DOPPIA (DA FILE O DA TESTO INCOLLATO)
-// ==========================================
 function processImportedJsonString(rawString) {
     try {
         const importedData = JSON.parse(rawString.trim());
@@ -1858,7 +1688,6 @@ if (importJsonBtn && importJsonFileInput) {
             importJsonFileInput.click();
             return;
         }
-        // Su mobile offriamo sia la scelta del file che l'incolla testo
         showJsonImportModal();
     });
 
@@ -1944,9 +1773,6 @@ if (closeProfile) {
     });
 }
 
-// ==========================================
-// DIARIO DI VIAGGIO (GESTIONE COMPLETA)
-// ==========================================
 const openDiaryBtn = document.getElementById("openDiaryBtn");
 const diaryModal = document.getElementById("diaryModal");
 const closeDiaryBtn = document.getElementById("closeDiaryBtn");
@@ -2074,4 +1900,35 @@ function loadDiaryPinsForCity(city) {
                         <div style="font-size: 0.75rem; color: #94a3b8;">${pin.category}</div>
                     </div>
                 </div>
-                <button class="btn-primary" style="paddi
+                <button class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem; flex: unset;">${dict.diaryBtnGoToPin}</button>
+            `;
+            card.querySelector("button").addEventListener("click", () => {
+                diaryModal.classList.remove("open");
+                const profModal = document.getElementById("profileModal");
+                if (profModal) profModal.classList.remove("open");
+                map.flyTo({ center: [pin.lng, pin.lat], zoom: 16, speed: 1.2 });
+                setTimeout(() => openPlace(pin.id), 1000);
+            });
+            diaryPinsContainer.appendChild(card);
+        });
+    }
+}
+
+function isPointInsideGeojson(point, geojson) {
+    const x = point.lng, y = point.lat;
+    function rayCast(polygonCoords) {
+        let inside = false;
+        for (let i = 0, j = polygonCoords.length - 1; i < polygonCoords.length; j = i++) {
+            const xi = polygonCoords[i][0], yi = polygonCoords[i][1];
+            const xj = polygonCoords[j][0], yj = polygonCoords[j][1];
+            const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+    if (geojson.type === "Polygon") return rayCast(geojson.coordinates[0]);
+    else if (geojson.type === "MultiPolygon") {
+        for (let poly of geojson.coordinates) { if (rayCast(poly[0])) return true; }
+    }
+    return false;
+}
