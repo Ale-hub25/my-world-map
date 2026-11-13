@@ -1680,13 +1680,12 @@ if (closeModal) {
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", async () => {
-        // JSON compatto (senza spazi inutili) per ridurre al minimo il peso
         const dataStr = JSON.stringify({ places, userProfile });
         const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
         const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
         if (isMobile) {
-            // Tentativo 1: Condivisione nativa come file (funziona su Android Chrome/WebView moderni e iOS)
+            // 1. Tentativo primario: Condivisione nativa del file .json (apre il menu Android/iOS per salvare su Drive, File, Telegram, ecc.)
             try {
                 const file = new File([dataStr], fileName, { type: "application/json" });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1697,10 +1696,39 @@ if (exportJsonBtn) {
                     return;
                 }
             } catch (err) {
-                console.log("Condivisione file non riuscita o annullata, passo al modale:", err);
+                if (err && err.name === 'AbortError') return; // L'utente ha chiuso volontariamente il menu
+                console.log("Condivisione file .json non supportata da questa WebView, provo come .txt:", err);
             }
 
-            // Tentativo 2: Modale universale per Android/WebView (Copia + Condivisione testo)
+            // 2. Tentativo secondario: Alcune WebView Android bloccano il MIME type application/json ma accettano text/plain
+            try {
+                const txtFile = new File([dataStr], fileName.replace('.json', '.txt'), { type: "text/plain" });
+                if (navigator.canShare && navigator.canShare({ files: [txtFile] })) {
+                    await navigator.share({
+                        title: 'Backup My World Map',
+                        files: [txtFile]
+                    });
+                    return;
+                }
+            } catch (err) {
+                if (err && err.name === 'AbortError') return;
+                console.log("Condivisione file .txt non riuscita:", err);
+            }
+
+            // 3. Tentativo terziario: Condivisione diretta come testo nativo (invia il backup a WhatsApp, Telegram, Gmail, Drive senza passare dal copia-incolla)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Backup My World Map',
+                        text: dataStr
+                    });
+                    return;
+                } catch (err) {
+                    if (err && err.name === 'AbortError') return;
+                }
+            }
+
+            // 4. Ultima spiaggia: Modale di emergenza
             showJsonExportModal(dataStr);
             return;
         }
@@ -1823,6 +1851,7 @@ const importJsonBtn = document.getElementById("importJsonBtn");
 const importJsonFileInput = document.getElementById("importJsonFileInput");
 
 if (importJsonBtn && importJsonFileInput) {
+    importJsonFileInput.setAttribute("accept", ".json,.txt,application/json,text/plain");
     importJsonBtn.addEventListener("click", () => {
         const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (!isMobile) {
@@ -2045,35 +2074,4 @@ function loadDiaryPinsForCity(city) {
                         <div style="font-size: 0.75rem; color: #94a3b8;">${pin.category}</div>
                     </div>
                 </div>
-                <button class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem; flex: unset;">${dict.diaryBtnGoToPin}</button>
-            `;
-            card.querySelector("button").addEventListener("click", () => {
-                diaryModal.classList.remove("open");
-                const profModal = document.getElementById("profileModal");
-                if (profModal) profModal.classList.remove("open");
-                map.flyTo({ center: [pin.lng, pin.lat], zoom: 16, speed: 1.2 });
-                setTimeout(() => openPlace(pin.id), 1000);
-            });
-            diaryPinsContainer.appendChild(card);
-        });
-    }
-}
-
-function isPointInsideGeojson(point, geojson) {
-    const x = point.lng, y = point.lat;
-    function rayCast(polygonCoords) {
-        let inside = false;
-        for (let i = 0, j = polygonCoords.length - 1; i < polygonCoords.length; j = i++) {
-            const xi = polygonCoords[i][0], yi = polygonCoords[i][1];
-            const xj = polygonCoords[j][0], yj = polygonCoords[j][1];
-            const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-            if (intersect) inside = !inside;
-        }
-        return inside;
-    }
-    if (geojson.type === "Polygon") return rayCast(geojson.coordinates[0]);
-    else if (geojson.type === "MultiPolygon") {
-        for (let poly of geojson.coordinates) { if (rayCast(poly[0])) return true; }
-    }
-    return false;
-}
+                <button class="btn-primary" style="paddi
