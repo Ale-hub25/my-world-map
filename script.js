@@ -1537,44 +1537,41 @@ if (closeModal) {
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", async () => {
-        const dataStr = JSON.stringify({ places, userProfile });
+        // 1. Creiamo una copia dei pin SENZA le foto (per mantenere il file leggerissimo e inviolabile)
+        const exportPlaces = JSON.parse(JSON.stringify(places));
+        Object.keys(exportPlaces).forEach(id => {
+            exportPlaces[id].photo = ""; // Azzera la foto nel file di esportazione
+        });
+
+        // 2. Copia pulita del profilo utente (città e luoghi conosciuti)
+        const exportProfile = JSON.parse(JSON.stringify(userProfile));
+
+        // 3. Generiamo la stringa JSON finale
+        const dataStr = JSON.stringify({ places: exportPlaces, userProfile: exportProfile });
         const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
         const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+        // 4. Su Mobile tentiamo la condivisione nativa del file (ora che pesa pochi KB funzionerà sempre!)
         if (isMobile) {
             try {
                 const file = new File([dataStr], fileName, { type: "application/json" });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ title: 'Backup My World Map', files: [file] });
+                    await navigator.share({
+                        title: 'Backup My World Map',
+                        files: [file]
+                    });
                     return;
                 }
             } catch (err) {
-                if (err && err.name === 'AbortError') return;
+                if (err && err.name === 'AbortError') return; // L'utente ha chiuso il menu
             }
 
-            try {
-                const txtFile = new File([dataStr], fileName.replace('.json', '.txt'), { type: "text/plain" });
-                if (navigator.canShare && navigator.canShare({ files: [txtFile] })) {
-                    await navigator.share({ title: 'Backup My World Map', files: [txtFile] });
-                    return;
-                }
-            } catch (err) {
-                if (err && err.name === 'AbortError') return;
-            }
-
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: 'Backup My World Map', text: dataStr });
-                    return;
-                } catch (err) {
-                    if (err && err.name === 'AbortError') return;
-                }
-            }
-
+            // Se per qualsiasi motivo la condivisione file è schermata, usiamo la modale di testo
             showJsonExportModal(dataStr);
             return;
         }
 
+        // 5. Su PC: Download diretto immediato
         try {
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1590,7 +1587,6 @@ if (exportJsonBtn) {
         }
     });
 }
-
 function showJsonExportModal(jsonData) {
     const oldModal = document.getElementById('jsonExportModal');
     if (oldModal) oldModal.remove();
