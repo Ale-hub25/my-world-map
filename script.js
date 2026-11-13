@@ -1537,7 +1537,7 @@ if (closeModal) {
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", async () => {
-        // 1. Pulizia dei dati (rimozione foto per mantenere il file leggero)
+        // 1. Pulizia dei dati (rimozione foto)
         const exportPlaces = JSON.parse(JSON.stringify(places));
         Object.keys(exportPlaces).forEach(id => {
             exportPlaces[id].photo = ""; 
@@ -1546,10 +1546,9 @@ if (exportJsonBtn) {
         const exportProfile = JSON.parse(JSON.stringify(userProfile));
         const dataStr = JSON.stringify({ places: exportPlaces, userProfile: exportProfile });
         const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
-        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-        // 2. Tentativo con la Condivisione Nativa (Ottimizzata per Mobile)
-        if (isMobile && navigator.share && navigator.canShare) {
+        // 2. Nelle app .aab (WebView), 'navigator.share' è il metodo nativo più affidabile
+        if (navigator.share && navigator.canShare) {
             try {
                 const file = new File([dataStr], fileName, { type: "application/json" });
                 if (navigator.canShare({ files: [file] })) {
@@ -1557,34 +1556,34 @@ if (exportJsonBtn) {
                         title: 'Backup My World Map',
                         files: [file]
                     });
-                    return;
+                    return; // Esportazione completata con successo tramite condivisione nativa Android/iOS
                 }
             } catch (err) {
-                if (err && err.name === 'AbortError') return; // L'utente ha annullato il menu di condivisione
-                // Se la share API fallisce (comune in Android WebView), passiamo al download diretto via Data URI
+                if (err && err.name === 'AbortError') return; // L'utente ha chiuso il menu
             }
         }
 
-        // 3. Soluzione universale per Android e Desktop: Data URI anziché Blob
-        try {
-            // I Data URI bypassano le restrizioni dei Blob URL sulle WebView di Android
-            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            
-            const a = document.createElement('a');
-            a.href = dataUri;
-            a.download = fileName;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            
-            a.click();
-            
-            setTimeout(() => {
+        // 3. Fallback universale: Se siamo su PC o il browser supporta il Blob download diretto
+        const isDesktop = !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isDesktop) {
+            try {
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
                 a.remove();
-            }, 1000);
-        } catch (e) {
-            // Fallback estremo solo in caso di browser estremamente blindati
-            showJsonExportModal(dataStr);
+                URL.revokeObjectURL(url);
+                return;
+            } catch (e) {}
         }
+
+        // 4. Paracadute Definitivo per la WebView dell' .aab: La Modale Testuale
+        // Se la WebView blocca il download e il device non condivide il file, 
+        // la modale con "Copia Codice" o "Condividi Testo" salverà sempre l'utente al 100%.
+        showJsonExportModal(dataStr);
     });
 }
 function showJsonExportModal(jsonData) {
