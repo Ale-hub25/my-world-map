@@ -1,3 +1,4 @@
+
 const translations = {
     it: {
         searchPlaceholder: "🔍 Cerca città o luogo...",
@@ -206,18 +207,37 @@ let userProfile = JSON.parse(localStorage.getItem('My World Map_user')) || {
     friends: []
 };
 
+// 1. Recupero sicuro dell'ultima posizione salvata (anti-crash)
+let savedMapState = null;
+try {
+    savedMapState = JSON.parse(localStorage.getItem('My World Map_lastView'));
+} catch (e) {
+    localStorage.removeItem('My World Map_lastView');
+}
+
+const hasValidCenter = savedMapState && 
+    Array.isArray(savedMapState.center) && 
+    savedMapState.center.length === 2 && 
+    !isNaN(savedMapState.center[0]) && 
+    !isNaN(savedMapState.center[1]);
+
+const initialCenter = hasValidCenter ? savedMapState.center : [12.4964, 41.9028];
+const initialZoom = hasValidCenter ? (savedMapState.zoom || 14) : 14;
+const initialPitch = hasValidCenter ? (savedMapState.pitch || 0) : 0;
+const initialBearing = hasValidCenter ? (savedMapState.bearing || 0) : 0;
+
 const mapStyleUrl = userMapStyle.isDarkMode ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/liberty';
 
+// 2. Creazione della mappa pulita che sfrutta la posizione salvata
 const map = new maplibregl.Map({
     container: 'map',
     style: mapStyleUrl,
-    center: [12.4964, 41.9028],
-    zoom: 14,
-    pitch: 0,
-    bearing: 0,
+    center: initialCenter,
+    zoom: initialZoom,
+    pitch: initialPitch,
+    bearing: initialBearing,
     preserveDrawingBuffer: true
 });
-
 map.addControl(new maplibregl.ScaleControl({
     maxWidth: 100,
     unit: 'metric'
@@ -461,6 +481,7 @@ map.on('load', () => {
     renderMarkers();
     updateMacroCityMarkers();
     updateBoundariesAndUnexploredLayer();
+    avviaAdMob();
 });
 
 map.on('styledata', () => {
@@ -468,9 +489,23 @@ map.on('styledata', () => {
 });
 
 map.on('moveend', () => {
+    try {
+        const center = map.getCenter();
+        const mapState = {
+            center: [center.lng, center.lat],
+            zoom: map.getZoom(),
+            pitch: map.getPitch(),
+            bearing: map.getBearing()
+        };
+        localStorage.setItem('My World Map_lastView', JSON.stringify(mapState));
+    } catch (e) {
+        console.error("Errore salvataggio vista:", e);
+    }
+    
     updateSoundscapes();
     renderMarkers();
 });
+
 map.on('zoom', updateSoundscapes);
 
 function enable3DBuildings() {
@@ -1537,17 +1572,20 @@ if (closeModal) {
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", async () => {
-        // 1. Pulizia dei dati (rimozione foto)
+        // 1. Pulizia dei pin: rimuoviamo le foto di tutti i luoghi
         const exportPlaces = JSON.parse(JSON.stringify(places));
         Object.keys(exportPlaces).forEach(id => {
             exportPlaces[id].photo = ""; 
         });
 
+        // 2. Pulizia del profilo: rimuoviamo l'immagine del profilo utente (avatar)
         const exportProfile = JSON.parse(JSON.stringify(userProfile));
+        exportProfile.avatar = ""; // <-- QUESTA ERA LA CAUSA DEL PESO ECCESSIVO!
+
         const dataStr = JSON.stringify({ places: exportPlaces, userProfile: exportProfile });
         const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
 
-        // 2. Nelle app .aab (WebView), 'navigator.share' è il metodo nativo più affidabile
+        // 3. Condivisione nativa (per .aab / mobile)
         if (navigator.share && navigator.canShare) {
             try {
                 const file = new File([dataStr], fileName, { type: "application/json" });
@@ -1556,14 +1594,14 @@ if (exportJsonBtn) {
                         title: 'Backup My World Map',
                         files: [file]
                     });
-                    return; // Esportazione completata con successo tramite condivisione nativa Android/iOS
+                    return;
                 }
             } catch (err) {
-                if (err && err.name === 'AbortError') return; // L'utente ha chiuso il menu
+                if (err && err.name === 'AbortError') return;
             }
         }
 
-        // 3. Fallback universale: Se siamo su PC o il browser supporta il Blob download diretto
+        // 4. Download diretto per desktop
         const isDesktop = !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (isDesktop) {
             try {
@@ -1580,9 +1618,7 @@ if (exportJsonBtn) {
             } catch (e) {}
         }
 
-        // 4. Paracadute Definitivo per la WebView dell' .aab: La Modale Testuale
-        // Se la WebView blocca il download e il device non condivide il file, 
-        // la modale con "Copia Codice" o "Condividi Testo" salverà sempre l'utente al 100%.
+        // 5. Fallback con la modale testuale
         showJsonExportModal(dataStr);
     });
 }
@@ -1926,4 +1962,47 @@ function isPointInsideGeojson(point, geojson) {
         for (let poly of geojson.coordinates) { if (rayCast(poly[0])) return true; }
     }
     return false;
+}
+// ==========================================
+// 📢 GESTIONE GOOGLE ADMOB (BANNER + APERTURA)
+// ==========================================
+// ==========================================
+// 📢 GESTIONE GOOGLE ADMOB (BANNER + APERTURA)
+// ==========================================
+
+async function avviaAdMob() {
+    try {
+        // Caricamento dinamico protetto per Capacitor
+        const { AdMob, BannerAdPosition, BannerAdSize } = await import('@capacitor-community/admob');
+
+        await AdMob.initialize({ requestTrackingAuthorization: true });
+        
+        // Mostra il banner in basso
+        await AdMob.showBanner({
+            adId: 'ca-app-pub-5453612296155947/9096790539',
+            position: BannerAdPosition.BOTTOM_CENTER,
+            size: BannerAdSize.BANNER,
+            margin: 0,
+            testing: true 
+        });
+
+        // Mostra l'annuncio all'apertura dell'app
+        await AdMob.prepareAppOpenAd({
+            adId: 'ca-app-pub-5453612296155947/7395686891',
+            testing: true
+        });
+        await AdMob.showAppOpenAd();
+
+    } catch (e) {
+        console.log('AdMob non attivo (normale se testato da browser web):', e);
+    }
+}
+
+async function nascondiBanner() {
+    try {
+        const { AdMob } = await import('@capacitor-community/admob');
+        await AdMob.hideBanner();
+    } catch (e) {
+        console.error('Errore chiusura banner:', e);
+    }
 }
