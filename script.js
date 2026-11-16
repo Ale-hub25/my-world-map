@@ -1681,7 +1681,7 @@ if (exportJsonBtn) {
         const exportProfile = JSON.parse(JSON.stringify(userProfile || {}));
         exportProfile.avatar = "";
 
-        // Semplifichiamo i GeoJSON per far pesare il file pochi KB mantenendo le forme reali
+        // Semplifichiamo i GeoJSON per mantenere le forme reali ma pesare pochi KB
         ["mainCities", "knownPlaces", "visitedCities"].forEach(key => {
             if (Array.isArray(exportProfile[key])) {
                 exportProfile[key].forEach(city => {
@@ -1707,38 +1707,28 @@ if (exportJsonBtn) {
         const dataStr = JSON.stringify(backupData);
         const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
 
-        if (navigator.share && navigator.canShare) {
-            try {
-                const file = new File([dataStr], fileName, { type: "application/json" });
-                if (navigator.canShare({ files: [file] })) {
-                    await navigator.share({ title: "Backup My World Map", files: [file] });
-                    return;
-                }
-            } catch (err) {
-                if (err && err.name === "AbortError") return;
-            }
+        // Tentativo di download diretto compatibile anche con Android/Chrome
+        try {
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            
+            alert("✅ File di backup scaricato con successo nella cartella Download del telefono!");
+            return;
+        } catch (err) {
+            console.log("Download diretto non riuscito, apro il fallback:", err);
         }
 
-        const isDesktop = !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (isDesktop) {
-            try {
-                const blob = new Blob([dataStr], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-                return;
-            } catch (err) {}
-        }
-
+        // Paracadute di emergenza se il browser mobile blocca il download
         showJsonExportModal(dataStr);
     });
 }
-
 function showJsonExportModal(jsonData) {
     const oldModal = document.getElementById('jsonExportModal');
     if (oldModal) oldModal.remove();
