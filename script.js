@@ -1,4 +1,3 @@
-
 const translations = {
     it: {
         searchPlaceholder: "🔍 Cerca città o luogo...",
@@ -25,6 +24,7 @@ const translations = {
         helpSec1Text: "Usa la barra di ricerca per trovare qualsiasi città o indirizzo globale con suggerimenti automatici. Il pulsante Filtra Categoria consente di mostrare sulla mappa solo i pin appartenenti a una specifica categoria.",
         helpSec2Title: "📍 Aggiunta e Gestione Pin",
         helpSec2Text: "Premi il tasto per attivare il mirino centrale sulla mappa. Sposta la mappa fino al punto esatto, conferma e compila la scheda aggiungendo un nome, un'emoji, foto, tag e ricordi personali.",
+        safetyBlockMsg: "⚠️ Non puoi posizionare pin fuori dai confini delle tue città o luoghi conosciuti.",
         helpSec3Title: "✈️ Voli Animati tra Aeroporti",
         helpSec3Text: "Quando selezioni la categoria Aeroporto per un pin, apri la sua scheda per scegliere un altro aeroporto memorizzato e spiccare il volo.",
         btnSaveSettings: "Salva e Chiudi", 
@@ -111,6 +111,7 @@ const translations = {
         helpSec1Text: "Use the search bar to find any city or global address with automatic suggestions. The Filter Category button allows you to display only pins belonging to a specific category.",
         helpSec2Title: "📍 Adding and Managing Pins",
         helpSec2Text: "Press the button to activate the central crosshair on the map. Move the map to the exact spot, confirm, and fill out the form.",
+        safetyBlockMsg: "⚠️ You cannot place pins outside the boundaries of your cities or known places.",
         helpSec3Title: "✈️ Animated Flights Between Airports",
         helpSec3Text: "When you select the Airport category for a pin, open its sheet to choose another stored airport and take flight.",
         btnSaveSettings: "Save and Close", 
@@ -207,7 +208,6 @@ let userProfile = JSON.parse(localStorage.getItem('My World Map_user')) || {
     friends: []
 };
 
-// 1. Recupero sicuro dell'ultima posizione salvata (anti-crash)
 let savedMapState = null;
 try {
     savedMapState = JSON.parse(localStorage.getItem('My World Map_lastView'));
@@ -228,7 +228,6 @@ const initialBearing = hasValidCenter ? (savedMapState.bearing || 0) : 0;
 
 const mapStyleUrl = userMapStyle.isDarkMode ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/liberty';
 
-// 2. Creazione della mappa pulita che sfrutta la posizione salvata
 const map = new maplibregl.Map({
     container: 'map',
     style: mapStyleUrl,
@@ -708,30 +707,106 @@ function setupClusteredSourceAndLayers() {
     map.on('mouseleave', 'clusters-layer', () => { map.getCanvas().style.cursor = ''; });
 }
 
-function updateBoundariesAndUnexploredLayer() {
-    const allKnown = [...(userProfile.mainCities || []), ...(userProfile.knownPlaces || []), ...(userProfile.visitedCities || [])];
-    const boundaryFeatures = [];
-    const knownPolygons = [];
+function ensureClockwise(ring) {
+    let area = 0;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        area += (ring[j][0] - ring[i][0]) * (ring[j][1] + ring[i][1]);
+    }
+    if (area > 0) {
+        return ring.slice().reverse();
+    }
+    return ring;
+}
 
-    allKnown.forEach(c => {
-        if (c.geojson) {
-            boundaryFeatures.push({ type: 'Feature', geometry: c.geojson, properties: { name: c.name } });
-            if (c.geojson.type === 'Polygon' || c.geojson.type === 'MultiPolygon') knownPolygons.push(c.geojson);
+function updateBoundariesAndUnexploredLayer() {
+    if (typeof map === 'undefined' || !map.getSource || !map.getSource('unexplored-src')) {
+        setTimeout(updateBoundariesAndUnexploredLayer, 100);
+        return;
+    }
+
+    const allKnown = [
+        ...(userProfile.mainCities || []),
+        ...(userProfile.knownPlaces || []),
+        ...(userProfile.visitedCities || [])
+    ];
+
+    const boundaryFeatures = [];
+    const validRings = [];
+
+    allKnown.forEach(city => {
+        const poly = city.geojson;
+
+        if (!poly || !['Polygon', 'MultiPolygon'].includes(poly.type)) {
+            return;
+        }
+
+        boundaryFeatures.push({
+            type: 'Feature',
+            geometry: poly,
+            properties: {
+                name: city.name || 'Luogo'
+            }
+        });
+
+        if (poly.type === 'Polygon' && poly.coordinates && poly.coordinates[0]) {
+            validRings.push(poly.coordinates[0]);
+        } else if (poly.type === 'MultiPolygon' && poly.coordinates) {
+            poly.coordinates.forEach(polygon => {
+                if (polygon && polygon[0]) {
+                    validRings.push(polygon[0]);
+                }
+            });
         }
     });
 
-    if (map.getSource('known-boundaries-src')) map.getSource('known-boundaries-src').setData({ type: 'FeatureCollection', features: boundaryFeatures });
-    if (map.getSource('unexplored-src')) {
-        if (knownPolygons.length > 0) {
-            const worldPolygon = [[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]];
-            knownPolygons.forEach(g => {
-                if (g.type === 'Polygon') worldPolygon.push(g.coordinates[0]);
-                else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => worldPolygon.push(p[0]));
+    try {
+        const boundariesSource = map.getSource('known-boundaries-src');
+
+        if (boundariesSource) {
+            boundariesSource.setData({
+                type: 'FeatureCollection',
+                features: boundaryFeatures
             });
-            map.getSource('unexplored-src').setData({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Polygon', coordinates: worldPolygon } }] });
-        } else {
-            map.getSource('unexplored-src').setData({ type: 'FeatureCollection', features: [] });
         }
+
+        const unexploredSource = map.getSource('unexplored-src');
+
+        if (unexploredSource) {
+            if (validRings.length > 0) {
+                const worldPolygon = [
+                    [
+                        [-180, -90],
+                        [180, -90],
+                        [180, 90],
+                        [-180, 90],
+                        [-180, -90]
+                    ],
+                    ...validRings
+                ];
+
+                unexploredSource.setData({
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: worldPolygon
+                        },
+                        properties: {}
+                    }]
+                });
+            } else {
+                unexploredSource.setData({
+                    type: 'FeatureCollection',
+                    features: []
+                });
+            }
+        }
+
+        map.triggerRepaint();
+
+    } catch (e) {
+        console.error("Errore aggiornamento layer mappa:", e);
     }
 }
 
@@ -1497,7 +1572,9 @@ if (confirmPick) {
         });
 
         if (!isInsideAllowedArea) {
-            alert("🚫 BLOCCO DI SICUREZZA: Non puoi posizionare pin in aree inesplorate o fuori dai confini delle tue città e luoghi conosciuti!");
+            const lang = userProfile.language || 'it';
+            const dict = translations[lang] || translations.it;
+            alert(dict.safetyBlockMsg);
             return;
         }
 
@@ -1569,45 +1646,85 @@ if (closeModal) {
     });
 }
 
+// ==========================================
+// 📐 FUNZIONE DI SEMPLIFICAZIONE GEOMETRICA
+// ==========================================
+function simplifyRing(ring, maxPoints = 80) {
+    if (!Array.isArray(ring) || ring.length <= maxPoints) return ring;
+    const step = Math.ceil(ring.length / maxPoints);
+    const simplified = [];
+    for (let i = 0; i < ring.length; i += step) {
+        simplified.push(ring[i]);
+    }
+    if (simplified.length > 0) {
+        const first = simplified[0];
+        const last = simplified[simplified.length - 1];
+        if (first[0] !== last[0] || first[1] !== last[1]) {
+            simplified.push([first[0], first[1]]);
+        }
+    }
+    return simplified;
+}
+
+// ==========================================
+// 📥 FUNZIONE DI ESPORTAZIONE (Con confini reali alleggeriti)
+// ==========================================
 const exportJsonBtn = document.getElementById("exportJsonBtn");
+
 if (exportJsonBtn) {
     exportJsonBtn.addEventListener("click", async () => {
-        // 1. Pulizia dei pin: rimuoviamo le foto di tutti i luoghi
-        const exportPlaces = JSON.parse(JSON.stringify(places));
+        const exportPlaces = JSON.parse(JSON.stringify(places || {}));
         Object.keys(exportPlaces).forEach(id => {
-            exportPlaces[id].photo = ""; 
+            if (exportPlaces[id]) exportPlaces[id].photo = "";
         });
 
-        // 2. Pulizia del profilo: rimuoviamo l'immagine del profilo utente (avatar)
-        const exportProfile = JSON.parse(JSON.stringify(userProfile));
-        exportProfile.avatar = ""; // <-- QUESTA ERA LA CAUSA DEL PESO ECCESSIVO!
+        const exportProfile = JSON.parse(JSON.stringify(userProfile || {}));
+        exportProfile.avatar = "";
 
-        const dataStr = JSON.stringify({ places: exportPlaces, userProfile: exportProfile });
+        // Semplifichiamo i GeoJSON per far pesare il file pochi KB mantenendo le forme reali
+        ["mainCities", "knownPlaces", "visitedCities"].forEach(key => {
+            if (Array.isArray(exportProfile[key])) {
+                exportProfile[key].forEach(city => {
+                    if (city.geojson && city.geojson.coordinates) {
+                        if (city.geojson.type === 'Polygon') {
+                            city.geojson.coordinates = city.geojson.coordinates.map(ring => simplifyRing(ring, 80));
+                        } else if (city.geojson.type === 'MultiPolygon') {
+                            city.geojson.coordinates = city.geojson.coordinates.map(poly => poly.map(ring => simplifyRing(ring, 60)));
+                        }
+                    }
+                });
+            } else {
+                exportProfile[key] = [];
+            }
+        });
+
+        const backupData = {
+            backupVersion: 3,
+            places: exportPlaces,
+            userProfile: exportProfile
+        };
+
+        const dataStr = JSON.stringify(backupData);
         const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
 
-        // 3. Condivisione nativa (per .aab / mobile)
         if (navigator.share && navigator.canShare) {
             try {
                 const file = new File([dataStr], fileName, { type: "application/json" });
                 if (navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        title: 'Backup My World Map',
-                        files: [file]
-                    });
+                    await navigator.share({ title: "Backup My World Map", files: [file] });
                     return;
                 }
             } catch (err) {
-                if (err && err.name === 'AbortError') return;
+                if (err && err.name === "AbortError") return;
             }
         }
 
-        // 4. Download diretto per desktop
         const isDesktop = !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (isDesktop) {
             try {
-                const blob = new Blob([dataStr], { type: 'application/json' });
+                const blob = new Blob([dataStr], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                const a = document.createElement("a");
                 a.href = url;
                 a.download = fileName;
                 document.body.appendChild(a);
@@ -1615,13 +1732,13 @@ if (exportJsonBtn) {
                 a.remove();
                 URL.revokeObjectURL(url);
                 return;
-            } catch (e) {}
+            } catch (err) {}
         }
 
-        // 5. Fallback con la modale testuale
         showJsonExportModal(dataStr);
     });
 }
+
 function showJsonExportModal(jsonData) {
     const oldModal = document.getElementById('jsonExportModal');
     if (oldModal) oldModal.remove();
@@ -1681,31 +1798,94 @@ function showJsonExportModal(jsonData) {
     document.getElementById('closeJsonModalX').addEventListener('click', () => modal.remove());
 }
 
-function processImportedJsonString(rawString) {
+function rebuildCityGeojson(profile) {
+    ['mainCities', 'knownPlaces', 'visitedCities'].forEach(key => {
+        if (profile[key]) {
+            profile[key].forEach(city => {
+                if (!city.geojson && city.boundingbox && city.boundingbox.length === 4) {
+                    const [latMin, latMax, lonMin, lonMax] = city.boundingbox.map(Number);
+                    city.geojson = {
+                        type: "Polygon",
+                        coordinates: [[
+                            [lonMin, latMin],
+                            [lonMax, latMin],
+                            [lonMax, latMax],
+                            [lonMin, latMax],
+                            [lonMin, latMin]
+                        ]]
+                    };
+                }
+            });
+        }
+    });
+}
+
+async function processImportedJsonString(rawString) {
     try {
         const importedData = JSON.parse(rawString.trim());
-        if (importedData && importedData.places && importedData.userProfile) {
-            if (confirm("⚠️ Importando questo backup i dati attuali verranno sovrascritti. Vuoi procedere?")) {
-                places = importedData.places;
-                userProfile = importedData.userProfile;
-                saveState();
-                renderMarkers();
-                updateMacroCityMarkers();
-                updateBoundariesAndUnexploredLayer();
-                applyLanguageTranslations();
-                loadProfileUI();
-                loadSettingsUI();
-                alert("✅ Dati importati con successo!");
-                document.getElementById("settingsModal").classList.remove("open");
-                return true;
-            }
-        } else {
+        if (!importedData || !importedData.places || !importedData.userProfile) {
             alert("❌ Dati di backup non validi o incompleti.");
+            return false;
         }
+
+        if (!confirm("⚠️ Importando questo backup i dati attuali verranno sovrascritti. Vuoi procedere?")) {
+            return false;
+        }
+
+        const settingsModal = document.getElementById("settingsModal");
+        if (settingsModal) settingsModal.classList.remove("open");
+
+        userProfile.name = importedData.userProfile.name || "Utente";
+        userProfile.avatar = importedData.userProfile.avatar || "";
+        userProfile.language = importedData.userProfile.language || "it";
+        
+        userProfile.mainCities = importedData.userProfile.mainCities || [];
+        userProfile.knownPlaces = importedData.userProfile.knownPlaces || [];
+        userProfile.visitedCities = importedData.userProfile.visitedCities || [];
+        
+        places = importedData.places || {};
+
+        ['mainCities', 'knownPlaces', 'visitedCities'].forEach(key => {
+            if (Array.isArray(userProfile[key])) {
+                userProfile[key].forEach(city => {
+                    if (!city.geojson && city.boundingbox && city.boundingbox.length === 4) {
+                        const [latMin, latMax, lonMin, lonMax] = city.boundingbox.map(Number);
+                        city.geojson = {
+                            type: "Polygon",
+                            coordinates: [[
+                                [lonMin, latMin],
+                                [lonMin, latMax],
+                                [lonMax, latMax],
+                                [lonMax, latMin],
+                                [lonMin, latMin]
+                            ]]
+                        };
+                    }
+                });
+            }
+        });
+
+        saveState();
+
+        renderMarkers();
+        updateMacroCityMarkers();
+        updateBoundariesAndUnexploredLayer();
+        applyLanguageTranslations();
+        loadProfileUI();
+        loadSettingsUI();
+
+        if (typeof map !== 'undefined' && map.triggerRepaint) {
+            map.triggerRepaint();
+        }
+
+        alert("✅ Backup importato con successo! Confini reali e PIN ripristinati all'istante.");
+        return true;
+
     } catch (err) {
-        alert("❌ Formato JSON non valido. Assicurati di aver copiato l'intero codice.");
+        console.error("Errore importazione:", err);
+        alert("❌ Formato JSON non valido o errore durante l'importazione.");
+        return false;
     }
-    return false;
 }
 
 const importJsonBtn = document.getElementById("importJsonBtn");
@@ -1726,8 +1906,8 @@ if (importJsonBtn && importJsonFileInput) {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (event) => {
-            processImportedJsonString(event.target.result);
+        reader.onload = async (event) => {
+            await processImportedJsonString(event.target.result);
             importJsonFileInput.value = "";
         };
         reader.readAsText(file);
@@ -1762,10 +1942,13 @@ function showJsonImportModal() {
         importJsonFileInput.click();
     });
 
-    document.getElementById('confirmPasteImportBtn').addEventListener('click', () => {
+    document.getElementById('confirmPasteImportBtn').addEventListener('click', async () => {
         const pasted = document.getElementById('pasteJsonTextarea').value;
-        if (!pasted.trim()) return alert("Incolla prima il codice JSON!");
-        if (processImportedJsonString(pasted)) {
+        if (!pasted.trim()) {
+            return alert("Incolla prima il codice JSON!");
+        }
+        const success = await processImportedJsonString(pasted);
+        if (success) {
             modal.remove();
         }
     });
@@ -1963,21 +2146,13 @@ function isPointInsideGeojson(point, geojson) {
     }
     return false;
 }
-// ==========================================
-// 📢 GESTIONE GOOGLE ADMOB (BANNER + APERTURA)
-// ==========================================
-// ==========================================
-// 📢 GESTIONE GOOGLE ADMOB (BANNER + APERTURA)
-// ==========================================
 
 async function avviaAdMob() {
     try {
-        // Caricamento dinamico protetto per Capacitor
         const { AdMob, BannerAdPosition, BannerAdSize } = await import('@capacitor-community/admob');
 
         await AdMob.initialize({ requestTrackingAuthorization: true });
         
-        // Mostra il banner in basso
         await AdMob.showBanner({
             adId: 'ca-app-pub-5453612296155947/9096790539',
             position: BannerAdPosition.BOTTOM_CENTER,
@@ -1986,7 +2161,6 @@ async function avviaAdMob() {
             testing: true 
         });
 
-        // Mostra l'annuncio all'apertura dell'app
         await AdMob.prepareAppOpenAd({
             adId: 'ca-app-pub-5453612296155947/7395686891',
             testing: true
