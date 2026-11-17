@@ -319,7 +319,9 @@ function applyLanguageTranslations() {
     if (addBtn) addBtn.title = dict.titleAddPin;
     if (settingsBtn) settingsBtn.title = dict.titleSettings;
     if (profBtn) profBtn.title = dict.titleProfile;
-
+    if (typeof setupAntarcticaEasterEgg === 'function') {
+        setupAntarcticaEasterEgg();
+   }
     updateProfileStats();
 }
 
@@ -471,6 +473,68 @@ function playSound(type) {
     document.addEventListener(evtType, () => initSoundscapes(), { once: true });
 });
 
+let easterEggMarkers = [];
+
+// Lista dei tuoi Easter Egg sparsi nel mondo!
+const secretEasterEggs = [
+    {
+        lngLat: [0, -72], // Antartide
+        textIt: "🐧 Che ci fai qui? Tanto non verrai mai in Antartide...",
+        textEn: "🐧 What are you doing here? You're never coming to Antarctica anyway...",
+        minZoom: 4.5
+    },
+    {
+        lngLat: [86.9250, 27.9881], // Monte Everest (Esempio extra)
+        textIt: "🏔️ Che ci fai qui? Tanto non verrai mai in quassù...",
+        textEn: "🏔️What are you doing here? You'll never come up here..",
+        minZoom: 10
+    }
+];
+
+function setupAntarcticaEasterEgg() {
+    // Rimuove i vecchi se esistono
+    easterEggMarkers.forEach(m => m.remove());
+    easterEggMarkers = [];
+
+    const lang = userProfile.language || 'it';
+
+    secretEasterEggs.forEach(egg => {
+        const text = lang === 'en' ? egg.textEn : egg.textIt;
+
+        const el = document.createElement('div');
+        el.className = 'custom-easter-egg';
+        el.style.cssText = 'display: none; background: rgba(15, 23, 42, 0.8); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-style: italic; text-align: center; max-width: 200px; pointer-events: none; text-shadow: 0 1px 3px rgba(0,0,0,0.9); user-select: none;';
+        el.textContent = text;
+
+        const marker = new maplibregl.Marker({ element: el })
+            .setLngLat(egg.lngLat)
+            .addTo(map);
+
+        easterEggMarkers.push({ marker, minZoom: egg.minZoom });
+    });
+
+    // Ascolta lo zoom una sola volta
+    if (!window._easterEggZoomListenerAdded) {
+        map.on('zoom', updateEasterEggsVisibility);
+        window._easterEggZoomListenerAdded = true;
+    }
+
+    updateEasterEggsVisibility();
+}
+
+function updateEasterEggsVisibility() {
+    const currentZoom = map.getZoom();
+    easterEggMarkers.forEach(item => {
+        const el = item.marker.getElement();
+        if (el) {
+            if (currentZoom > item.minZoom) {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+    });
+}
 map.on('load', () => {
     applyLanguageTranslations();
     enable3DBuildings();
@@ -481,6 +545,7 @@ map.on('load', () => {
     updateMacroCityMarkers();
     updateBoundariesAndUnexploredLayer();
     avviaAdMob();
+    setupAntarcticaEasterEgg();
 });
 
 map.on('styledata', () => {
@@ -1145,6 +1210,7 @@ if (applyStyleBtn) {
         applyMapColors(); 
         renderMarkers(); 
         document.getElementById('styleModal').classList.remove('open');
+        nascondiBanner();
     });
 }
 
@@ -1347,6 +1413,7 @@ if (saveProfileAvatarBtn) {
         saveState(); 
         loadProfileUI(); 
         document.getElementById("profileModal").classList.remove("open");
+        nascondiBanner();
     });
 }
 
@@ -1360,6 +1427,7 @@ if (saveSettingsBtn) {
         saveState();
         applyLanguageTranslations();
         document.getElementById("settingsModal").classList.remove("open");
+        nascondiBanner();
     });
 }
 
@@ -1427,7 +1495,9 @@ function openPlace(id) {
         } 
     });
     
-    if (placeSheet) placeSheet.classList.add("open");
+    if (placeSheet) {
+        placeSheet.classList.add("open");
+    }
 }
 
 const flyToAirportBtn = document.getElementById("flyToAirportBtn");
@@ -1494,6 +1564,7 @@ if (editPlaceBtn) {
 
         if (placeSheet) placeSheet.classList.remove("open"); 
         document.getElementById("addModal").classList.add("open");
+        mostraBanner();
     });
 }
 
@@ -1590,6 +1661,7 @@ if (confirmPick) {
         if(removePhotoBtn) removePhotoBtn.click();
         document.getElementById("mapPicker").classList.add("hidden"); 
         document.getElementById("addModal").classList.add("open");
+        mostraBanner();
     });
 }
 
@@ -1616,6 +1688,7 @@ if (savePlace) {
             renderMarkers(); 
             saveState(); 
             document.getElementById("addModal").classList.remove("open"); 
+            nascondiBanner();
             openPlace(currentSelectedPlaceId);
         } else {
             const id = `place-${Date.now()}`;
@@ -1633,6 +1706,7 @@ if (savePlace) {
             renderMarkers(); 
             saveState(); 
             document.getElementById("addModal").classList.remove("open"); 
+            nascondiBanner();
             openPlace(id);
         }
     });
@@ -1642,6 +1716,7 @@ const closeModal = document.getElementById("closeModal");
 if (closeModal) {
     closeModal.addEventListener("click", () => { 
         document.getElementById("addModal").classList.remove("open"); 
+        nascondiBanner();
         removeTempSearchMarker(); 
     });
 }
@@ -1951,16 +2026,19 @@ if (settingsButton) {
     settingsButton.addEventListener("click", () => {
         loadSettingsUI();
         document.getElementById("settingsModal").classList.add("open");
+        mostraBanner();
     });
 }
 
 const closeSheet = document.getElementById("closeSheet");
-if (closeSheet) closeSheet.addEventListener("click", () => placeSheet.classList.remove("open"));
+if (closeSheet) closeSheet.addEventListener("click", () => {
+    placeSheet.classList.remove("open");
+});
 
 const styleButton = document.getElementById("styleButton");
 const closeStyle = document.getElementById("closeStyle");
-if (styleButton) styleButton.addEventListener("click", () => { loadStyleUI(); document.getElementById("styleModal").classList.add("open"); });
-if (closeStyle) closeStyle.addEventListener("click", () => document.getElementById("styleModal").classList.remove("open"));
+if (styleButton) styleButton.addEventListener("click", () => { loadStyleUI(); document.getElementById("styleModal").classList.add("open"); mostraBanner(); });
+if (closeStyle) closeStyle.addEventListener("click", () => { document.getElementById("styleModal").classList.remove("open"); nascondiBanner(); });
 
 const profileNavBtn = document.getElementById("profileNavBtn");
 const closeProfile = document.getElementById("closeProfile");
@@ -1969,11 +2047,13 @@ if (profileNavBtn) {
         e.stopPropagation(); 
         loadProfileUI(); 
         document.getElementById("profileModal").classList.add("open"); 
+        mostraBanner();
     });
 }
 if (closeProfile) {
     closeProfile.addEventListener("click", () => {
         document.getElementById("profileModal").classList.remove("open");
+        nascondiBanner();
     });
 }
 
@@ -2137,36 +2217,82 @@ function isPointInsideGeojson(point, geojson) {
     return false;
 }
 
-async function avviaAdMob() {
-    try {
-        const { AdMob, BannerAdPosition, BannerAdSize } = await import('@capacitor-community/admob');
+// ==========================================
+// 📢 GESTIONE GOOGLE ADMOB (SOLO TEST SICURO)
+// ==========================================
+let isBannerCreated = false;
 
-        await AdMob.initialize({ requestTrackingAuthorization: true });
-        
-        await AdMob.showBanner({
-            adId: 'ca-app-pub-5453612296155947/9096790539',
-            position: BannerAdPosition.BOTTOM_CENTER,
-            size: BannerAdSize.BANNER,
-            margin: 0,
-            testing: true 
+// ID UFFICIALI DI TEST GOOGLE (100% sicuri contro il ban)
+const TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
+const TEST_APP_OPEN_ID = 'ca-app-pub-3940256099942544/9257395921';
+
+// I TUOI ID REALI (da usare SOLO prima della pubblicazione sul Play Store):
+// const PROD_BANNER_ID = 'ca-app-pub-5453612296155947/9096790539';
+// const PROD_APP_OPEN_ID = 'ca-app-pub-5453612296155947/7395686891';
+
+function getAdMobPlugin() {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+        return window.Capacitor.Plugins.AdMob;
+    }
+    return null;
+}
+
+async function avviaAdMob() {
+    const AdMob = getAdMobPlugin();
+    if (!AdMob) {
+        console.log('AdMob non attivo (normale se testato da browser web)');
+        return;
+    }
+    try {
+        await AdMob.initialize({
+            initializeForTesting: true
+        });
+
+        // Mostra l'annuncio di apertura appena ha finito di caricarsi
+        AdMob.addListener('appOpenAdLoaded', async () => {
+            try {
+                await AdMob.showAppOpenAd();
+            } catch (err) {
+                console.error('Errore showAppOpenAd:', err);
+            }
         });
 
         await AdMob.prepareAppOpenAd({
-            adId: 'ca-app-pub-5453612296155947/7395686891',
-            testing: true
+            adId: TEST_APP_OPEN_ID,
+            isTesting: true
         });
-        await AdMob.showAppOpenAd();
-
     } catch (e) {
-        console.log('AdMob non attivo (normale se testato da browser web):', e);
+        console.error('Errore AdMob avvio:', e);
+    }
+}
+
+async function mostraBanner() {
+    const AdMob = getAdMobPlugin();
+    if (!AdMob) return;
+    try {
+        if (isBannerCreated) {
+            await AdMob.resumeBanner();
+            return;
+        }
+        await AdMob.showBanner({
+            adId: TEST_BANNER_ID,
+            position: 'BOTTOM_CENTER',
+            size: 'BANNER',
+            margin: 0,
+            isTesting: true
+        });
+        isBannerCreated = true;
+    } catch (e) {
+        console.error('Errore mostraBanner:', e);
     }
 }
 
 async function nascondiBanner() {
+    const AdMob = getAdMobPlugin();
+    if (!AdMob || !isBannerCreated) return;
     try {
-        const { AdMob } = await import('@capacitor-community/admob');
         await AdMob.hideBanner();
     } catch (e) {
-        console.error('Errore chiusura banner:', e);
+        console.error('Errore nascondiBanner:', e);
     }
 }
