@@ -2217,16 +2217,17 @@ function isPointInsideGeojson(point, geojson) {
     return false;
 }
 
+
 // ==========================================
-// 📢 GESTIONE GOOGLE ADMOB (SOLO TEST SICURO)
+// 📢 GESTIONE GOOGLE ADMOB (COMPLETA E SICURA)
 // ==========================================
 let isBannerCreated = false;
 
-// ID UFFICIALI DI TEST GOOGLE (100% sicuri contro il ban)
+// ID UFFICIALI DI TEST GOOGLE
 const TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
 const TEST_APP_OPEN_ID = 'ca-app-pub-3940256099942544/9257395921';
 
-// I TUOI ID REALI (da usare SOLO prima della pubblicazione sul Play Store):
+// I TUOI ID REALI (per la pubblicazione)
 // const PROD_BANNER_ID = 'ca-app-pub-5453612296155947/9096790539';
 // const PROD_APP_OPEN_ID = 'ca-app-pub-5453612296155947/7395686891';
 
@@ -2237,36 +2238,67 @@ function getAdMobPlugin() {
     return null;
 }
 
+// ==========================================
+// APP OPEN AD - PUBBLICITÀ ALL'APERTURA
+// ==========================================
 async function avviaAdMob() {
     const AdMob = getAdMobPlugin();
+
     if (!AdMob) {
         console.log('AdMob non attivo (normale se testato da browser web)');
         return;
     }
+
     try {
         await AdMob.initialize({
             initializeForTesting: true
         });
 
-        // prepareAppOpenAd attende il caricamento completo dell'annuncio di test e poi lo mostra
-        await AdMob.prepareAppOpenAd({
-            adId: TEST_APP_OPEN_ID,
-            isTesting: true
+        await AdMob.addListener('appOpenAdFailedToLoad', (error) => {
+            console.error('App Open Ad non caricato:', error);
         });
-        await AdMob.showAppOpenAd();
+
+        await AdMob.addListener('appOpenAdFailedToShow', (error) => {
+            console.error('App Open Ad non visualizzato:', error);
+        });
+
+        console.log('Caricamento App Open Ad in corso...');
+
+        const loadedAd = await AdMob.loadAppOpen({
+            adId: TEST_APP_OPEN_ID
+        });
+
+        console.log('App Open Ad caricato:', loadedAd.adUnitId);
+
+        const status = await AdMob.isAppOpenLoaded({
+            adId: loadedAd.adUnitId
+        });
+
+        if (status.value) {
+            await AdMob.showAppOpen({
+                adId: loadedAd.adUnitId
+            });
+
+            console.log('App Open Ad visualizzato correttamente');
+        } else {
+            console.warn('App Open Ad non disponibile');
+        }
+
     } catch (e) {
-        console.error('Errore AdMob avvio:', e);
+        console.error('Errore AdMob App Open:', e);
     }
 }
 
 async function mostraBanner() {
     const AdMob = getAdMobPlugin();
     if (!AdMob) return;
+
     try {
         if (isBannerCreated) {
             await AdMob.resumeBanner();
             return;
         }
+
         await AdMob.showBanner({
             adId: TEST_BANNER_ID,
             position: 'BOTTOM_CENTER',
@@ -2274,7 +2306,9 @@ async function mostraBanner() {
             margin: 0,
             isTesting: true
         });
+
         isBannerCreated = true;
+
     } catch (e) {
         console.error('Errore mostraBanner:', e);
     }
@@ -2283,6 +2317,7 @@ async function mostraBanner() {
 async function nascondiBanner() {
     const AdMob = getAdMobPlugin();
     if (!AdMob || !isBannerCreated) return;
+
     try {
         await AdMob.hideBanner();
     } catch (e) {
