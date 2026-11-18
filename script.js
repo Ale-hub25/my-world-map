@@ -320,14 +320,77 @@ function applyLanguageTranslations() {
     if (settingsBtn) settingsBtn.title = dict.titleSettings;
     if (profBtn) profBtn.title = dict.titleProfile;
     if (typeof setupAntarcticaEasterEgg === 'function') {
-        setupAntarcticaEasterEgg();
-   }
+    setupAntarcticaEasterEgg();
+}
     updateProfileStats();
 }
 
 let audioCtx = null;
 let windGain = null;
 let waveGain = null;
+
+let easterEggMarkers = [];
+
+// Lista degli Easter Egg sparsi nel mondo
+const secretEasterEggs = [
+    {
+        lngLat: [0, -72], // Antartide
+        textIt: "🐧 Che ci fai qui? Tanto non verrai mai in Antartide...",
+        textEn: "🐧 What are you doing here? You're never coming to Antarctica anyway...",
+        minZoom: 4.5
+    },
+    {
+        lngLat: [86.9250, 27.9881], // Monte Everest
+        textIt: "🏔️ Che ci fai qui? Tanto non vorrei mai quassù...",
+        textEn: "🏔️ What are you doing here? You'll never come up here...",
+        minZoom: 10
+    }
+];
+
+function setupAntarcticaEasterEgg() {
+    easterEggMarkers.forEach(item => {
+        if (item && item.marker) item.marker.remove();
+    });
+    easterEggMarkers = [];
+
+    const lang = userProfile.language || 'it';
+
+    secretEasterEggs.forEach(egg => {
+        const text = lang === 'en' ? egg.textEn : egg.textIt;
+
+        const el = document.createElement('div');
+        el.className = 'custom-easter-egg';
+        el.style.cssText = 'display: none; background: rgba(15, 23, 42, 0.85); color: #38bdf8; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 11px; font-style: italic; text-align: center; max-width: 220px; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); user-select: none; line-height: 1.3;';
+        el.textContent = text;
+
+        const marker = new maplibregl.Marker({ element: el })
+            .setLngLat(egg.lngLat)
+            .addTo(map);
+
+        easterEggMarkers.push({ marker, minZoom: egg.minZoom });
+    });
+
+    if (!window._easterEggZoomListenerAdded) {
+        map.on('zoom', updateEasterEggsVisibility);
+        window._easterEggZoomListenerAdded = true;
+    }
+
+    updateEasterEggsVisibility();
+}
+
+function updateEasterEggsVisibility() {
+    const currentZoom = map.getZoom();
+    easterEggMarkers.forEach(item => {
+        const el = item.marker.getElement();
+        if (el) {
+            if (currentZoom > item.minZoom) {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+    });
+}
 
 function initSoundscapes() {
     if (audioCtx) return;
@@ -473,68 +536,6 @@ function playSound(type) {
     document.addEventListener(evtType, () => initSoundscapes(), { once: true });
 });
 
-let easterEggMarkers = [];
-
-// Lista dei tuoi Easter Egg sparsi nel mondo!
-const secretEasterEggs = [
-    {
-        lngLat: [0, -72], // Antartide
-        textIt: "🐧 Che ci fai qui? Tanto non verrai mai in Antartide...",
-        textEn: "🐧 What are you doing here? You're never coming to Antarctica anyway...",
-        minZoom: 4.5
-    },
-    {
-        lngLat: [86.9250, 27.9881], // Monte Everest (Esempio extra)
-        textIt: "🏔️ Che ci fai qui? Tanto non verrai mai in quassù...",
-        textEn: "🏔️What are you doing here? You'll never come up here..",
-        minZoom: 10
-    }
-];
-
-function setupAntarcticaEasterEgg() {
-    // Rimuove i vecchi se esistono
-    easterEggMarkers.forEach(m => m.remove());
-    easterEggMarkers = [];
-
-    const lang = userProfile.language || 'it';
-
-    secretEasterEggs.forEach(egg => {
-        const text = lang === 'en' ? egg.textEn : egg.textIt;
-
-        const el = document.createElement('div');
-        el.className = 'custom-easter-egg';
-        el.style.cssText = 'display: none; background: rgba(15, 23, 42, 0.8); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-style: italic; text-align: center; max-width: 200px; pointer-events: none; text-shadow: 0 1px 3px rgba(0,0,0,0.9); user-select: none;';
-        el.textContent = text;
-
-        const marker = new maplibregl.Marker({ element: el })
-            .setLngLat(egg.lngLat)
-            .addTo(map);
-
-        easterEggMarkers.push({ marker, minZoom: egg.minZoom });
-    });
-
-    // Ascolta lo zoom una sola volta
-    if (!window._easterEggZoomListenerAdded) {
-        map.on('zoom', updateEasterEggsVisibility);
-        window._easterEggZoomListenerAdded = true;
-    }
-
-    updateEasterEggsVisibility();
-}
-
-function updateEasterEggsVisibility() {
-    const currentZoom = map.getZoom();
-    easterEggMarkers.forEach(item => {
-        const el = item.marker.getElement();
-        if (el) {
-            if (currentZoom > item.minZoom) {
-                el.style.display = 'block';
-            } else {
-                el.style.display = 'none';
-            }
-        }
-    });
-}
 map.on('load', () => {
     applyLanguageTranslations();
     enable3DBuildings();
@@ -1416,7 +1417,6 @@ if (saveProfileAvatarBtn) {
         nascondiBanner();
     });
 }
-
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 if (saveSettingsBtn) {
     saveSettingsBtn.addEventListener("click", () => {
@@ -2248,19 +2248,12 @@ async function avviaAdMob() {
             initializeForTesting: true
         });
 
-        // Mostra l'annuncio di apertura appena ha finito di caricarsi
-        AdMob.addListener('appOpenAdLoaded', async () => {
-            try {
-                await AdMob.showAppOpenAd();
-            } catch (err) {
-                console.error('Errore showAppOpenAd:', err);
-            }
-        });
-
+        // prepareAppOpenAd attende il caricamento completo dell'annuncio di test e poi lo mostra
         await AdMob.prepareAppOpenAd({
             adId: TEST_APP_OPEN_ID,
             isTesting: true
         });
+        await AdMob.showAppOpenAd();
     } catch (e) {
         console.error('Errore AdMob avvio:', e);
     }
