@@ -1500,17 +1500,186 @@ function openPlace(id) {
     }
 }
 
+let flightOverlayEl = null;
+let flightAnimFrameId = null;
+
+function clearFlightTrail() {
+    if (flightAnimFrameId) {
+        cancelAnimationFrame(flightAnimFrameId);
+        flightAnimFrameId = null;
+    }
+    if (flightOverlayEl) {
+        flightOverlayEl.remove();
+        flightOverlayEl = null;
+    }
+}
+
+function animateFlightWithTrail(startLngLat, endLngLat, durationMs = 3500, onComplete) {
+    clearFlightTrail();
+
+    const mapContainer = map.getContainer();
+    const width = mapContainer.clientWidth || window.innerWidth;
+    const height = mapContainer.clientHeight || window.innerHeight;
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 50;
+        overflow: hidden;
+    `;
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+
+    const glowPath = document.createElementNS(svgNS, 'path');
+    glowPath.setAttribute('fill', 'none');
+    glowPath.setAttribute('stroke', '#38bdf8');
+    glowPath.setAttribute('stroke-width', '8');
+    glowPath.setAttribute('stroke-linecap', 'round');
+    glowPath.setAttribute('stroke-linejoin', 'round');
+    glowPath.setAttribute('opacity', '0.55');
+
+    const corePath = document.createElementNS(svgNS, 'path');
+    corePath.setAttribute('fill', 'none');
+    corePath.setAttribute('stroke', '#ffffff');
+    corePath.setAttribute('stroke-width', '3.5');
+    corePath.setAttribute('stroke-linecap', 'round');
+    corePath.setAttribute('stroke-linejoin', 'round');
+    corePath.setAttribute('opacity', '0.95');
+
+    svg.appendChild(glowPath);
+    svg.appendChild(corePath);
+
+    const planeEl = document.createElement('div');
+    planeEl.style.cssText = `
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: 30px;
+        line-height: 1;
+        transform: translate(-50%, -50%);
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.75));
+        will-change: transform;
+    `;
+    planeEl.innerHTML = '<span style="display:inline-block;">✈️</span>';
+    const planeIcon = planeEl.firstElementChild;
+
+    overlay.appendChild(svg);
+    overlay.appendChild(planeEl);
+    mapContainer.appendChild(overlay);
+    flightOverlayEl = overlay;
+
+    map.flyTo({
+        center: endLngLat,
+        zoom: 15,
+        pitch: 30,
+        speed: 1.1,
+        curve: 1.4,
+        duration: durationMs,
+        essential: true
+    });
+
+    const startTime = performance.now();
+    const totalSamples = 80;
+
+    function frame(now) {
+        if (!flightOverlayEl) return;
+
+        const elapsed = now - startTime;
+        const rawT = Math.min(elapsed / durationMs, 1);
+        const easedT = rawT < 0.5
+            ? 2 * rawT * rawT
+            : 1 - Math.pow(-2 * rawT + 2, 2) / 2;
+
+        const pStart = map.project(startLngLat);
+        const pEnd = map.project(endLngLat);
+
+        const midX = (pStart.x + pEnd.x) / 2;
+        const midY = (pStart.y + pEnd.y) / 2;
+        const dx = pEnd.x - pStart.x;
+        const dy = pEnd.y - pStart.y;
+        const dist = Math.hypot(dx, dy);
+
+        const lift = Math.min(dist * 0.28, 140);
+        const ctrlX = midX - (dy / (dist || 1)) * (lift * 0.2);
+        const ctrlY = midY + (dx / (dist || 1)) * (lift * 0.2) - lift;
+
+        // Genera tutti i punti della curva completa
+        const curvePoints = [];
+        for (let i = 0; i <= totalSamples; i++) {
+            const u = i / totalSamples;
+            const inv = 1 - u;
+            const x = inv * inv * pStart.x + 2 * inv * u * ctrlX + u * u * pEnd.x;
+            const y = inv * inv * pStart.y + 2 * inv * u * ctrlY + u * u * pEnd.y;
+            curvePoints.push({ x, y });
+        }
+
+        // Posizione esatta dell'aereo lungo la curva in base a easedT
+        const exactIdx = easedT * totalSamples;
+        const baseIdx = Math.min(Math.floor(exactIdx), totalSamples - 1);
+        const frac = exactIdx - baseIdx;
+
+        const ptA = curvePoints[baseIdx];
+        const ptB = curvePoints[baseIdx + 1];
+        const planeX = ptA.x + (ptB.x - ptA.x) * frac;
+        const planeY = ptA.y + (ptB.y - ptA.y) * frac;
+
+        // Costruisce la scia dall'inizio fino esattamente a (planeX, planeY)
+        const drawnPoints = curvePoints.slice(0, baseIdx + 1);
+        drawnPoints.push({ x: planeX, y: planeY });
+
+        const d = drawnPoints
+            .map((pt, idx) => `${idx === 0 ? 'M' : 'L'} ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`)
+            .join(' ');
+
+        glowPath.setAttribute('d', d);
+        corePath.setAttribute('d', d);
+
+        // Allinea centro dell'aereo e angolo di volo alla tangente del segmento
+        planeEl.style.transform = `translate(${planeX.toFixed(1)}px, ${planeY.toFixed(1)}px)`;
+        const angleDeg = (Math.atan2(ptB.y - ptA.y, ptB.x - ptA.x) * 180 / Math.PI) + 45;
+        planeIcon.style.transform = `rotate(${angleDeg.toFixed(1)}deg)`;
+
+        if (rawT < 1) {
+            flightAnimFrameId = requestAnimationFrame(frame);
+        } else {
+            if (typeof onComplete === 'function') onComplete();
+            setTimeout(() => {
+                clearFlightTrail();
+            }, 1200);
+        }
+    }
+
+    flightAnimFrameId = requestAnimationFrame(frame);
+}
+
 const flyToAirportBtn = document.getElementById("flyToAirportBtn");
 if (flyToAirportBtn) {
     flyToAirportBtn.addEventListener("click", () => {
         const destId = document.getElementById("airportDestinationSelect").value;
         if (!destId) return alert("Seleziona un aeroporto di destinazione!");
         const destPlace = places[destId];
+        const originPlace = places[currentSelectedPlaceId];
         if (destPlace) {
             playSound('flight');
             if (placeSheet) placeSheet.classList.remove("open");
-            map.flyTo({ center: [destPlace.lng, destPlace.lat], zoom: 15, pitch: 30, speed: 1.2, curve: 1.4 });
-            setTimeout(() => openPlace(destId), 2000);
+
+            if (originPlace) {
+                animateFlightWithTrail(
+                    [originPlace.lng, originPlace.lat],
+                    [destPlace.lng, destPlace.lat],
+                    3500,
+                    () => openPlace(destId)
+                );
+            } else {
+                map.flyTo({ center: [destPlace.lng, destPlace.lat], zoom: 15, pitch: 30, duration: 2500 });
+                setTimeout(() => openPlace(destId), 2500);
+            }
         }
     });
 }
@@ -1780,27 +1949,24 @@ if (exportJsonBtn) {
         };
 
         const dataStr = JSON.stringify(backupData);
-        const fileName = `my_world_map_backup_${new Date().toISOString().slice(0, 10)}.json`;
 
-        // Tentativo di download diretto compatibile anche con Android/Chrome
-        try {
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-            
-            alert("✅ File di backup scaricato con successo nella cartella Download del telefono!");
-            return;
-        } catch (err) {
-            console.log("Download diretto non riuscito, apro il fallback:", err);
+        // 📱 Sulle app mobile usiamo la condivisione nativa o il modale sicuro,
+        // bypassando il blocco della cartella Download di Android
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        
+        if (isMobile && navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Backup My World Map',
+                    text: dataStr
+                });
+                return;
+            } catch (e) {
+                // Se l'utente chiude il pannello di condivisione, apre comunque il modale
+            }
         }
 
-        // Paracadute di emergenza se il browser mobile blocca il download
+        // Apre la schermata pulita con il testo e il tasto "Copia Codice"
         showJsonExportModal(dataStr);
     });
 }
